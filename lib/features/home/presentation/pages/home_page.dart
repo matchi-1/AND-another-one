@@ -3,6 +3,8 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/primary_menu_button.dart';
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -69,42 +71,42 @@ class _HomePageState extends State<HomePage>
 
           // Rotating stars / halftone decorations
           Positioned(
-            top: size.height * 0.03,
-            left: -25,
+            top: -235,
+            left: -235,
             child: _RotatingStar(
               controller: _star1Controller,
               imagePath: AppAssets.star1,
-              width: 120,
+              width: 500,
             ),
           ),
 
           Positioned(
-            top: size.height * 0.28,
-            right: -35,
+            top: 75,
+            right: -320,
             child: _RotatingStar(
               controller: _star2Controller,
               imagePath: AppAssets.star2,
-              width: 150,
+              width: 530,
             ),
           ),
 
           Positioned(
-            bottom: size.height * 0.18,
-            left: -40,
+            bottom: 120,
+            left: -280,
             child: _RotatingStar(
               controller: _star3Controller,
               imagePath: AppAssets.star3,
-              width: 170,
+              width: 500,
             ),
           ),
 
           Positioned(
-            bottom: -20,
-            right: -20,
+            bottom: -280,
+            right: -200,
             child: _RotatingStar(
               controller: _star4Controller,
               imagePath: AppAssets.star4,
-              width: 180,
+              width: 500,
             ),
           ),
 
@@ -121,7 +123,7 @@ class _HomePageState extends State<HomePage>
                       // Logo image
                       Image.asset(
                         AppAssets.homeLogo,
-                        width: size.width * 0.62,
+                        width: size.width * 0.78,
                       ),
 
                       SizedBox(height: size.height * 0.08),
@@ -164,7 +166,7 @@ class _HomePageState extends State<HomePage>
 }
 
 class _RotatingStar extends StatelessWidget {
-  final AnimationController controller;
+  final Animation<double> controller;
   final String imagePath;
   final double width;
 
@@ -176,12 +178,21 @@ class _RotatingStar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RotationTransition(
-      turns: controller,
-      child: Image.asset(
-        imagePath,
-        width: width,
-        fit: BoxFit.contain,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: controller,
+        child: Image.asset(
+          imagePath,
+          width: width,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.low,
+        ),
+        builder: (context, child) {
+          return Transform.rotate(
+            angle: controller.value * 2 * math.pi,
+            child: child,
+          );
+        },
       ),
     );
   }
