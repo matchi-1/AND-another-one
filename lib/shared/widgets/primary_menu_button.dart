@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
 class PrimaryMenuButton extends StatelessWidget {
@@ -17,8 +16,7 @@ class PrimaryMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 560,
-      //maxFinite: double.infinity,
+      width: double.infinity,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -28,7 +26,7 @@ class PrimaryMenuButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             boxShadow: const [
               BoxShadow(
-                color: AppColors.shadow,
+                color: Color(0x66000000),
                 offset: Offset(0, 6),
                 blurRadius: 0,
               ),

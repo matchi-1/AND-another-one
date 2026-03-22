@@ -1,65 +1,130 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/primary_menu_button.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage>
+    with TickerProviderStateMixin {
+  late final AnimationController _star1Controller;
+  late final AnimationController _star2Controller;
+  late final AnimationController _star3Controller;
+  late final AnimationController _star4Controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _star1Controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 16),
+    )..repeat();
+
+    _star2Controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat(reverse: false);
+
+    _star3Controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 18),
+    )..repeat();
+
+    _star4Controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 22),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _star1Controller.dispose();
+    _star2Controller.dispose();
+    _star3Controller.dispose();
+    _star4Controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.blueBg,
-              ),
+      body: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: Image.asset(
+              AppAssets.bgMenu,
+              fit: BoxFit.cover,
             ),
+          ),
 
-            // Optional decorative dots / shapes later
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _GridPainter(),
-                ),
-              ),
+          // Rotating stars / halftone decorations
+          Positioned(
+            top: size.height * 0.03,
+            left: -25,
+            child: _RotatingStar(
+              controller: _star1Controller,
+              imagePath: AppAssets.star1,
+              width: 120,
             ),
+          ),
 
-            Center(
+          Positioned(
+            top: size.height * 0.28,
+            right: -35,
+            child: _RotatingStar(
+              controller: _star2Controller,
+              imagePath: AppAssets.star2,
+              width: 150,
+            ),
+          ),
+
+          Positioned(
+            bottom: size.height * 0.18,
+            left: -40,
+            child: _RotatingStar(
+              controller: _star3Controller,
+              imagePath: AppAssets.star3,
+              width: 170,
+            ),
+          ),
+
+          Positioned(
+            bottom: -20,
+            right: -20,
+            child: _RotatingStar(
+              controller: _star4Controller,
+              imagePath: AppAssets.star4,
+              width: 180,
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 700),
+                  constraints: const BoxConstraints(maxWidth: 420),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(height: size.height * 0.05),
+                      SizedBox(height: size.height * 0.06),
 
-                      // Temporary logo/title block
-                      const Text(
-                        'AND',
-                        style: TextStyle(
-                          fontSize: 72,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.orange,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'ANOTHER ONE!',
-                        style: TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFFFFF2BF),
-                        ),
+                      // Logo image
+                      Image.asset(
+                        AppAssets.homeLogo,
+                        width: size.width * 0.62,
                       ),
 
-                      const SizedBox(height: 60),
+                      SizedBox(height: size.height * 0.08),
 
                       PrimaryMenuButton(
                         label: 'PLAY',
@@ -91,32 +156,33 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
+class _RotatingStar extends StatelessWidget {
+  final AnimationController controller;
+  final String imagePath;
+  final double width;
 
-class _GridPainter extends CustomPainter {
+  const _RotatingStar({
+    required this.controller,
+    required this.imagePath,
+    required this.width,
+  });
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.12)
-      ..strokeWidth = 1;
-
-    const gap = 32.0;
-
-    for (double x = 0; x <= size.width; x += gap) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    for (double y = 0; y <= size.height; y += gap) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: controller,
+      child: Image.asset(
+        imagePath,
+        width: width,
+        fit: BoxFit.contain,
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
