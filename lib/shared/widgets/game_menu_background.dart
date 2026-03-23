@@ -6,12 +6,14 @@ class GameMenuBackground extends StatefulWidget {
   final Widget child;
   final Color backgroundColor;
   final bool useSafeArea;
+  final bool useGrid;
 
   const GameMenuBackground({
     super.key,
     required this.child,
     required this.backgroundColor,
     this.useSafeArea = true,
+    this.useGrid = true,
   });
 
   @override
@@ -54,7 +56,9 @@ class _GameMenuBackgroundState extends State<GameMenuBackground>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    precacheImage(const AssetImage(AppAssets.bgMenu), context);
+    if (widget.useGrid) {
+      precacheImage(const AssetImage(AppAssets.bgMenu), context);
+    }
     precacheImage(const AssetImage(AppAssets.star1), context);
     precacheImage(const AssetImage(AppAssets.star2), context);
     precacheImage(const AssetImage(AppAssets.star3), context);
@@ -132,14 +136,15 @@ class _GameMenuBackgroundState extends State<GameMenuBackground>
         ),
 
         // 3) Background overlay image on top of stars
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Image.asset(
-              AppAssets.bgMenu,
-              fit: BoxFit.cover,
+        if (widget.useGrid)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Image.asset(
+                AppAssets.bgMenu,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
 
         // 4) Foreground page content
         Positioned.fill(child: content),
