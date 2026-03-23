@@ -6,22 +6,22 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 
-class ModeSelectPage extends StatelessWidget {
-  const ModeSelectPage({super.key});
+class OneOrNoneSelectPage extends StatelessWidget {
+  const OneOrNoneSelectPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     const double btnWidth = 300;
-    const double btnHeight = 75;
+    const double btnHeight = 70;
     const double btnFontSize = 28;
-    const double btnGap = 12;
+    const double btnGap = 10;
     const Color btnTextColor = Colors.white;
 
     return Scaffold(
       body: GameMenuBackground(
-        backgroundColor: AppColors.redBg,
+        backgroundColor: AppColors.purpleBg,
         child: SingleChildScrollView(
           child: SingleChildScrollView(
             child: ConstrainedBox(
@@ -33,40 +33,53 @@ class ModeSelectPage extends StatelessWidget {
 
                   Image.asset(
                     AppAssets.homeLogo,
-                    width: size.width * 0.35,
+                    width: size.width * 0.32,
                   ),
 
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 50),
 
                   Image.asset(
-                    AppAssets.selectModeText,
-                    width: size.width * 0.7,
+                    AppAssets.oneOrNoneText,
+                    width: size.width * 0.6,
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 35),
 
                   BeveledMenuButton(
-                    label: 'GATEKEEPING',
-                    color: AppColors.orangeButton,
+                    label: 'BASIC',
+                    color: AppColors.yellowButton,
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.gatekeepingSelect);
+                      Navigator.pushNamed(context, AppRoutes.selectMode);
                     },
                   ),
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
-                    label: 'ONE OR NONE',
-                    color: AppColors.purpleButton,
+                    label: 'LOGIC',
+                    color: AppColors.darkOrangeButton,
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.oneOrNoneSelect);
+                      Navigator.pushNamed(context, AppRoutes.selectMode);
+                    },
+                  ),
+                  const SizedBox(height: btnGap),
+
+                  BeveledMenuButton(
+                    label: 'MANIC',
+                    color: AppColors.redButton,
+                    width: btnWidth,
+                    height: btnHeight,
+                    textColor: btnTextColor,
+                    fontSize: btnFontSize,
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.logicGuide);
                     },
                   ),
                   const SizedBox(height: btnGap + 30),
@@ -79,7 +92,7 @@ class ModeSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize - 6,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.home);
+                      Navigator.pushNamed(context, AppRoutes.selectMode);
                     },
                   ),
                 ],

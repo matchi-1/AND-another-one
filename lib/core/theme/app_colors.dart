@@ -4,6 +4,7 @@ class AppColors {
   static const blueBg = Color(0xFF0E6CFF);
   static const redBg = Color(0xFFED2242);
   static const orangeBg = Color(0xFFFF7F0F);
+  static const purpleBg = Color(0xFFA03BFF);
   static const yellowButton = Color(0xFFF6B700);
   static const orangeButton = Color(0xFFFF8017);
   static const darkOrangeButton = Color(0xFFEF7711);
