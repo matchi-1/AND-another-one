@@ -1,5 +1,7 @@
 class AppAssets {
   static const homeLogo = 'assets/images/shared/logo.png';
+  static const selectModeText = 'assets/images/shared/select-mode.png';
+  static const gatekeepingText = 'assets/images/shared/gatekeeping.png';
   static const bgMenu = 'assets/images/shared/background-menu.png';
   static const star1 = 'assets/images/shared/star1.png';
   static const star2 = 'assets/images/shared/star2.png';

@@ -22,35 +22,45 @@ class ModeSelectPage extends StatelessWidget {
     return Scaffold(
       body: GameMenuBackground(
         backgroundColor: AppColors.redBg,
-        child: Center(
+        child: SingleChildScrollView(
           child: SingleChildScrollView(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 children: [
+
+                  const SizedBox(height: 100),
+
                   Image.asset(
                     AppAssets.homeLogo,
-                    width: size.width * 0.8,
+                    width: size.width * 0.35,
                   ),
 
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 60),
+
+                  Image.asset(
+                    AppAssets.selectModeText,
+                    width: size.width * 0.7,
+                  ),
+
+                  const SizedBox(height: 30),
 
                   BeveledMenuButton(
                     label: 'GATEKEEPING',
-                    color: AppColors.yellowButton,
+                    color: AppColors.orangeButton,
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.play);
+                      Navigator.pushNamed(context, AppRoutes.gatekeepingSelect);
                     },
                   ),
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
                     label: 'ONE OR NONE',
-                    color: AppColors.pinkButton,
+                    color: AppColors.purpleButton,
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,

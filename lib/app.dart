@@ -3,6 +3,7 @@ import 'core/navigation/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'features/guide/presentation/pages/logic_guide_page.dart';
+import 'features/play/presentation/pages/gatekeeping_select_page.dart';
 import 'features/play/presentation/pages/mode_select_page.dart';
 import 'features/settings/presentation/pages/settings_page.dart';
 
@@ -21,6 +22,7 @@ class AndAnotherOneApp extends StatelessWidget {
         AppRoutes.play: (_) => const ModeSelectPage(),
         AppRoutes.logicGuide: (_) => const LogicGuidePage(),
         AppRoutes.settings: (_) => const SettingsPage(),
+        AppRoutes.gatekeepingSelect: (_) => const GatekeepingSelectPage()
       },
     );
   }
