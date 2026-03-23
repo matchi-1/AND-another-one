@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage>
     const double btnWidth = 300;
     const double btnHeight = 75;
     const double btnFontSize = 28;
-    const double btnGap = 10;
+    const double btnGap = 12;
     const Color btnTextColor = Colors.white;
 
     return Scaffold(
@@ -141,7 +141,7 @@ class _HomePageState extends State<HomePage>
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                //padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 420),
                   child: Column(
@@ -188,6 +188,7 @@ class _HomePageState extends State<HomePage>
                           Navigator.pushNamed(context, AppRoutes.settings);
                         },
                       ),
+                      const SizedBox(height: 600),
                     ],
                   ),
                 ),
