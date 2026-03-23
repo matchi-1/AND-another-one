@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class BeveledMenuButton extends StatelessWidget {
   final String label;
   final Color color;
-  final Color shadowColor;
   final double width;
   final double height;
   final double fontSize;
@@ -14,7 +13,6 @@ class BeveledMenuButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.color,
-    required this.shadowColor,
     required this.onTap,
     required this.width,
     required this.height,
@@ -50,7 +48,7 @@ class BeveledMenuButton extends StatelessWidget {
                     ],
                   ),
                   // border: Border.all(
-                  //   color: Colors.white.withOpacity(0.30),
+                  //   color: Colors.white.withValues(alpha: 0.30),
                   //   width: 2,
                   // ),
                   boxShadow: const [
@@ -74,8 +72,8 @@ class BeveledMenuButton extends StatelessWidget {
                           borderRadius: BorderRadius.circular (15),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.white.withOpacity(0.35),
-                              Colors.white.withOpacity(0.20),
+                              Colors.white.withValues(alpha: 0.35),
+                              Colors.white.withValues(alpha: 0.20),
                             ],
                           ),
                         ),
@@ -93,8 +91,8 @@ class BeveledMenuButton extends StatelessWidget {
                           borderRadius: BorderRadius.circular (15),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.white.withOpacity(0.25),
-                              Colors.white.withOpacity(0.05),
+                              Colors.white.withValues(alpha: 0.25),
+                              Colors.white.withValues(alpha: 0.05),
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -114,8 +112,8 @@ class BeveledMenuButton extends StatelessWidget {
                           borderRadius: BorderRadius.circular (2),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.black.withOpacity(0.18),
-                              Colors.black.withOpacity(0.20),
+                              Colors.black.withValues(alpha: 0.18),
+                              Colors.black.withValues(alpha: 0.20),
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -135,8 +133,8 @@ class BeveledMenuButton extends StatelessWidget {
                           borderRadius: BorderRadius.circular (2),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.black.withOpacity(0.18),
-                              Colors.black.withOpacity(0.20),
+                              Colors.black.withValues(alpha: 0.18),
+                              Colors.black.withValues(alpha: 0.20),
                             ],
                           ),
                         ),

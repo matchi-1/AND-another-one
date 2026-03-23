@@ -71,6 +71,7 @@ class _HomePageState extends State<HomePage>
     const double btnWidth = 300;
     const double btnHeight = 75;
     const double btnFontSize = 28;
+    const double btnGap = 10;
     const Color btnTextColor = Colors.white;
 
     return Scaffold(
@@ -140,24 +141,19 @@ class _HomePageState extends State<HomePage>
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 420),
                   child: Column(
                     children: [
-                      SizedBox(height: size.height * 0.04),
-
                       Image.asset(
                         AppAssets.homeLogo,
-                        width: size.width * 0.76,
+                        width: size.width * 0.8,
                       ),
-
-                      SizedBox(height: size.height * 0.08),
                     
                       BeveledMenuButton(
                         label: 'PLAY',
                         color: AppColors.yellowButton,
-                        shadowColor: const Color(0xFFB57A00),
                         width: btnWidth,
                         height: btnHeight,
                         textColor: btnTextColor,
@@ -166,12 +162,11 @@ class _HomePageState extends State<HomePage>
                           Navigator.pushNamed(context, AppRoutes.play);
                         },
                       ),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: btnGap),
 
                       BeveledMenuButton(
                         label: 'LOGIC GUIDE',
                         color: AppColors.pinkButton,
-                        shadowColor: const Color(0xFFB52A85),
                         width: btnWidth,
                         height: btnHeight,
                         textColor: btnTextColor,
@@ -180,12 +175,11 @@ class _HomePageState extends State<HomePage>
                           Navigator.pushNamed(context, AppRoutes.logicGuide);
                         },
                       ),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: btnGap),
 
                       BeveledMenuButton(
                         label: 'SETTINGS',
                         color: AppColors.greenButton,
-                        shadowColor: const Color(0xFF228F00),
                         width: btnWidth,
                         height: btnHeight,
                         textColor: btnTextColor,
