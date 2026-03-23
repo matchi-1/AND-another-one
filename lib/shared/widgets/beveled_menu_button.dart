@@ -31,19 +31,6 @@ class BeveledMenuButton extends StatelessWidget {
         onTap: onTap,
         child: Stack(
           children: [
-            // Bottom 3D shadow/base
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                height: 90,
-                decoration: BoxDecoration(
-                  color: shadowColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
 
             // Main button face
             Positioned(
@@ -69,8 +56,8 @@ class BeveledMenuButton extends StatelessWidget {
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x22000000),
-                      offset: Offset(5, 12),
-                      blurRadius: 4,
+                      offset: Offset(5, 8),
+                      blurRadius: 3,
                     ),
                   ],
                 ),
@@ -78,17 +65,78 @@ class BeveledMenuButton extends StatelessWidget {
                   children: [
                     // top gloss / bevel highlight
                     Positioned(
-                      top: 0,
+                      top: 1,
                       left: 2,
-                      right: 2,
+                      right: 3,
+                      child: Container(
+                        height: 7,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular (15),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.35),
+                              Colors.white.withOpacity(0.20),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // left highlight
+                    Positioned(
+                      top: 5,
+                      left: 0,
+                      child: Container(
+                        height: height,
+                        width: 10,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular (15),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.25),
+                              Colors.white.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // right shadow
+                    Positioned(
+                      top: 5,
+                      right: 0,
+                      child: Container(
+                        height: height,
+                        width: 8,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular (2),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.18),
+                              Colors.black.withOpacity(0.20),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // bottom shadow
+                    Positioned(
+                      bottom: 0,
+                      left: 2,
+                      right: 8,
                       child: Container(
                         height: 8,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular (2),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.white.withOpacity(0.40),
-                              Colors.white.withOpacity(0.40),
+                              Colors.black.withOpacity(0.18),
+                              Colors.black.withOpacity(0.20),
                             ],
                           ),
                         ),
