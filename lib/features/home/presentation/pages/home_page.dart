@@ -6,8 +6,15 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _isSoundOn = true;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +92,20 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       SystemNavigator.pop();
                     },
+                  ),
+
+                  const SizedBox(height: btnGap + 20),
+
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isSoundOn = !_isSoundOn;
+                      });
+                    },
+                    child: Image.asset(
+                      _isSoundOn ? AppAssets.soundOn : AppAssets.soundOff,
+                      width: size.width * 0.12,
+                    ),
                   ),
                 ],
               ),
