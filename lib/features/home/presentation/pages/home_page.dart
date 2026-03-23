@@ -44,7 +44,7 @@ class HomePage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.play);
+                      Navigator.pushNamed(context, AppRoutes.selectMode);
                     },
                   ),
                   const SizedBox(height: btnGap),

@@ -19,10 +19,11 @@ class AndAnotherOneApp extends StatelessWidget {
       initialRoute: AppRoutes.home,
       routes: {
         AppRoutes.home: (_) => const HomePage(),
-        AppRoutes.play: (_) => const ModeSelectPage(),
+        AppRoutes.selectMode: (_) => const ModeSelectPage(),
         AppRoutes.logicGuide: (_) => const LogicGuidePage(),
         AppRoutes.settings: (_) => const SettingsPage(),
         AppRoutes.gatekeepingSelect: (_) => const GatekeepingSelectPage()
+        //AppRoutes.oneOrNoneSelect:(_) => const OneOrNoneSelectPage()
       },
     );
   }
