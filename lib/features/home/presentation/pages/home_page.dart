@@ -14,9 +14,9 @@ class HomePage extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     const double btnWidth = 300;
-    const double btnHeight = 75;
-    const double btnFontSize = 28;
-    const double btnGap = 12;
+    const double btnHeight = 70;
+    const double btnFontSize = 27;
+    const double btnGap = 8;
     const Color btnTextColor = Colors.white;
 
     return Scaffold(
@@ -34,7 +34,7 @@ class HomePage extends StatelessWidget {
                     width: size.width * 0.8,
                   ),
 
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 30),
 
                   BeveledMenuButton(
                     label: 'PLAY',

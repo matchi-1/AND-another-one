@@ -43,7 +43,20 @@ class GatekeepingSelectPage extends StatelessWidget {
                     width: size.width * 0.78,
                   ),
 
-                  const SizedBox(height: 35),
+                  const SizedBox(height: 18),
+
+                  BeveledMenuButton(
+                    label: 'HOW TO PLAY?',
+                    color: AppColors.purpleButton,
+                    width: 200,
+                    height: 40,
+                    textColor: btnTextColor,
+                    fontSize: 18,
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.logicGuide);
+                    },
+                  ),
+                  const SizedBox(height: 32),
 
                   BeveledMenuButton(
                     label: 'BASIC',
