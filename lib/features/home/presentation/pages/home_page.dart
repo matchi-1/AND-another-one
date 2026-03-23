@@ -4,6 +4,8 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
+import 'package:flutter/services.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -150,6 +152,8 @@ class _HomePageState extends State<HomePage>
                         AppAssets.homeLogo,
                         width: size.width * 0.8,
                       ),
+
+                      const SizedBox(height: 50),
                     
                       BeveledMenuButton(
                         label: 'PLAY',
@@ -188,7 +192,19 @@ class _HomePageState extends State<HomePage>
                           Navigator.pushNamed(context, AppRoutes.settings);
                         },
                       ),
-                      const SizedBox(height: 600),
+                      const SizedBox(height: btnGap+30),
+
+                      BeveledMenuButton(
+                        label: 'EXIT',
+                        color: AppColors.greyButton,
+                        width: btnWidth-150,
+                        height: btnHeight-20,
+                        textColor: btnTextColor,
+                        fontSize: btnFontSize-6,
+                        onTap: () {
+                          SystemNavigator.pop();
+                        },
+                      ),
                     ],
                   ),
                 ),
