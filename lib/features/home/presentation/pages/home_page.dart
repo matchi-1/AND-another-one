@@ -63,14 +63,14 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
-                    label: 'SETTINGS',
+                    label: 'LEADERBOARDS',
                     color: AppColors.greenButton,
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.settings);
+                      Navigator.pushNamed(context, AppRoutes.leaderboards);
                     },
                   ),
                   const SizedBox(height: btnGap + 30),

@@ -6,7 +6,8 @@ import 'features/guide/presentation/pages/logic_guide_page.dart';
 import 'features/play/presentation/pages/gatekeeping_select_page.dart';
 import 'features/play/presentation/pages/one_or_none.dart';
 import 'features/play/presentation/pages/mode_select_page.dart';
-import 'features/settings/presentation/pages/settings_page.dart';
+import 'features/leaderboards/presentation/pages/leaderboards_page.dart';
+
 
 
 class AndAnotherOneApp extends StatelessWidget {
@@ -23,7 +24,7 @@ class AndAnotherOneApp extends StatelessWidget {
         AppRoutes.home: (_) => const HomePage(),
         AppRoutes.selectMode: (_) => const ModeSelectPage(),
         AppRoutes.logicGuide: (_) => const LogicGuidePage(),
-        AppRoutes.settings: (_) => const SettingsPage(),
+        AppRoutes.leaderboards: (_) => const LeaderboardsPage(),
         AppRoutes.gatekeepingSelect: (_) => const GatekeepingSelectPage(),
         AppRoutes.oneOrNoneSelect:(_) => const OneOrNoneSelectPage()
       },
