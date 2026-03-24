@@ -231,7 +231,7 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.14),
+                            color: AppColors.pinkBg.withOpacity(0.5),
                             //borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: Colors.white.withOpacity(0.28),
@@ -344,7 +344,20 @@ class _LeaderboardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isTopThree = rank <= 3;
+    Color rowColor;
+    switch (rank) {
+      case 1:
+        rowColor = AppColors.yellowButton.withOpacity(0.5);
+        break;
+      case 2:
+        rowColor = AppColors.greyButton.withOpacity(0.4);
+        break;
+      case 3:
+        rowColor = AppColors.darkOrangeButton.withOpacity(0.35);
+        break;
+      default:
+        rowColor = AppColors.blueBg.withOpacity(0.5);
+    }
 
     Color medalColor;
     switch (rank) {
@@ -364,9 +377,7 @@ class _LeaderboardRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: isTopThree
-            ? AppColors.purpleBg.withOpacity(0.5)
-            : AppColors.blueBg.withOpacity(0.5),
+        color: rowColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.white.withOpacity(0.28),
@@ -379,7 +390,7 @@ class _LeaderboardRow extends StatelessWidget {
             width: 50,
             child: Row(
               children: [
-                if (isTopThree)
+                if (rank <= 3)
                   Container(
                     width: 10,
                     height: 10,
