@@ -3,6 +3,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
+import '../../../../shared/widgets/music_button.dart';
 
 enum LeaderboardMode {
   gatekeeping,
@@ -102,12 +103,7 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                       icon: Image.asset(AppAssets.backBtn, width: 30),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    IconButton(
-                      icon: Image.asset(AppAssets.soundOn, width: 32),
-                      onPressed: () {
-                        // sound toggle placeholder
-                      },
-                    ),
+                    const MusicButton(size: 32),
                   ],
                 ),
               ),
