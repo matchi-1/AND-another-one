@@ -5,4 +5,6 @@ class AppRoutes {
   static const leaderboards = '/leaderboards';
   static const gatekeepingSelect = '/gatekeeping-select';
   static const oneOrNoneSelect = '/oneOrNone-select';
+  static const login = '/login';
+  static const register = '/register';
 }
