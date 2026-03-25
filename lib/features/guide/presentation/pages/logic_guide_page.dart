@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
+import '../../../../shared/widgets/music_button.dart';
 
 class LogicGuidePage extends StatelessWidget {
   const LogicGuidePage({super.key});
@@ -29,12 +30,7 @@ class LogicGuidePage extends StatelessWidget {
                       icon: Image.asset(AppAssets.backBtn, width: 30),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    IconButton(
-                      icon: Image.asset(AppAssets.soundOn, width: 32),
-                      onPressed: () {
-                        // sound toggle placeholder -- not working pa
-                      },
-                    ),
+                    const MusicButton(size: 32),
                   ],
                 ),
               ),
