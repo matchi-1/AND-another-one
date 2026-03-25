@@ -100,7 +100,7 @@ class HomePage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize - 6,
                     onTap: () {
-                      SystemNavigator.pop();
+                      Navigator.pushNamed(context, AppRoutes.login);
                     },
                   ),
 

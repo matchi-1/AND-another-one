@@ -7,7 +7,8 @@ import 'features/play/presentation/pages/gatekeeping_select_page.dart';
 import 'features/play/presentation/pages/one_or_none.dart';
 import 'features/play/presentation/pages/mode_select_page.dart';
 import 'features/leaderboards/presentation/pages/leaderboards_page.dart';
-
+import 'features/auth/presentation/pages/login_page.dart';
+import 'features/auth/presentation/pages/register_page.dart';
 
 
 class AndAnotherOneApp extends StatelessWidget {
@@ -19,8 +20,10 @@ class AndAnotherOneApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'AND Another One',
       theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.home,
+      initialRoute: AppRoutes.login,
       routes: {
+        AppRoutes.login: (_) => const LoginPage(),
+        AppRoutes.register: (_) => const RegisterPage(),
         AppRoutes.home: (_) => const HomePage(),
         AppRoutes.selectMode: (_) => const ModeSelectPage(),
         AppRoutes.logicGuide: (_) => const LogicGuidePage(),
