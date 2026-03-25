@@ -68,7 +68,6 @@ class HomePage extends StatelessWidget {
                   BeveledMenuButton(
                     label: 'LEADERBOARDS',
                     color: AppColors.greenButton,
-                    //shadowColor: const Color(0xFF228F00),
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,
@@ -82,7 +81,20 @@ class HomePage extends StatelessWidget {
                   BeveledMenuButton(
                     label: 'EXIT',
                     color: AppColors.greyButton,
-                    //shadowColor: const Color(0xFF636363),
+                    width: btnWidth - 150,
+                    height: btnHeight - 20,
+                    textColor: btnTextColor,
+                    fontSize: btnFontSize - 6,
+                    onTap: () {
+                      SystemNavigator.pop();
+                    },
+                  ),
+
+                  const SizedBox(height: btnGap),
+
+                  BeveledMenuButton(
+                    label: 'LOGOUT',
+                    color: AppColors.redButton,
                     width: btnWidth - 150,
                     height: btnHeight - 20,
                     textColor: btnTextColor,
