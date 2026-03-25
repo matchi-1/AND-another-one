@@ -4,11 +4,13 @@ import 'core/theme/app_theme.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'features/guide/presentation/pages/logic_guide_page.dart';
 import 'features/play/presentation/pages/gatekeeping_select_page.dart';
-import 'features/play/presentation/pages/one_or_none.dart';
+import 'features/play/presentation/pages/one_or_none_select_page.dart';
 import 'features/play/presentation/pages/mode_select_page.dart';
 import 'features/leaderboards/presentation/pages/leaderboards_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
+import 'features/play/presentation/pages/mechanics_gatekeeping.dart';
+import 'features/play/presentation/pages/mechanics_one_or_none.dart';
 
 
 class AndAnotherOneApp extends StatelessWidget {
@@ -29,8 +31,11 @@ class AndAnotherOneApp extends StatelessWidget {
         AppRoutes.logicGuide: (_) => const LogicGuidePage(),
         AppRoutes.leaderboards: (_) => const LeaderboardsPage(),
         AppRoutes.gatekeepingSelect: (_) => const GatekeepingSelectPage(),
-        AppRoutes.oneOrNoneSelect:(_) => const OneOrNoneSelectPage()
+        AppRoutes.oneOrNoneSelect:(_) => const OneOrNoneSelectPage(),
+        AppRoutes.mechanicsGatekeeping: (_) => const MechanicsGatekeepingPage(),
+        AppRoutes.mechanicsOneOrNone: (_) => const MechanicsOneOrNonePage(),
       },
     );
   }
 }
+

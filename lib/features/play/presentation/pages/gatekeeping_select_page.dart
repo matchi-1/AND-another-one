@@ -53,7 +53,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: 18,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.logicGuide);
+                      Navigator.pushNamed(context, AppRoutes.mechanicsGatekeeping);
                     },
                   ),
                   const SizedBox(height: 32),

@@ -7,4 +7,6 @@ class AppRoutes {
   static const oneOrNoneSelect = '/oneOrNone-select';
   static const login = '/login';
   static const register = '/register';
+  static const mechanicsGatekeeping = '/mechanics-gatekeeping';
+  static const mechanicsOneOrNone = '/mechanics-oneOrNone';
 }

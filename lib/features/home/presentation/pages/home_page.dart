@@ -30,6 +30,8 @@ class HomePage extends StatelessWidget {
               child: Column(
                 children: [
 
+                  const SizedBox(height: 50),
+
                   Image.asset(
                     AppAssets.homeLogo,
                     width: size.width * 0.8,

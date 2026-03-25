@@ -53,7 +53,7 @@ class OneOrNoneSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: 18,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.logicGuide);
+                      Navigator.pushNamed(context, AppRoutes.mechanicsOneOrNone);
                     },
                   ),
                   const SizedBox(height: 32),
