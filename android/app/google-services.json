@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "203911321036",
+    "firebase_url": "https://plasma-creek-491403-e8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "plasma-creek-491403-e8",
+    "storage_bucket": "plasma-creek-491403-e8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203911321036:android:3e39e63aa06dbd5b16f969",
+        "android_client_info": {
+          "package_name": "com.example.and_another_one"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9hiNuZwKsEJJgjElucz74zH-SdrHk-ms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
