@@ -4,6 +4,7 @@ class AppRoutes {
   static const logicGuide = '/logic-guide';
   static const leaderboards = '/leaderboards';
   static const gatekeepingSelect = '/gatekeeping-select';
+  static const gatekeepingGame = '/gatekeeping-game';
   static const oneOrNoneSelect = '/oneOrNone-select';
   static const login = '/login';
   static const register = '/register';

@@ -66,7 +66,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.selectMode);
+                      Navigator.pushNamed(context, AppRoutes.gatekeepingGame);
                     },
                   ),
                   const SizedBox(height: btnGap),
@@ -79,7 +79,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.selectMode);
+                      Navigator.pushNamed(context, AppRoutes.gatekeepingGame);
                     },
                   ),
                   const SizedBox(height: btnGap),
@@ -92,7 +92,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.logicGuide);
+                      Navigator.pushNamed(context, AppRoutes.gatekeepingGame);
                     },
                   ),
                   const SizedBox(height: btnGap + 30),
