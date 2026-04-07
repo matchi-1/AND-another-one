@@ -516,12 +516,12 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
           _currentQuestion.imagePath,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
-            return const Center(
+            return Center(
               child: Text(
-                'Diagram image not found',
+                'Diagram image not found:\n${_currentQuestion.imagePath}',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                   color: _lineBrown,
                 ),
