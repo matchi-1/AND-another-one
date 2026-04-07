@@ -80,10 +80,10 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   double _centerPopupOpacity = 0.0;
   double _centerPopupScale = 0.9;
 
-  static const Color _operatorBlue = Color(0xFF19C4E8);
-  static const Color _operatorYellow = Color(0xFFF7C21A);
-  static const Color _operatorGreen = Color(0xFF08E10A);
-  static const Color _operatorCoral = Color(0xFFFF6D57);
+  static const Color _operatorBlue = Color(0xFF00D0FF);
+  static const Color _operatorYellow = Color(0xFFEDB600);
+  static const Color _operatorGreen = Color(0xFF08C90A);
+  static const Color _operatorCoral = Color(0xFFF4553F);
   static const Color _passOrange = Color(0xFFFF6B00);
   static const Color _backspaceGrey = Color(0xFFA8A8A8);
   static const Color _scoreGreen = Color(0xFF129D1C);
@@ -279,7 +279,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     if (isCorrect) {
       final gained = 20; // or your multiplier logic
 
-      _playFlash(Colors.green, opacity: 0.18);
+      _playFlash(isCorrect: true);
       _showScoreDelta('+$gained', Colors.greenAccent);
 
       await _finishRound(
@@ -328,28 +328,29 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     });
   }
 
-  Future<void> _playFlash(Color color, {double opacity = 0.22}) async {
+  Future<void> _playFlash({bool isCorrect = false}) async {
     if (!mounted) return;
-
     setState(() {
-      _flashColor = color;
-      _flashOpacity = opacity;
+      _flashColor = isCorrect ? Colors.green : Colors.red;
+      _flashOpacity = 0.75;
     });
 
-    await Future.delayed(const Duration(milliseconds: 90));
+    await Future.delayed(
+      Duration(milliseconds: isCorrect ? 300 : 135),
+    );
     if (!mounted) return;
 
     setState(() {
       _flashOpacity = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 120));
+    await Future.delayed(const Duration(milliseconds: 135));
   }
 
   Future<void> _playWrongDamageFlash() async {
-    await _playFlash(Colors.red, opacity: 0.20);
-    await Future.delayed(const Duration(milliseconds: 70));
-    await _playFlash(Colors.red, opacity: 0.26);
+    await _playFlash();
+    await Future.delayed(const Duration(milliseconds: 40));
+    await _playFlash();
   }
 
   Future<void> _showScoreDelta(String text, Color color) async {
@@ -362,21 +363,21 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       _scoreDeltaYOffset = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 40));
+    await Future.delayed(const Duration(milliseconds: 60));
     if (!mounted) return;
 
     setState(() {
-      _scoreDeltaYOffset = -18.0;
+      _scoreDeltaYOffset = -24.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 650));
+    await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     setState(() {
       _scoreDeltaOpacity = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 180));
+    await Future.delayed(const Duration(milliseconds: 220));
     if (!mounted) return;
 
     setState(() {
@@ -698,10 +699,10 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final double sidePadding = 18;
-    final double gap = 14;
+    final double gap = 8;
     final double operatorButtonWidth = (size.width - (sidePadding * 2) - gap) / 2;
-    final double operatorButtonHeight = 90;
-    const double opBtnGap = 5;
+    final double operatorButtonHeight = 100;
+    const double opBtnGap = 3;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -780,7 +781,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                                     child: Text(
                                       _scoreDeltaText!,
                                       style: TextStyle(
-                                        fontSize: w * 0.055,
+                                        fontSize: w * 0.085,
                                         fontWeight: FontWeight.w900,
                                         color: _scoreDeltaColor,
                                         shadows: const [
@@ -816,7 +817,8 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                       ),
                     ),
 
-                    _buildFeedbackText(),
+                    //_buildFeedbackText(),
+                    const SizedBox(height: 10),
 
                     IgnorePointer(
                       ignoring: _roundLocked || _gameFinished,
@@ -855,7 +857,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                               ],
                             ),
 
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
 
                             Row(
                               children: [
@@ -917,7 +919,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
             IgnorePointer(
               child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 90),
+                duration: const Duration(milliseconds: 220),
                 opacity: _flashOpacity,
                 child: Container(
                   color: _flashColor,
