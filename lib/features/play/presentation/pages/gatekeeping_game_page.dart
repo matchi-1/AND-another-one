@@ -64,9 +64,6 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   bool _roundLocked = false;
   bool _gameFinished = false;
 
-  String? _feedbackText;
-  Color _feedbackColor = const Color(0xFF18C90C);
-
   Color _flashColor = Colors.transparent;
   double _flashOpacity = 0.0;
 
@@ -114,7 +111,6 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     _score = 0;
     _passesLeft = _startingPasses;
     _gameFinished = false;
-    _feedbackText = null;
 
     _loadCurrentQuestion();
     _startTimer();
@@ -129,7 +125,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     _activeSlotIndex = 0;
     _timeLeft = _timePerQuestion;
     _roundLocked = false;
-    _feedbackText = null;
+
   }
 
   List<_ExpressionPart> _parseExpression(String expression) {
@@ -309,8 +305,6 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   }) async {
     setState(() {
       _roundLocked = true;
-      _feedbackText = feedbackText;
-      _feedbackColor = feedbackColor;
       _score = (_score + scoreDelta).clamp(0, 999999);
     });
 
@@ -637,25 +631,6 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     );
   }
 
-  Widget _buildFeedbackText() {
-    if (_feedbackText == null) {
-      return const SizedBox(height: 20);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Text(
-        _feedbackText!,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-          color: _feedbackColor,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
 
   Widget _buildPassStrip() {
     return Container(
@@ -709,11 +684,13 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     const double opBtnGap = 3;
 
     return Scaffold(
-      body: GameMenuBackground(
-        backgroundColor: AppColors.blueBg,
-        useGrid: false,
-        child: Stack(
-          children: [
+        body: GameMenuBackground(
+          backgroundColor: AppColors.blueBg,
+          useGrid: false,
+          child: SizedBox.expand(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
             SafeArea(
               child: SingleChildScrollView(
                 child: Column(
@@ -777,25 +754,45 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
                               if (_scoreDeltaText != null)
                                 Positioned(
-                                  right: w * 0.12 + _scoreDeltaXOffset,
+                                  right: w * 0.11,
                                   top: h * 0.13 + _scoreDeltaYOffset,
                                   child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 180),
+                                    duration: const Duration(milliseconds: 250),
                                     opacity: _scoreDeltaOpacity,
-                                    child: Text(
-                                      _scoreDeltaText!,
-                                      style: TextStyle(
-                                        fontSize: w * 0.085,
-                                        fontWeight: FontWeight.w900,
-                                        color: _scoreDeltaColor,
-                                        shadows: const [
-                                          Shadow(
-                                            color: Colors.black38,
-                                            offset: Offset(0, 2),
-                                            blurRadius: 3,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Text(
+                                          _scoreDeltaText!,
+                                          style: TextStyle(
+                                            fontSize: w * 0.09,
+                                            fontWeight: FontWeight.w900,
+                                            foreground: Paint()
+                                              ..style = PaintingStyle.stroke
+                                              ..strokeWidth = 4
+                                              ..color = _scoreDeltaText!.startsWith('-')
+                                                  ? const Color(0xFFD50000)
+                                                  : const Color(0xFF0FAF2A),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                        Text(
+                                          _scoreDeltaText!,
+                                          style: TextStyle(
+                                            fontSize: w * 0.09,
+                                            fontWeight: FontWeight.w900,
+                                            color: _scoreDeltaText!.startsWith('-')
+                                                ? const Color(0xFFFFD0D0)
+                                                : const Color(0xFFBEFFC9),
+                                            shadows: const [
+                                              Shadow(
+                                                color: Colors.black38,
+                                                offset: Offset(0, 2),
+                                                blurRadius: 3,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -921,15 +918,17 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
               ),
             ),
 
-            IgnorePointer(
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 220),
-                opacity: _flashOpacity,
-                child: Container(
-                  color: _flashColor,
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 320),
+                    opacity: _flashOpacity,
+                    child: ColoredBox(
+                      color: _flashColor,
+                    ),
+                  ),
                 ),
               ),
-            ),
 
             if (_centerPopupText != null)
               IgnorePointer(
@@ -966,7 +965,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 
