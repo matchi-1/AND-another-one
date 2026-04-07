@@ -585,7 +585,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       width: width,
       height: height,
       textColor: _brownText,
-      fontSize: 54,
+      fontSize: 45,
       onTap: onTap,
     );
   }
@@ -611,13 +611,12 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         visualDensity: VisualDensity.compact,
-                        iconSize: 26,
+                        iconSize: 24,
                         icon: Image.asset(
                           AppAssets.backBtn,
                           width: 24,
