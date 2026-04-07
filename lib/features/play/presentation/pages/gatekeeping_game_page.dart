@@ -550,7 +550,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
   Widget _buildPassStrip() {
     return Container(
-      height: 44,
+      height: 30,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -596,6 +596,8 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     final double sidePadding = 18;
     final double gap = 14;
     final double operatorButtonWidth = (size.width - (sidePadding * 2) - gap) / 2;
+    final double operatorButtonHeight = 90;
+    const double opBtnGap = 5;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -620,7 +622,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                 ),
 
                 AspectRatio(
-                  aspectRatio: 0.66,
+                  aspectRatio: 0.78,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final w = constraints.maxWidth;
@@ -630,7 +632,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                         children: [
                           Positioned.fill(
                             child: Image.asset(
-                              AppAssets.diagramContainerGreen,
+                              AppAssets.diagramContainerGreen1,
                               fit: BoxFit.fill,
                             ),
                           ),
@@ -677,7 +679,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                 IgnorePointer(
                   ignoring: _roundLocked || _gameFinished,
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(sidePadding, 6, sidePadding, 30),
+                    padding: EdgeInsets.fromLTRB(sidePadding, 0, sidePadding, 0),
                     child: Column(
                       children: [
                         Row(
@@ -686,7 +688,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                               label: 'PASS',
                               color: _passOrange,
                               width: 120,
-                              height: 52,
+                              height: 50,
                               textColor: Colors.white,
                               fontSize: 20,
                               onTap: _handlePass,
@@ -697,8 +699,8 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                             BeveledMenuButton(
                               label: '‹',
                               color: _backspaceGrey,
-                              width: 110,
-                              height: 52,
+                              width: 80,
+                              height: 50,
                               textColor: Colors.white,
                               fontSize: 34,
                               onTap: _handleBackspace,
@@ -706,7 +708,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                           ],
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 10),
 
                         Row(
                           children: [
@@ -715,7 +717,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                                 symbol: '+',
                                 color: _operatorBlue,
                                 width: operatorButtonWidth,
-                                height: 120,
+                                height: operatorButtonHeight,
                                 onTap: () => _handleOperatorTap('OR'),
                               ),
                             ),
@@ -725,14 +727,14 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                                 symbol: '•',
                                 color: _operatorYellow,
                                 width: operatorButtonWidth,
-                                height: 120,
+                                height: operatorButtonHeight,
                                 onTap: () => _handleOperatorTap('AND'),
                               ),
                             ),
                           ],
                         ),
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: opBtnGap),
 
                         Row(
                           children: [
@@ -741,7 +743,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                                 symbol: '¬',
                                 color: _operatorGreen,
                                 width: operatorButtonWidth,
-                                height: 120,
+                                height: operatorButtonHeight,
                                 onTap: () => _handleOperatorTap('NOT'),
                               ),
                             ),
@@ -751,7 +753,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                                 symbol: '⊕',
                                 color: _operatorCoral,
                                 width: operatorButtonWidth,
-                                height: 120,
+                                height: operatorButtonHeight,
                                 onTap: () => _handleOperatorTap('XOR'),
                               ),
                             ),
