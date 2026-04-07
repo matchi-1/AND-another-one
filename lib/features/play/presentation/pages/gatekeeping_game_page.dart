@@ -67,6 +67,19 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   String? _feedbackText;
   Color _feedbackColor = const Color(0xFF18C90C);
 
+  Color _flashColor = Colors.transparent;
+  double _flashOpacity = 0.0;
+
+  String? _scoreDeltaText;
+  Color _scoreDeltaColor = Colors.white;
+  double _scoreDeltaOpacity = 0.0;
+  double _scoreDeltaYOffset = 0.0;
+
+  String? _centerPopupText;
+  Color _centerPopupColor = Colors.white;
+  double _centerPopupOpacity = 0.0;
+  double _centerPopupScale = 0.9;
+
   static const Color _operatorBlue = Color(0xFF19C4E8);
   static const Color _operatorYellow = Color(0xFFF7C21A);
   static const Color _operatorGreen = Color(0xFF08E10A);
@@ -233,6 +246,8 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       _passesLeft--;
     });
 
+    _showCenterPopup('PASS', const Color(0xFFFFB347));
+    // _showScoreDelta('-10', const Color(0xFFFFB347));
     await _finishRound(
       feedbackText: 'PASS',
       feedbackColor: _passOrange,
@@ -262,21 +277,26 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     );
 
     if (isCorrect) {
-      HapticFeedback.mediumImpact();
+      final gained = 20; // or your multiplier logic
 
-      final gained = 100 + (_timeLeft * 2);
+      _playFlash(Colors.green, opacity: 0.18);
+      _showScoreDelta('+$gained', Colors.greenAccent);
+
       await _finishRound(
         feedbackText: 'CORRECT  +$gained',
         feedbackColor: const Color(0xFF15B700),
         scoreDelta: gained,
       );
     } else {
-      HapticFeedback.heavyImpact();
+      const lost = 20;
+
+      _playWrongDamageFlash();
+      _showScoreDelta('-$lost', Colors.redAccent);
 
       await _finishRound(
-        feedbackText: 'WRONG  -25',
+        feedbackText: 'WRONG  -$lost',
         feedbackColor: Colors.red,
-        scoreDelta: -25,
+        scoreDelta: -lost,
       );
     }
   }
@@ -305,6 +325,90 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     setState(() {
       _currentQuestionIndex++;
       _loadCurrentQuestion();
+    });
+  }
+
+  Future<void> _playFlash(Color color, {double opacity = 0.22}) async {
+    if (!mounted) return;
+
+    setState(() {
+      _flashColor = color;
+      _flashOpacity = opacity;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 90));
+    if (!mounted) return;
+
+    setState(() {
+      _flashOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 120));
+  }
+
+  Future<void> _playWrongDamageFlash() async {
+    await _playFlash(Colors.red, opacity: 0.20);
+    await Future.delayed(const Duration(milliseconds: 70));
+    await _playFlash(Colors.red, opacity: 0.26);
+  }
+
+  Future<void> _showScoreDelta(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaText = text;
+      _scoreDeltaColor = color;
+      _scoreDeltaOpacity = 1.0;
+      _scoreDeltaYOffset = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 40));
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaYOffset = -18.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 650));
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 180));
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaText = null;
+      _scoreDeltaYOffset = 0.0;
+    });
+  }
+
+  Future<void> _showCenterPopup(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      _centerPopupText = text;
+      _centerPopupColor = color;
+      _centerPopupOpacity = 1.0;
+      _centerPopupScale = 1.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 450));
+    if (!mounted) return;
+
+    setState(() {
+      _centerPopupOpacity = 0.0;
+      _centerPopupScale = 1.08;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 180));
+    if (!mounted) return;
+
+    setState(() {
+      _centerPopupText = null;
+      _centerPopupScale = 0.9;
     });
   }
 
@@ -603,177 +707,257 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       body: GameMenuBackground(
         backgroundColor: AppColors.blueBg,
         useGrid: false,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        visualDensity: VisualDensity.compact,
-                        iconSize: 24,
-                        icon: Image.asset(
-                          AppAssets.backBtn,
-                          width: 24,
-                          height: 24,
-                        ),
-                        onPressed: () => Navigator.pop(context),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 2,
                       ),
-                      const MusicButton(size: 26),
-                    ],
-                  ),
-                ),
-
-                AspectRatio(
-                  aspectRatio: 0.78,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final w = constraints.maxWidth;
-                      final h = constraints.maxHeight;
-
-                      return Stack(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Positioned.fill(
-                            child: Image.asset(
-                              AppAssets.diagramContainerGreen1,
-                              fit: BoxFit.fill,
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            visualDensity: VisualDensity.compact,
+                            iconSize: 24,
+                            icon: Image.asset(
+                              AppAssets.backBtn,
+                              width: 24,
+                              height: 24,
                             ),
+                            onPressed: () => Navigator.pop(context),
                           ),
-
-                          Positioned(
-                            left: w * 0.055,
-                            top: h * 0.045,
-                            width: w * 0.18,
-                            height: h * 0.10,
-                            child: _buildTimerText(w),
-                          ),
-
-                          Positioned(
-                            right: w * 0.07,
-                            top: h * 0.055,
-                            width: w * 0.31,
-                            height: h * 0.09,
-                            child: _buildScoreText(w),
-                          ),
-
-                          Positioned(
-                            left: w * 0.12,
-                            right: w * 0.12,
-                            top: h * 0.18,
-                            height: h * 0.55,
-                            child: _buildDiagramPlaceholder(),
-                          ),
-
-                          Positioned(
-                            left: w * 0.12,
-                            right: w * 0.12,
-                            bottom: h * 0.08,
-                            height: h * 0.08,
-                            child: _buildExpressionBar(),
-                          ),
+                          const MusicButton(size: 26),
                         ],
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+
+                    AspectRatio(
+                      aspectRatio: 0.78,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final w = constraints.maxWidth;
+                          final h = constraints.maxHeight;
+
+                          return Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Image.asset(
+                                  AppAssets.diagramContainerGreen1,
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+
+                              Positioned(
+                                left: w * 0.055,
+                                top: h * 0.045,
+                                width: w * 0.18,
+                                height: h * 0.10,
+                                child: _buildTimerText(w),
+                              ),
+
+                              Positioned(
+                                right: w * 0.07,
+                                top: h * 0.055,
+                                width: w * 0.31,
+                                height: h * 0.09,
+                                child: _buildScoreText(w),
+                              ),
+
+                              if (_scoreDeltaText != null)
+                                Positioned(
+                                  right: w * 0.12,
+                                  top: h * 0.13 + _scoreDeltaYOffset,
+                                  child: AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 180),
+                                    opacity: _scoreDeltaOpacity,
+                                    child: Text(
+                                      _scoreDeltaText!,
+                                      style: TextStyle(
+                                        fontSize: w * 0.055,
+                                        fontWeight: FontWeight.w900,
+                                        color: _scoreDeltaColor,
+                                        shadows: const [
+                                          Shadow(
+                                            color: Colors.black38,
+                                            offset: Offset(0, 2),
+                                            blurRadius: 3,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                              Positioned(
+                                left: w * 0.12,
+                                right: w * 0.12,
+                                top: h * 0.18,
+                                height: h * 0.55,
+                                child: _buildDiagramPlaceholder(),
+                              ),
+
+                              Positioned(
+                                left: w * 0.12,
+                                right: w * 0.12,
+                                bottom: h * 0.08,
+                                height: h * 0.08,
+                                child: _buildExpressionBar(),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+
+                    _buildFeedbackText(),
+
+                    IgnorePointer(
+                      ignoring: _roundLocked || _gameFinished,
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          sidePadding,
+                          0,
+                          sidePadding,
+                          0,
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                BeveledMenuButton(
+                                  label: 'PASS',
+                                  color: _passOrange,
+                                  width: 120,
+                                  height: 50,
+                                  textColor: Colors.white,
+                                  fontSize: 20,
+                                  onTap: _handlePass,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(child: _buildPassStrip()),
+                                const SizedBox(width: 8),
+                                BeveledMenuButton(
+                                  label: '‹',
+                                  color: _backspaceGrey,
+                                  width: 80,
+                                  height: 50,
+                                  textColor: Colors.white,
+                                  fontSize: 34,
+                                  onTap: _handleBackspace,
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildChoiceButton(
+                                    symbol: '+',
+                                    color: _operatorBlue,
+                                    width: operatorButtonWidth,
+                                    height: operatorButtonHeight,
+                                    onTap: () => _handleOperatorTap('OR'),
+                                  ),
+                                ),
+                                SizedBox(width: gap),
+                                Expanded(
+                                  child: _buildChoiceButton(
+                                    symbol: '•',
+                                    color: _operatorYellow,
+                                    width: operatorButtonWidth,
+                                    height: operatorButtonHeight,
+                                    onTap: () => _handleOperatorTap('AND'),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: opBtnGap),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildChoiceButton(
+                                    symbol: '¬',
+                                    color: _operatorGreen,
+                                    width: operatorButtonWidth,
+                                    height: operatorButtonHeight,
+                                    onTap: () => _handleOperatorTap('NOT'),
+                                  ),
+                                ),
+                                SizedBox(width: gap),
+                                Expanded(
+                                  child: _buildChoiceButton(
+                                    symbol: '⊕',
+                                    color: _operatorCoral,
+                                    width: operatorButtonWidth,
+                                    height: operatorButtonHeight,
+                                    onTap: () => _handleOperatorTap('XOR'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
 
-                _buildFeedbackText(),
+            IgnorePointer(
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 90),
+                opacity: _flashOpacity,
+                child: Container(
+                  color: _flashColor,
+                ),
+              ),
+            ),
 
-                IgnorePointer(
-                  ignoring: _roundLocked || _gameFinished,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(sidePadding, 0, sidePadding, 0),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            BeveledMenuButton(
-                              label: 'PASS',
-                              color: _passOrange,
-                              width: 120,
-                              height: 50,
-                              textColor: Colors.white,
-                              fontSize: 20,
-                              onTap: _handlePass,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(child: _buildPassStrip()),
-                            const SizedBox(width: 8),
-                            BeveledMenuButton(
-                              label: '‹',
-                              color: _backspaceGrey,
-                              width: 80,
-                              height: 50,
-                              textColor: Colors.white,
-                              fontSize: 34,
-                              onTap: _handleBackspace,
-                            ),
-                          ],
+            if (_centerPopupText != null)
+              IgnorePointer(
+                child: Center(
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 180),
+                    opacity: _centerPopupOpacity,
+                    child: AnimatedScale(
+                      duration: const Duration(milliseconds: 180),
+                      scale: _centerPopupScale,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
-
-                        const SizedBox(height: 10),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildChoiceButton(
-                                symbol: '+',
-                                color: _operatorBlue,
-                                width: operatorButtonWidth,
-                                height: operatorButtonHeight,
-                                onTap: () => _handleOperatorTap('OR'),
-                              ),
-                            ),
-                            SizedBox(width: gap),
-                            Expanded(
-                              child: _buildChoiceButton(
-                                symbol: '•',
-                                color: _operatorYellow,
-                                width: operatorButtonWidth,
-                                height: operatorButtonHeight,
-                                onTap: () => _handleOperatorTap('AND'),
-                              ),
-                            ),
-                          ],
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.45),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-
-                        const SizedBox(height: opBtnGap),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildChoiceButton(
-                                symbol: '¬',
-                                color: _operatorGreen,
-                                width: operatorButtonWidth,
-                                height: operatorButtonHeight,
-                                onTap: () => _handleOperatorTap('NOT'),
-                              ),
-                            ),
-                            SizedBox(width: gap),
-                            Expanded(
-                              child: _buildChoiceButton(
-                                symbol: '⊕',
-                                color: _operatorCoral,
-                                width: operatorButtonWidth,
-                                height: operatorButtonHeight,
-                                onTap: () => _handleOperatorTap('XOR'),
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          _centerPopupText!,
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w900,
+                            color: _centerPopupColor,
+                            letterSpacing: 1.2,
+                          ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+          ],
         ),
       ),
     );
