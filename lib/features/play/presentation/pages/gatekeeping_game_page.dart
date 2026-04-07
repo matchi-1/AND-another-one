@@ -6,9 +6,16 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../data/models/gatekeeping_question.dart';
+import '../../data/repositories/gatekeeping_question_repository.dart';
 
 class GatekeepingGamePage extends StatefulWidget {
-  const GatekeepingGamePage({super.key});
+  const GatekeepingGamePage({
+    super.key,
+    this.difficulty = GatekeepingDifficulty.basic,
+  });
+
+  final GatekeepingDifficulty difficulty;
 
   @override
   State<GatekeepingGamePage> createState() => _GatekeepingGamePageState();
@@ -18,38 +25,9 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   static const int _timePerQuestion = 60;
   static const int _startingPasses = 5;
 
-  final List<_GatekeepingQuestion> _baseQuestions = const [
-    _GatekeepingQuestion(
-      circuitExpression: 'A __AND B',
-      diagramText: 'A ──┐\n   AND ── OUT\nB ──┘',
-    ),
-    _GatekeepingQuestion(
-      circuitExpression: 'A __OR B',
-      diagramText: 'A ──┐\n   OR ── OUT\nB ──┘',
-    ),
-    _GatekeepingQuestion(
-      circuitExpression: 'B __AND C',
-      diagramText: 'B ──┐\n   AND ── OUT\nC ──┘',
-    ),
-    _GatekeepingQuestion(
-      circuitExpression: 'B __OR C',
-      diagramText: 'B ──┐\n   OR ── OUT\nC ──┘',
-    ),
-    _GatekeepingQuestion(
-      circuitExpression: 'A __AND C',
-      diagramText: 'A ──┐\n   AND ── OUT\nC ──┘',
-    ),
-    _GatekeepingQuestion(
-      circuitExpression: 'A __OR C',
-      diagramText: 'A ──┐\n   OR ── OUT\nC ──┘',
-    ),
-    _GatekeepingQuestion(
-      circuitExpression: '__NOT A __AND B',
-      diagramText: 'A ── NOT ──┐\n           AND ── OUT\nB ─────────┘',
-    ),
-  ];
 
-  late List<_GatekeepingQuestion> _questions;
+
+  late List<GatekeepingQuestion> _questions;
   late List<_ExpressionPart> _parsedExpression;
   late List<String?> _playerAnswers;
 
@@ -88,7 +66,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   static const Color _brownText = Color(0xFF8A5200);
   static const Color _lineBrown = Color(0xFF7B5A2A);
 
-  _GatekeepingQuestion get _currentQuestion => _questions[_currentQuestionIndex];
+  GatekeepingQuestion get _currentQuestion => _questions[_currentQuestionIndex];
 
   @override
   void initState() {
@@ -105,7 +83,9 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   void _resetWholeGame() {
     _timer?.cancel();
 
-    _questions = List<_GatekeepingQuestion>.from(_baseQuestions)..shuffle();
+    _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
+      widget.difficulty,
+    );
 
     _currentQuestionIndex = 0;
     _score = 0;
@@ -118,7 +98,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   }
 
   void _loadCurrentQuestion() {
-    _parsedExpression = _parseExpression(_currentQuestion.circuitExpression);
+    _parsedExpression = _parseExpression(_currentQuestion.expression);
     final slotCount = _parsedExpression.where((part) => part.isSlot).length;
 
     _playerAnswers = List<String?>.filled(slotCount, null);
@@ -157,10 +137,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   }
 
   List<String> _correctAnswersForCurrentQuestion() {
-    return _parsedExpression
-        .where((part) => part.isSlot)
-        .map((part) => part.answer!)
-        .toList();
+    return _currentQuestion.answers;
   }
 
   void _startTimer() {
@@ -533,32 +510,24 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   Widget _buildDiagramPlaceholder() {
     return Container(
       alignment: Alignment.center,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'SAMPLE DIAGRAM',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: _lineBrown,
-                letterSpacing: 1.0,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Image.asset(
+          _currentQuestion.imagePath,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Text(
+                'Diagram image not found',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: _lineBrown,
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              _currentQuestion.diagramText,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 28,
-                height: 1.35,
-                fontWeight: FontWeight.w800,
-                color: _lineBrown,
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -969,15 +938,6 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   }
 }
 
-class _GatekeepingQuestion {
-  const _GatekeepingQuestion({
-    required this.circuitExpression,
-    required this.diagramText,
-  });
-
-  final String circuitExpression;
-  final String diagramText;
-}
 
 class _ExpressionPart {
   const _ExpressionPart.text(this.text)
