@@ -74,6 +74,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   Color _scoreDeltaColor = Colors.white;
   double _scoreDeltaOpacity = 0.0;
   double _scoreDeltaYOffset = 0.0;
+  double _scoreDeltaXOffset = 0.0;
 
   String? _centerPopupText;
   Color _centerPopupColor = Colors.white;
@@ -332,7 +333,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     if (!mounted) return;
     setState(() {
       _flashColor = isCorrect ? Colors.green : Colors.red;
-      _flashOpacity = 0.75;
+      _flashOpacity = isCorrect ? 0.65 : 0.75;
     });
 
     await Future.delayed(
@@ -361,13 +362,15 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       _scoreDeltaColor = color;
       _scoreDeltaOpacity = 1.0;
       _scoreDeltaYOffset = 0.0;
+      _scoreDeltaXOffset = 0.0;
     });
 
     await Future.delayed(const Duration(milliseconds: 60));
     if (!mounted) return;
 
     setState(() {
-      _scoreDeltaYOffset = -24.0;
+      _scoreDeltaYOffset = -15.0;
+      _scoreDeltaXOffset = -10.0;
     });
 
     await Future.delayed(const Duration(milliseconds: 900));
@@ -383,6 +386,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     setState(() {
       _scoreDeltaText = null;
       _scoreDeltaYOffset = 0.0;
+      _scoreDeltaXOffset = 0.0;
     });
   }
 
@@ -773,7 +777,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
                               if (_scoreDeltaText != null)
                                 Positioned(
-                                  right: w * 0.12,
+                                  right: w * 0.12 + _scoreDeltaXOffset,
                                   top: h * 0.13 + _scoreDeltaYOffset,
                                   child: AnimatedOpacity(
                                     duration: const Duration(milliseconds: 180),
