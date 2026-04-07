@@ -608,15 +608,24 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Image.asset(AppAssets.backBtn, width: 30),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        iconSize: 26,
+                        icon: Image.asset(
+                          AppAssets.backBtn,
+                          width: 24,
+                          height: 24,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const MusicButton(size: 32),
+                      const MusicButton(size: 26),
                     ],
                   ),
                 ),
@@ -638,16 +647,16 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                           ),
 
                           Positioned(
-                            left: w * 0.065,
-                            top: h * 0.055,
+                            left: w * 0.055,
+                            top: h * 0.045,
                             width: w * 0.18,
                             height: h * 0.10,
                             child: _buildTimerText(w),
                           ),
 
                           Positioned(
-                            right: w * 0.08,
-                            top: h * 0.06,
+                            right: w * 0.07,
+                            top: h * 0.055,
                             width: w * 0.31,
                             height: h * 0.09,
                             child: _buildScoreText(w),
@@ -665,7 +674,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                             left: w * 0.12,
                             right: w * 0.12,
                             bottom: h * 0.08,
-                            height: h * 0.11,
+                            height: h * 0.08,
                             child: _buildExpressionBar(),
                           ),
                         ],
