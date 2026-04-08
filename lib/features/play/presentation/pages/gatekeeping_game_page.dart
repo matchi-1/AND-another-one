@@ -554,66 +554,83 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   Widget _buildExpressionBar() {
     int slotIndex = 0;
 
-    return Center(
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: _parsedExpression.map((part) {
-          if (!part.isSlot) {
-            return Text(
-              part.text!,
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-              ),
-            );
-          }
+    final children = <Widget>[];
 
-          final currentSlot = slotIndex;
-          slotIndex++;
-
-          final playerValue = _playerAnswers[currentSlot];
-          final isActive = _activeSlotIndex == currentSlot && !_roundLocked;
-
-          return GestureDetector(
-            onTap: () {
-              if (_roundLocked || _gameFinished) return;
-              setState(() {
-                _activeSlotIndex = currentSlot;
-              });
-            },
-            child: Container(
-              width: 30,
-              height: 30,
-              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(playerValue == null ? 0.85 : 1),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: isActive ? const Color(0xFFFFE28A) : Colors.white,
-                  width: isActive ? 3 : 2,
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 3,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              alignment: Alignment.center,
+    for (final part in _parsedExpression) {
+      if (!part.isSlot) {
+        final text = part.text?.trim();
+        if (text != null && text.isNotEmpty) {
+          children.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                playerValue == null ? '' : _symbolForOperator(playerValue),
-                style: TextStyle(
-                  fontSize: 20,
+                text,
+                style: const TextStyle(
+                  fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: playerValue == null ? Colors.transparent : _brownText,
+                  color: Colors.white,
                 ),
               ),
             ),
           );
-        }).toList(),
+        }
+        continue;
+      }
+
+      final currentSlot = slotIndex;
+      slotIndex++;
+
+      final playerValue = _playerAnswers[currentSlot];
+      final isActive = _activeSlotIndex == currentSlot && !_roundLocked;
+
+      children.add(
+        GestureDetector(
+          onTap: () {
+            if (_roundLocked || _gameFinished) return;
+            setState(() {
+              _activeSlotIndex = currentSlot;
+            });
+          },
+          child: Container(
+            width: 30,
+            height: 30,
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(playerValue == null ? 0.85 : 1),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: isActive ? const Color(0xFFFFE28A) : Colors.white,
+                width: isActive ? 3 : 2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 3,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              playerValue == null ? '' : _symbolForOperator(playerValue),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: playerValue == null ? Colors.transparent : _brownText,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: children,
+        ),
       ),
     );
   }
