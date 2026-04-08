@@ -5,15 +5,30 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  String _buildHiddenEmail(String usernameLower) {
+    return '$usernameLower@andanotherone.game';
+  }
+
   Future<void> register({
     required String username,
-    required String email,
     required String password,
   }) async {
-    final usernameLower = username.trim().toLowerCase();
+    final usernameTrimmed = username.trim();
+    final usernameLower = usernameTrimmed.toLowerCase();
+    final email = _buildHiddenEmail(usernameLower);
+
+    final usernameRef = _firestore.collection('usernames').doc(usernameLower);
+
+    final existingUsername = await usernameRef.get();
+    if (existingUsername.exists) {
+      throw FirebaseAuthException(
+        code: 'username-taken',
+        message: 'Username already taken.',
+      );
+    }
 
     final credential = await _auth.createUserWithEmailAndPassword(
-      email: email.trim(),
+      email: email,
       password: password.trim(),
     );
 
@@ -27,7 +42,6 @@ class AuthService {
 
     try {
       await _firestore.runTransaction((transaction) async {
-        final usernameRef = _firestore.collection('usernames').doc(usernameLower);
         final usernameSnap = await transaction.get(usernameRef);
 
         if (usernameSnap.exists) {
@@ -45,9 +59,9 @@ class AuthService {
             .doc(user.uid);
 
         transaction.set(userRef, {
-          'username': username.trim(),
+          'username': usernameTrimmed,
           'usernameLower': usernameLower,
-          'email': email.trim(),
+          'email': email,
           'totalXp': 0,
           'dailyXp': 0,
           'createdAt': FieldValue.serverTimestamp(),
@@ -55,11 +69,10 @@ class AuthService {
 
         transaction.set(usernameRef, {
           'uid': user.uid,
-          'email': email.trim(),
         });
 
         transaction.set(leaderboardRef, {
-          'username': username.trim(),
+          'username': usernameTrimmed,
           'score': 0,
           'xp': 0,
           'updatedAt': FieldValue.serverTimestamp(),
@@ -76,6 +89,7 @@ class AuthService {
     required String password,
   }) async {
     final usernameLower = username.trim().toLowerCase();
+    final email = _buildHiddenEmail(usernameLower);
 
     final doc = await _firestore.collection('usernames').doc(usernameLower).get();
 
@@ -83,16 +97,6 @@ class AuthService {
       throw FirebaseAuthException(
         code: 'user-not-found',
         message: 'Username not found.',
-      );
-    }
-
-    final data = doc.data();
-    final email = data?['email'] as String?;
-
-    if (email == null || email.isEmpty) {
-      throw FirebaseAuthException(
-        code: 'missing-email',
-        message: 'No email linked to this username.',
       );
     }
 

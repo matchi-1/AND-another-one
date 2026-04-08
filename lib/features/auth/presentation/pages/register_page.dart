@@ -37,10 +37,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _register() async {
     final username = _usernameController.text.trim();
-    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+    if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill up all fields.')),
       );
@@ -52,7 +51,6 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       await _authService.register(
         username: username,
-        email: email,
         password: password,
       );
 
@@ -65,12 +63,8 @@ class _RegisterPageState extends State<RegisterPage> {
     } on FirebaseAuthException catch (e) {
       String message = 'Registration failed.';
 
-      if (e.code == 'email-already-in-use') {
-        message = 'That email is already in use.';
-      } else if (e.code == 'weak-password') {
+      if (e.code == 'weak-password') {
         message = 'Password is too weak.';
-      } else if (e.code == 'invalid-email') {
-        message = 'Invalid email address.';
       } else if (e.code == 'username-taken') {
         message = 'Username is already taken.';
       }
@@ -134,12 +128,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           label: 'USERNAME',
                           hintText: 'Choose a username',
                           controller: _usernameController,
-                        ),
-                        const SizedBox(height: 16),
-                        AuthInputField(
-                          label: 'EMAIL',
-                          hintText: 'Enter email',
-                          controller: _emailController,
                         ),
                         const SizedBox(height: 16),
                         AuthInputField(
