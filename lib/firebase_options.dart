@@ -71,8 +71,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD1tCRXyLbhs6uVcRdf_78ATqmMRgit add .'
-        'rTNNWk',
+    apiKey: 'AIzaSyD1tCRXyLbhs6uVcRdf_78ATqmMRrTNNWk',
     appId: '1:203911321036:ios:5aa13911b0e1290216f969',
     messagingSenderId: '203911321036',
     projectId: 'plasma-creek-491403-e8',
@@ -91,4 +90,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'plasma-creek-491403-e8.firebasestorage.app',
     measurementId: 'G-SYN0ZV21ZT',
   );
+
 }

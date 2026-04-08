@@ -6,9 +6,38 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../../auth/data/auth_service.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final AuthService _authService = AuthService();
+
+  bool _hasShownRouteMessage = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_hasShownRouteMessage) return;
+
+    final message = ModalRoute.of(context)?.settings.arguments as String?;
+
+    if (message != null && message.isNotEmpty) {
+      _hasShownRouteMessage = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,8 +130,14 @@ class HomePage extends StatelessWidget {
                     height: btnHeight - 20,
                     textColor: btnTextColor,
                     fontSize: btnFontSize - 6,
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.login);
+                    onTap: () async {
+                      await _authService.logout();
+                      if (!mounted) return;
+
+                      Navigator.of(this.context).pushNamedAndRemoveUntil(
+                        AppRoutes.login,
+                            (route) => false,
+                      );
                     },
                   ),
 

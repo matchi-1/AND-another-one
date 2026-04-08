@@ -5,6 +5,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/auth_input_field.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../data/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -15,6 +19,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
@@ -22,30 +27,66 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _register() {
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
+
+  Future<void> _register() async {
     final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (username.isEmpty || password.isEmpty) {
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a username and password.'),
-        ),
+        const SnackBar(content: Text('Please fill up all fields.')),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Account created successfully.'),
-      ),
-    );
+    setState(() => _isLoading = true);
 
-    Navigator.pushReplacementNamed(context, AppRoutes.home);
+    try {
+      await _authService.register(
+        username: username,
+        email: email,
+        password: password,
+      );
+
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.login,
+        arguments: 'Your "$username" account has been successfully created.',
+      );
+    } on FirebaseAuthException catch (e) {
+      String message = 'Registration failed.';
+
+      if (e.code == 'email-already-in-use') {
+        message = 'That email is already in use.';
+      } else if (e.code == 'weak-password') {
+        message = 'Password is too weak.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email address.';
+      } else if (e.code == 'username-taken') {
+        message = 'Username is already taken.';
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -93,6 +134,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           label: 'USERNAME',
                           hintText: 'Choose a username',
                           controller: _usernameController,
+                        ),
+                        const SizedBox(height: 16),
+                        AuthInputField(
+                          label: 'EMAIL',
+                          hintText: 'Enter email',
+                          controller: _emailController,
                         ),
                         const SizedBox(height: 16),
                         AuthInputField(
