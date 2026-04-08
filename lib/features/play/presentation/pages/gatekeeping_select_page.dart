@@ -5,6 +5,8 @@ import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
+import '../../../play/data/models/gatekeeping_question.dart';
+import '../../../play/presentation/pages/gatekeeping_game_page.dart';
 
 class GatekeepingSelectPage extends StatelessWidget {
   const GatekeepingSelectPage({super.key});
@@ -66,7 +68,14 @@ class GatekeepingSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.selectMode);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const GatekeepingGamePage(
+                            difficulty: GatekeepingDifficulty.basic,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: btnGap),
@@ -79,7 +88,14 @@ class GatekeepingSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.selectMode);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const GatekeepingGamePage(
+                            difficulty: GatekeepingDifficulty.logic,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: btnGap),
@@ -92,7 +108,14 @@ class GatekeepingSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.logicGuide);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const GatekeepingGamePage(
+                            difficulty: GatekeepingDifficulty.manic,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: btnGap + 30),

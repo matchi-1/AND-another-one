@@ -60,6 +60,11 @@ flutter:
   assets:
     - assets/images/home/
     - assets/images/shared/
+    - assets/images/diagrams/
+    - assets/images/diagrams/basic/
+    - assets/images/diagrams/logic/
+    - assets/images/diagrams/manic/
+
 
 
   # To add assets to your application, add an assets section, like this:

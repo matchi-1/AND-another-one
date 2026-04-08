@@ -4,6 +4,7 @@ import 'core/theme/app_theme.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'features/guide/presentation/pages/logic_guide_page.dart';
 import 'features/play/presentation/pages/gatekeeping_select_page.dart';
+import 'features/play/presentation/pages/gatekeeping_game_page.dart';
 import 'features/play/presentation/pages/one_or_none_select_page.dart';
 import 'features/play/presentation/pages/mode_select_page.dart';
 import 'features/leaderboards/presentation/pages/leaderboards_page.dart';
@@ -34,6 +35,7 @@ class AndAnotherOneApp extends StatelessWidget {
         AppRoutes.oneOrNoneSelect:(_) => const OneOrNoneSelectPage(),
         AppRoutes.mechanicsGatekeeping: (_) => const MechanicsGatekeepingPage(),
         AppRoutes.mechanicsOneOrNone: (_) => const MechanicsOneOrNonePage(),
+        AppRoutes.gatekeepingGame: (_) => const GatekeepingGamePage(),
       },
     );
   }
