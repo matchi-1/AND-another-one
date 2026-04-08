@@ -22,7 +22,7 @@ class GatekeepingGamePage extends StatefulWidget {
 }
 
 class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
-  static const int _timePerQuestion = 60;
+  static const int _startingRoundTime = 60;
   static const int _startingPasses = 5;
 
 
@@ -34,7 +34,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   Timer? _timer;
 
   int _currentQuestionIndex = 0;
-  int _timeLeft = _timePerQuestion;
+  int _timeLeft = _startingRoundTime;
   int _score = 0;
   int _passesLeft = _startingPasses;
   int _activeSlotIndex = 0;
@@ -87,14 +87,35 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       widget.difficulty,
     );
 
+    if (_questions.isEmpty) {
+      _gameFinished = true;
+      return;
+    }
+
     _currentQuestionIndex = 0;
     _score = 0;
     _passesLeft = _startingPasses;
     _gameFinished = false;
+    _timeLeft = _startingRoundTime;
 
     _loadCurrentQuestion();
     _startTimer();
     setState(() {});
+  }
+
+  void _advanceToNextQuestion() {
+    if (_questions.isEmpty) return;
+
+    setState(() {
+      _currentQuestionIndex++;
+
+      if (_currentQuestionIndex >= _questions.length) {
+        _questions.shuffle();
+        _currentQuestionIndex = 0;
+      }
+
+      _loadCurrentQuestion();
+    });
   }
 
   void _loadCurrentQuestion() {
@@ -103,9 +124,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
     _playerAnswers = List<String?>.filled(slotCount, null);
     _activeSlotIndex = 0;
-    _timeLeft = _timePerQuestion;
     _roundLocked = false;
-
   }
 
   List<_ExpressionPart> _parseExpression(String expression) {
@@ -221,11 +240,10 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     });
 
     _showCenterPopup('PASS', const Color(0xFFFFB347));
-    // _showScoreDelta('-10', const Color(0xFFFFB347));
+
     await _finishRound(
-      feedbackText: 'PASS',
-      feedbackColor: _passOrange,
       scoreDelta: -10,
+      timeDelta: 0,
     );
   }
 
@@ -234,11 +252,14 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
     HapticFeedback.heavyImpact();
 
-    await _finishRound(
-      feedbackText: 'TIME UP',
-      feedbackColor: Colors.red,
-      scoreDelta: -20,
-    );
+    setState(() {
+      _gameFinished = true;
+      _roundLocked = true;
+      _timeLeft = 0;
+    });
+
+    _timer?.cancel();
+    _showEndDialog();
   }
 
   Future<void> _checkCurrentAnswer() async {
@@ -251,53 +272,50 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     );
 
     if (isCorrect) {
-      final gained = 20; // or your multiplier logic
+      const gainedScore = 20;
+      const gainedTime = 2;
 
       _playFlash(isCorrect: true);
-      _showScoreDelta('+$gained', Colors.greenAccent);
+      _showScoreDelta('+$gainedTime', Colors.greenAccent);
 
       await _finishRound(
-        feedbackText: 'CORRECT  +$gained',
-        feedbackColor: const Color(0xFF15B700),
-        scoreDelta: gained,
+        scoreDelta: gainedScore,
+        timeDelta: gainedTime,
       );
     } else {
-      const lost = 20;
+      const lostScore = 20;
+      const lostTime = -1;
 
       _playWrongDamageFlash();
-      _showScoreDelta('-$lost', Colors.redAccent);
+      _showScoreDelta('$lostTime', Colors.redAccent);
 
       await _finishRound(
-        feedbackText: 'WRONG  -$lost',
-        feedbackColor: Colors.red,
-        scoreDelta: -lost,
+        scoreDelta: -lostScore,
+        timeDelta: lostTime,
       );
     }
   }
 
   Future<void> _finishRound({
-    required String feedbackText,
-    required Color feedbackColor,
     required int scoreDelta,
+    required int timeDelta,
   }) async {
     setState(() {
       _roundLocked = true;
       _score = (_score + scoreDelta).clamp(0, 999999);
+      _timeLeft = (_timeLeft + timeDelta).clamp(0, 999999);
     });
 
     await Future.delayed(const Duration(milliseconds: 850));
 
-    if (!mounted) return;
+    if (!mounted || _gameFinished) return;
 
-    if (_currentQuestionIndex >= _questions.length - 1) {
-      _showEndDialog();
+    if (_timeLeft <= 0) {
+      _handleTimeout();
       return;
     }
 
-    setState(() {
-      _currentQuestionIndex++;
-      _loadCurrentQuestion();
-    });
+    _advanceToNextQuestion();
   }
 
   Future<void> _playFlash({bool isCorrect = false}) async {
