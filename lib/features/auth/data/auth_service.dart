@@ -52,11 +52,6 @@ class AuthService {
         }
 
         final userRef = _firestore.collection('users').doc(user.uid);
-        final leaderboardRef = _firestore
-            .collection('leaderboards')
-            .doc('global')
-            .collection('entries')
-            .doc(user.uid);
 
         transaction.set(userRef, {
           'username': usernameTrimmed,
@@ -71,12 +66,7 @@ class AuthService {
           'uid': user.uid,
         });
 
-        transaction.set(leaderboardRef, {
-          'username': usernameTrimmed,
-          'score': 0,
-          'xp': 0,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
+
       });
     } catch (e) {
       await user.delete();

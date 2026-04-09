@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../../leaderboards/util/leaderboard_service.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
 
@@ -22,6 +23,24 @@ class GatekeepingGamePage extends StatefulWidget {
 }
 
 class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
+
+  final LeaderboardService _leaderboardService = LeaderboardService();
+  bool _scoreSubmitted = false;
+
+  String _modeId() => 'gatekeeping';
+
+  String _difficultyId() {
+    switch (widget.difficulty) {
+      case GatekeepingDifficulty.basic:
+        return 'basic';
+      case GatekeepingDifficulty.logic:
+        return 'logic';
+      case GatekeepingDifficulty.manic:
+        return 'manic';
+    }
+  }
+
+
   static const int _startingRoundTime = 60;
   static const int _startingPasses = 5;
 
@@ -81,6 +100,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   }
 
   void _resetWholeGame() {
+    _scoreSubmitted = false;
     _timer?.cancel();
 
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
@@ -259,6 +279,9 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     });
 
     _timer?.cancel();
+    await _submitFinalScoreOnce();
+
+    if (!mounted) return;
     _showEndDialog();
   }
 
@@ -308,12 +331,20 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
     await Future.delayed(const Duration(milliseconds: 850));
 
+    if (_currentQuestionIndex >= _questions.length - 1) {
+      await _submitFinalScoreOnce();
+      _showEndDialog();
+      return;
+    }
+
     if (!mounted || _gameFinished) return;
 
     if (_timeLeft <= 0) {
       _handleTimeout();
       return;
     }
+
+
 
     _advanceToNextQuestion();
   }
@@ -483,6 +514,17 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       default:
         return '?';
     }
+  }
+
+  Future<void> _submitFinalScoreOnce() async {
+    if (_scoreSubmitted) return;
+    _scoreSubmitted = true;
+
+    await _leaderboardService.submitScore(
+      modeId: _modeId(),
+      difficultyId: _difficultyId(),
+      score: _score,
+    );
   }
 
   Widget _buildTimerText(double width) {

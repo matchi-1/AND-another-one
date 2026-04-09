@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../util/leaderboard_service.dart';
 
 enum LeaderboardMode {
   gatekeeping,
@@ -16,6 +17,9 @@ enum LeaderboardDifficulty {
   manic,
 }
 
+final LeaderboardService _leaderboardService = LeaderboardService();
+
+
 class LeaderboardsPage extends StatefulWidget {
   const LeaderboardsPage({super.key});
 
@@ -24,8 +28,30 @@ class LeaderboardsPage extends StatefulWidget {
 }
 
 class _LeaderboardsPageState extends State<LeaderboardsPage> {
+
   LeaderboardMode selectedMode = LeaderboardMode.gatekeeping;
   LeaderboardDifficulty selectedDifficulty = LeaderboardDifficulty.basic;
+
+  String get _modeId {
+    switch (selectedMode) {
+      case LeaderboardMode.gatekeeping:
+        return 'gatekeeping';
+      case LeaderboardMode.oneOrNone:
+        return 'one_or_none';
+    }
+  }
+
+  String get _difficultyId {
+    switch (selectedDifficulty) {
+      case LeaderboardDifficulty.basic:
+        return 'basic';
+      case LeaderboardDifficulty.logic:
+        return 'logic';
+      case LeaderboardDifficulty.manic:
+        return 'manic';
+    }
+  }
+
 
   final Map<LeaderboardMode,
       Map<LeaderboardDifficulty, List<LeaderboardEntry>>> leaderboardData = {
@@ -297,30 +323,64 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                               const SizedBox(height: 10),
 
                               Expanded(
-                                child: currentEntries.isEmpty
-                                    ? const Center(
-                                  child: Text(
-                                    'No leaderboard entries yet.',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                child: StreamBuilder<List<LeaderboardEntryModel>>(
+                                  stream: _leaderboardService.streamLeaderboard(
+                                    modeId: _modeId,
+                                    difficultyId: _difficultyId,
+                                    limit: 50,
                                   ),
-                                )
-                                    : ListView.separated(
-                                  itemCount: currentEntries.length,
-                                  separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 8),
-                                  itemBuilder: (context, index) {
-                                    final entry = currentEntries[index];
-                                    return _LeaderboardRow(
-                                      rank: index + 1,
-                                      entry: entry,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(color: Colors.white),
+                                      );
+                                    }
+
+                                    if (snapshot.hasError) {
+                                      return const Center(
+                                        child: Text(
+                                          'Failed to load leaderboard.',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    final entries = snapshot.data ?? [];
+
+                                    if (entries.isEmpty) {
+                                      return const Center(
+                                        child: Text(
+                                          'No leaderboard entries yet.',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    return ListView.separated(
+                                      itemCount: entries.length,
+                                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                      itemBuilder: (context, index) {
+                                        final entry = entries[index];
+                                        return _LeaderboardRow(
+                                          rank: index + 1,
+                                          entry: LeaderboardEntry(
+                                            username: entry.username,
+                                            score: entry.bestScore,
+                                          ),
+                                        );
+                                      },
                                     );
                                   },
                                 ),
-                              ),
+                              )
                             ],
                           ),
                         ),
