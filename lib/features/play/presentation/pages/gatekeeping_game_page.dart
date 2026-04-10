@@ -148,7 +148,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   }
 
   List<_ExpressionPart> _parseExpression(String expression) {
-    final regex = RegExp(r'__(AND|OR|NOT|XOR)');
+    final regex = RegExp(r'__(AND|OR|NOT|XOR|XNOR|NAND|NOR)');
     final parts = <_ExpressionPart>[];
 
     int lastEnd = 0;
@@ -264,6 +264,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     await _finishRound(
       scoreDelta: -10,
       timeDelta: 0,
+      advanceQuestion: true
     );
   }
 
@@ -304,6 +305,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       await _finishRound(
         scoreDelta: gainedScore,
         timeDelta: gainedTime,
+        advanceQuestion: true
       );
     } else {
       const lostScore = 20;
@@ -315,6 +317,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
       await _finishRound(
         scoreDelta: -lostScore,
         timeDelta: lostTime,
+        advanceQuestion: false
       );
     }
   }
@@ -322,6 +325,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   Future<void> _finishRound({
     required int scoreDelta,
     required int timeDelta,
+    required bool advanceQuestion
   }) async {
     setState(() {
       _roundLocked = true;
@@ -331,7 +335,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
     await Future.delayed(const Duration(milliseconds: 850));
 
-    if (_currentQuestionIndex >= _questions.length - 1) {
+    if (_currentQuestionIndex >= _questions.length - 1 && advanceQuestion) {
       await _submitFinalScoreOnce();
       _showEndDialog();
       return;
@@ -346,7 +350,15 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
 
 
-    _advanceToNextQuestion();
+    if (advanceQuestion) {
+      _advanceToNextQuestion();
+    } else {
+      setState(() {
+        _playerAnswers = List<String?>.filled(_playerAnswers.length, null);
+        _activeSlotIndex = 0;
+        _roundLocked = false;
+      });
+    }
   }
 
   Future<void> _playFlash({bool isCorrect = false}) async {
@@ -600,12 +612,10 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
     for (final part in _parsedExpression) {
       if (!part.isSlot) {
-        final text = part.text?.trim();
-        if (text != null && text.isNotEmpty) {
-          children.add(
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
+        final text = part.text;
+          if (text != null && text.isNotEmpty) {
+            children.add(
+              Text(
                 text,
                 style: const TextStyle(
                   fontSize: 26,
@@ -613,7 +623,6 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
                   color: Colors.white,
                 ),
               ),
-            ),
           );
         }
         continue;
