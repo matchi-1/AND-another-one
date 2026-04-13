@@ -1,3 +1,4 @@
+import 'package:and_another_one/features/play/presentation/pages/one_or_none_game_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -5,6 +6,7 @@ import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
+import '../../data/models/gatekeeping_question.dart';
 
 class OneOrNoneSelectPage extends StatelessWidget {
   const OneOrNoneSelectPage({super.key});
@@ -66,7 +68,14 @@ class OneOrNoneSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.oneOrNoneGame);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const OneOrNoneGamePage(
+                            difficulty: Difficulty.basic,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: btnGap),
@@ -79,7 +88,14 @@ class OneOrNoneSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.oneOrNoneGame);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const OneOrNoneGamePage(
+                            difficulty: Difficulty.logic,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: btnGap),
@@ -92,7 +108,14 @@ class OneOrNoneSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.oneOrNoneGame);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const OneOrNoneGamePage(
+                            difficulty: Difficulty.manic,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: btnGap + 30),

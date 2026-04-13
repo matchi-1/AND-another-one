@@ -1,4 +1,4 @@
-enum GatekeepingDifficulty {
+enum Difficulty {
   basic,
   logic,
   manic,
@@ -9,7 +9,7 @@ class GatekeepingQuestion {
   final String imagePath;
   final String expression;
   final List<String> answers;
-  final GatekeepingDifficulty difficulty;
+  final Difficulty difficulty;
 
   const GatekeepingQuestion({
     required this.id,

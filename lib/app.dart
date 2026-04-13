@@ -1,3 +1,4 @@
+import 'package:and_another_one/features/play/presentation/pages/one_or_none_game_page.dart';
 import 'package:flutter/material.dart';
 import 'core/navigation/app_routes.dart';
 import 'core/theme/app_theme.dart';
@@ -33,6 +34,7 @@ class AndAnotherOneApp extends StatelessWidget {
         AppRoutes.leaderboards: (_) => const LeaderboardsPage(),
         AppRoutes.gatekeepingSelect: (_) => const GatekeepingSelectPage(),
         AppRoutes.oneOrNoneSelect:(_) => const OneOrNoneSelectPage(),
+        AppRoutes.oneOrNoneGame: (_) => const OneOrNoneGamePage(),
         AppRoutes.mechanicsGatekeeping: (_) => const MechanicsGatekeepingPage(),
         AppRoutes.mechanicsOneOrNone: (_) => const MechanicsOneOrNonePage(),
         AppRoutes.gatekeepingGame: (_) => const GatekeepingGamePage(),

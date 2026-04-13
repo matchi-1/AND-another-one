@@ -72,7 +72,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const GatekeepingGamePage(
-                            difficulty: GatekeepingDifficulty.basic,
+                            difficulty: Difficulty.basic,
                           ),
                         ),
                       );
@@ -92,7 +92,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const GatekeepingGamePage(
-                            difficulty: GatekeepingDifficulty.logic,
+                            difficulty: Difficulty.logic,
                           ),
                         ),
                       );
@@ -112,7 +112,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const GatekeepingGamePage(
-                            difficulty: GatekeepingDifficulty.manic,
+                            difficulty: Difficulty.manic,
                           ),
                         ),
                       );
