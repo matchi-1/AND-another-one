@@ -6,6 +6,7 @@ class AppRoutes {
   static const gatekeepingSelect = '/gatekeeping-select';
   static const gatekeepingGame = '/gatekeeping-game';
   static const oneOrNoneSelect = '/oneOrNone-select';
+  static const oneOrNoneGame = '/oneOrNone-game';
   static const login = '/login';
   static const register = '/register';
   static const mechanicsGatekeeping = '/mechanics-gatekeeping';
