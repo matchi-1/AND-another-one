@@ -8,9 +8,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../../leaderboards/util/leaderboard_service.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
-import '../../util/gameplay_helpers.dart';
 
 class OneOrNoneGamePage extends StatefulWidget {
   const OneOrNoneGamePage({
@@ -24,10 +24,9 @@ class OneOrNoneGamePage extends StatefulWidget {
   State<OneOrNoneGamePage> createState() => _OneOrNoneGamePageState();
 }
 
-class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
-    with GameplayHelpers {
-  static const int _startingRoundTimeValue = 60;
-  static const int _startingPassesValue = 5;
+class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
+  static const int _startingPasses = 5;
+  static const int _startingLives = 3;
 
   static const Color _passOrange = Color(0xFFFF6B00);
   static const Color _brownText = Color(0xFF8A5200);
@@ -37,6 +36,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
   static const Color _choiceZero = Color(0xFFFFBC19);
   static const Color _valuesGreen = Color(0xFF0BAE22);
 
+  final LeaderboardService _leaderboardService = LeaderboardService();
   final Random _random = Random();
 
   late List<GatekeepingQuestion> _questions;
@@ -44,21 +44,38 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
   late List<String> _currentVariables;
   late Map<String, int> _currentVariableValues;
 
+  int _currentQuestionIndex = 0;
+  int _score = 0;
+  int _passesLeft = _startingPasses;
+  int _livesLeft = _startingLives;
   int _correctOutput = 0;
 
-  GatekeepingQuestion get _currentQuestion => _questions[currentQuestionIndex];
+  bool _roundLocked = false;
+  bool _gameFinished = false;
+  bool _scoreSubmitted = false;
 
-  @override
-  int get startingRoundTime => _startingRoundTimeValue;
+  String _endDialogTitle = 'ROUND COMPLETE';
 
-  @override
-  int get startingPasses => _startingPassesValue;
+  Color _flashColor = Colors.transparent;
+  double _flashOpacity = 0.0;
 
-  @override
-  String get modeId => 'one_or_none';
+  String? _scoreDeltaText;
+  double _scoreDeltaOpacity = 0.0;
+  double _scoreDeltaYOffset = 0.0;
+  double _scoreDeltaXOffset = 0.0;
 
-  @override
-  String get difficultyId {
+  String? _livesDeltaText;
+  double _livesDeltaOpacity = 0.0;
+  double _livesDeltaYOffset = 0.0;
+
+  String? _centerPopupText;
+  Color _centerPopupColor = Colors.white;
+  double _centerPopupOpacity = 0.0;
+  double _centerPopupScale = 0.9;
+
+  GatekeepingQuestion get _currentQuestion => _questions[_currentQuestionIndex];
+
+  String get _difficultyId {
     switch (widget.difficulty) {
       case Difficulty.basic:
         return 'basic';
@@ -70,60 +87,56 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
   }
 
   @override
-  int get questionCount => _questions.length;
-
-  @override
   void initState() {
     super.initState();
-    resetWholeGame();
+    _resetWholeGame();
   }
 
-  @override
-  void resetWholeGame() {
+  void _resetWholeGame() {
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
       widget.difficulty,
     );
 
     if (_questions.isEmpty) {
-      gameFinished = true;
-      setState(() {});
+      setState(() {
+        _gameFinished = true;
+      });
       return;
     }
 
-    initializeSharedRun();
+    _scoreSubmitted = false;
+    _currentQuestionIndex = 0;
+    _score = 0;
+    _passesLeft = _startingPasses;
+    _livesLeft = _startingLives;
+    _roundLocked = false;
+    _gameFinished = false;
+    _endDialogTitle = 'ROUND COMPLETE';
+
+    _loadCurrentQuestion();
+    setState(() {});
   }
 
-  @override
-  void goToNextQuestion() {
+  void _advanceToNextQuestion() {
     if (_questions.isEmpty) return;
 
     setState(() {
-      currentQuestionIndex++;
-
-      if (currentQuestionIndex >= _questions.length) {
-        _questions.shuffle();
-        currentQuestionIndex = 0;
-      }
-
-      loadCurrentQuestion();
+      _currentQuestionIndex++;
+      _loadCurrentQuestion();
     });
   }
 
-  @override
-  void loadCurrentQuestion() {
+  void _loadCurrentQuestion() {
     _normalizedExpression = _normalizeExpression(_currentQuestion.expression);
     _currentVariables = _extractVariables(_normalizedExpression);
     _rerollCurrentVariableValues(avoidSame: false);
-    roundLocked = false;
-  }
-
-  @override
-  void onRetryCurrentQuestion() {
-    _rerollCurrentVariableValues();
+    _roundLocked = false;
   }
 
   void _rerollCurrentVariableValues({bool avoidSame = true}) {
-    final previous = avoidSame ? Map<String, int>.from(_currentVariableValues) : null;
+    final previous = avoidSame
+        ? Map<String, int>.from(_currentVariableValues)
+        : <String, int>{};
 
     do {
       _currentVariableValues = {
@@ -132,9 +145,8 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
       };
     } while (
         avoidSame &&
-        previous != null &&
-        _mapsEqual(previous, _currentVariableValues)
-    );
+        previous.isNotEmpty &&
+        _mapsEqual(previous, _currentVariableValues));
 
     _correctOutput = _evaluateExpression(
       _normalizedExpression,
@@ -335,48 +347,301 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
   }
 
   Future<void> _handleChoiceTap(int selectedValue) async {
-    if (roundLocked || gameFinished) return;
+    if (_roundLocked || _gameFinished) return;
 
     HapticFeedback.selectionClick();
     await _checkCurrentAnswer(selectedValue);
   }
 
+  Future<void> _handlePass() async {
+    if (_roundLocked || _gameFinished) return;
+    if (_passesLeft <= 0) return;
+
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      _passesLeft--;
+    });
+
+    _showCenterPopup('PASS', const Color(0xFFFFB347));
+
+    await _finishRound(
+      scoreDelta: -10,
+      livesDelta: 0,
+      advanceQuestion: true,
+    );
+  }
+
   Future<void> _checkCurrentAnswer(int selectedValue) async {
-    if (roundLocked || gameFinished) return;
+    if (_roundLocked || _gameFinished) return;
 
     final isCorrect = selectedValue == _correctOutput;
 
     if (isCorrect) {
       const gainedScore = 20;
-      const gainedTime = 2;
 
-      playFlash(isCorrect: true);
-      showScoreDelta('+$gainedTime', Colors.greenAccent);
+      _playFlash(isCorrect: true);
+      _showScoreDelta('+$gainedScore', Colors.greenAccent);
 
-      await finishRound(
+      await _finishRound(
         scoreDelta: gainedScore,
-        timeDelta: gainedTime,
+        livesDelta: 0,
         advanceQuestion: true,
       );
     } else {
-      const lostScore = 20;
-      const lostTime = -1;
+      const lostLives = 1;
 
-      playWrongDamageFlash();
-      showScoreDelta('$lostTime', Colors.redAccent);
+      _playWrongDamageFlash();
+      _showLivesDelta('-$lostLives', Colors.redAccent);
 
-      await finishRound(
-        scoreDelta: -lostScore,
-        timeDelta: lostTime,
+      await _finishRound(
+        scoreDelta: 0,
+        livesDelta: -lostLives,
         advanceQuestion: false,
       );
     }
   }
 
-  Widget _buildTimerText(double width) {
+  Future<void> _finishRound({
+    required int scoreDelta,
+    required int livesDelta,
+    required bool advanceQuestion,
+  }) async {
+    setState(() {
+      _roundLocked = true;
+      _score = (_score + scoreDelta).clamp(0, 999999);
+      _livesLeft = (_livesLeft + livesDelta).clamp(0, 999999);
+    });
+
+    await Future.delayed(const Duration(milliseconds: 850));
+
+    if (!mounted || _gameFinished) return;
+
+    if (_livesLeft <= 0) {
+      await _handleGameOver();
+      return;
+    }
+
+    if (advanceQuestion && _currentQuestionIndex >= _questions.length - 1) {
+      _endDialogTitle = 'ROUND COMPLETE';
+      await _submitFinalScoreOnce();
+      if (!mounted) return;
+      _showEndDialog();
+      return;
+    }
+
+    if (advanceQuestion) {
+      _advanceToNextQuestion();
+    } else {
+      setState(() {
+        _rerollCurrentVariableValues();
+        _roundLocked = false;
+      });
+    }
+  }
+
+  Future<void> _handleGameOver() async {
+    if (_gameFinished) return;
+
+    setState(() {
+      _gameFinished = true;
+      _roundLocked = true;
+      _endDialogTitle = 'GAME OVER';
+    });
+
+    await _submitFinalScoreOnce();
+
+    if (!mounted) return;
+    _showEndDialog();
+  }
+
+  Future<void> _submitFinalScoreOnce() async {
+    if (_scoreSubmitted) return;
+    _scoreSubmitted = true;
+
+    await _leaderboardService.submitScore(
+      modeId: 'one_or_none',
+      difficultyId: _difficultyId,
+      score: _score,
+    );
+  }
+
+  Future<void> _playFlash({bool isCorrect = false}) async {
+    if (!mounted) return;
+    setState(() {
+      _flashColor = isCorrect ? Colors.green : Colors.red;
+      _flashOpacity = isCorrect ? 0.65 : 0.75;
+    });
+
+    await Future.delayed(
+      Duration(milliseconds: isCorrect ? 300 : 135),
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _flashOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 135));
+  }
+
+  Future<void> _playWrongDamageFlash() async {
+    await _playFlash();
+    await Future.delayed(const Duration(milliseconds: 40));
+    await _playFlash();
+  }
+
+  Future<void> _showScoreDelta(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaText = text;
+      _scoreDeltaOpacity = 1.0;
+      _scoreDeltaYOffset = 0.0;
+      _scoreDeltaXOffset = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 60));
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaYOffset = -15.0;
+      _scoreDeltaXOffset = -10.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    setState(() {
+      _scoreDeltaText = null;
+      _scoreDeltaYOffset = 0.0;
+      _scoreDeltaXOffset = 0.0;
+    });
+  }
+
+  Future<void> _showLivesDelta(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      _livesDeltaText = text;
+      _livesDeltaOpacity = 1.0;
+      _livesDeltaYOffset = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 60));
+    if (!mounted) return;
+
+    setState(() {
+      _livesDeltaYOffset = -15.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    setState(() {
+      _livesDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    setState(() {
+      _livesDeltaText = null;
+      _livesDeltaYOffset = 0.0;
+    });
+  }
+
+  Future<void> _showCenterPopup(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      _centerPopupText = text;
+      _centerPopupColor = color;
+      _centerPopupOpacity = 1.0;
+      _centerPopupScale = 1.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 450));
+    if (!mounted) return;
+
+    setState(() {
+      _centerPopupOpacity = 0.0;
+      _centerPopupScale = 1.08;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 180));
+    if (!mounted) return;
+
+    setState(() {
+      _centerPopupText = null;
+      _centerPopupScale = 0.9;
+    });
+  }
+
+  void _showEndDialog() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            _endDialogTitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
+            ),
+          ),
+          content: Text(
+            'Final Score: $_score',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _resetWholeGame();
+              },
+              child: const Text(
+                'PLAY AGAIN',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'EXIT',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLivesText(double width) {
     return Center(
       child: Text(
-        '$timeLeft',
+        '$_livesLeft',
         style: TextStyle(
           fontSize: width * 0.10,
           fontWeight: FontWeight.w900,
@@ -396,7 +661,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
   Widget _buildScoreText(double width) {
     return Center(
       child: Text(
-        '$score',
+        '$_score',
         style: TextStyle(
           fontSize: width * 0.085,
           fontWeight: FontWeight.w900,
@@ -440,33 +705,38 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
   }
 
   Widget _buildValuesBar() {
-    return Container(
-      width: double.infinity,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: _valuesGreen,
-        border: Border.all(
-          color: Colors.white.withOpacity(0.35),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            offset: Offset(0, 2),
-            blurRadius: 2,
+    return SizedBox(
+      height: 72,
+      child: Container(
+        width: double.infinity,
+        alignment: Alignment.center,
+        /*
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: _valuesGreen,
+          border: Border.all(
+            color: Colors.white.withOpacity(0.35),
+            width: 2,
           ),
-        ],
-      ),
-      child: Text(
-        _valuesText(),
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.6,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              offset: Offset(0, 2),
+              blurRadius: 2,
+            ),
+          ],
+        ),
+        */
+        child: Text(
+          _valuesText(),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 26,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.6,
+          ),
         ),
       ),
     );
@@ -474,9 +744,10 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
 
   Widget _buildPassStrip() {
     return Container(
-      height: 30,
+      height: 32,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 12),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: AppColors.beigeBg,
         borderRadius: BorderRadius.circular(4),
@@ -486,7 +757,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
         ),
       ),
       child: Text(
-        'PASSES LEFT: $passesLeft',
+        'PASSES LEFT: $_passesLeft',
         style: const TextStyle(
           color: _passOrange,
           fontSize: 14,
@@ -539,7 +810,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     final double gap = 12;
     final double choiceButtonWidth =
         (size.width - (sidePadding * 2) - gap) / 2;
-    const double choiceButtonHeight = 140;
+    const double choiceButtonHeight = 180;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -596,8 +867,33 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                   top: h * 0.045,
                                   width: w * 0.18,
                                   height: h * 0.10,
-                                  child: _buildTimerText(w),
+                                  child: _buildLivesText(w),
                                 ),
+                                if (_livesDeltaText != null)
+                                  Positioned(
+                                    left: w * 0.11,
+                                    top: h * 0.13 + _livesDeltaYOffset,
+                                    child: AnimatedOpacity(
+                                      duration:
+                                          const Duration(milliseconds: 250),
+                                      opacity: _livesDeltaOpacity,
+                                      child: Text(
+                                        _livesDeltaText!,
+                                        style: TextStyle(
+                                          fontSize: w * 0.08,
+                                          fontWeight: FontWeight.w900,
+                                          color: const Color(0xFFFFD0D0),
+                                          shadows: const [
+                                            Shadow(
+                                              color: Colors.black38,
+                                              offset: Offset(0, 2),
+                                              blurRadius: 3,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 Positioned(
                                   right: w * 0.07,
                                   top: h * 0.055,
@@ -605,35 +901,38 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                   height: h * 0.09,
                                   child: _buildScoreText(w),
                                 ),
-                                if (scoreDeltaText != null)
+                                if (_scoreDeltaText != null)
                                   Positioned(
                                     right: w * 0.11,
-                                    top: h * 0.13 + scoreDeltaYOffset,
+                                    top: h * 0.13 + _scoreDeltaYOffset,
                                     child: AnimatedOpacity(
-                                      duration: const Duration(milliseconds: 250),
-                                      opacity: scoreDeltaOpacity,
+                                      duration:
+                                          const Duration(milliseconds: 250),
+                                      opacity: _scoreDeltaOpacity,
                                       child: Stack(
                                         alignment: Alignment.center,
                                         children: [
                                           Text(
-                                            scoreDeltaText!,
+                                            _scoreDeltaText!,
                                             style: TextStyle(
                                               fontSize: w * 0.09,
                                               fontWeight: FontWeight.w900,
                                               foreground: Paint()
                                                 ..style = PaintingStyle.stroke
                                                 ..strokeWidth = 4
-                                                ..color = scoreDeltaText!.startsWith('-')
+                                                ..color = _scoreDeltaText!
+                                                        .startsWith('-')
                                                     ? const Color(0xFFD50000)
                                                     : const Color(0xFF0FAF2A),
                                             ),
                                           ),
                                           Text(
-                                            scoreDeltaText!,
+                                            _scoreDeltaText!,
                                             style: TextStyle(
                                               fontSize: w * 0.09,
                                               fontWeight: FontWeight.w900,
-                                              color: scoreDeltaText!.startsWith('-')
+                                              color: _scoreDeltaText!
+                                                      .startsWith('-')
                                                   ? const Color(0xFFFFD0D0)
                                                   : const Color(0xFFBEFFC9),
                                               shadows: const [
@@ -659,9 +958,11 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                 Positioned(
                                   left: w * 0.07,
                                   right: w * 0.07,
-                                  bottom: h * 0.05,
-                                  height: h * 0.10,
-                                  child: _buildValuesBar(),
+                                  bottom: h * 0.035,
+                                  height: h * 0.16,
+                                  child: Center(
+                                    child: _buildValuesBar(),
+                                  ),
                                 ),
                               ],
                             );
@@ -670,7 +971,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                       ),
                       const SizedBox(height: 10),
                       IgnorePointer(
-                        ignoring: roundLocked || gameFinished,
+                        ignoring: _roundLocked || _gameFinished,
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(
                             sidePadding,
@@ -681,6 +982,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                           child: Column(
                             children: [
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   BeveledMenuButton(
                                     label: 'PASS',
@@ -689,9 +991,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                     height: 50,
                                     textColor: Colors.white,
                                     fontSize: 20,
-                                    onTap: () {
-                                      handlePass();
-                                    },
+                                    onTap: _handlePass,
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(child: _buildPassStrip()),
@@ -706,9 +1006,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                       color: _choiceOne,
                                       width: choiceButtonWidth,
                                       height: choiceButtonHeight,
-                                      onTap: () {
-                                        _handleChoiceTap(1);
-                                      },
+                                      onTap: () => _handleChoiceTap(1),
                                     ),
                                   ),
                                   SizedBox(width: gap),
@@ -718,9 +1016,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                       color: _choiceZero,
                                       width: choiceButtonWidth,
                                       height: choiceButtonHeight,
-                                      onTap: () {
-                                        _handleChoiceTap(0);
-                                      },
+                                      onTap: () => _handleChoiceTap(0),
                                     ),
                                   ),
                                 ],
@@ -737,20 +1033,20 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                 child: IgnorePointer(
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 320),
-                    opacity: flashOpacity,
-                    child: ColoredBox(color: flashColor),
+                    opacity: _flashOpacity,
+                    child: ColoredBox(color: _flashColor),
                   ),
                 ),
               ),
-              if (centerPopupText != null)
+              if (_centerPopupText != null)
                 IgnorePointer(
                   child: Center(
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 180),
-                      opacity: centerPopupOpacity,
+                      opacity: _centerPopupOpacity,
                       child: AnimatedScale(
                         duration: const Duration(milliseconds: 180),
-                        scale: centerPopupScale,
+                        scale: _centerPopupScale,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 24,
@@ -761,11 +1057,11 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            centerPopupText!,
+                            _centerPopupText!,
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.w900,
-                              color: centerPopupColor,
+                              color: _centerPopupColor,
                               letterSpacing: 1.2,
                             ),
                           ),

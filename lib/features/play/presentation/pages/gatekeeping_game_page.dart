@@ -446,9 +446,10 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
 
   Widget _buildPassStrip() {
     return Container(
-      height: 30,
+      height: 32,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 12),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: AppColors.beigeBg,
         borderRadius: BorderRadius.circular(4),
@@ -695,12 +696,13 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
                                   Expanded(child: _buildPassStrip()),
                                   const SizedBox(width: 8),
                                   BeveledMenuButton(
-                                    label: '‹',
+
+                                    label: '←',
                                     color: _backspaceGrey,
                                     width: 80,
                                     height: 50,
                                     textColor: Colors.white,
-                                    fontSize: 34,
+                                    fontSize: 30,
                                     onTap: _handleBackspace,
                                   ),
                                 ],
