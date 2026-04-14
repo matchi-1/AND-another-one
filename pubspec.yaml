@@ -60,12 +60,12 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/images/home/
     - assets/images/shared/
     - assets/images/diagrams/
     - assets/images/diagrams/basic/
     - assets/images/diagrams/logic/
     - assets/images/diagrams/manic/
+    - assets/images/logic_guide/
 
 
 
