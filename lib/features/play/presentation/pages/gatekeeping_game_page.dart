@@ -796,8 +796,8 @@ const Map<String, _OperatorConfig> _operatorConfigs = {
   'OR': _OperatorConfig(symbol: '+', color: _GatekeepingGamePageState._operatorOr),
   'AND': _OperatorConfig(symbol: '•', color: _GatekeepingGamePageState._operatorAnd),
   'NOT': _OperatorConfig(symbol: '¬', color: _GatekeepingGamePageState._operatorNot),
-  'NOR': _OperatorConfig(symbol: '⊽', color: _GatekeepingGamePageState._operatorNor),
-  'NAND': _OperatorConfig(symbol: '⊼', color: _GatekeepingGamePageState._operatorNand),
+  'NOR': _OperatorConfig(symbol: '↓', color: _GatekeepingGamePageState._operatorNor),
+  'NAND': _OperatorConfig(symbol: '↑', color: _GatekeepingGamePageState._operatorNand),
   'XOR': _OperatorConfig(symbol: '⊕', color: _GatekeepingGamePageState._operatorXor),
   'XNOR': _OperatorConfig(symbol: '⊙', color: _GatekeepingGamePageState._operatorXnor),
 };
