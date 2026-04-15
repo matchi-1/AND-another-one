@@ -118,13 +118,19 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   }
 
   void _advanceToNextQuestion() {
-    if (_questions.isEmpty) return;
+  if (_questions.isEmpty) return;
 
-    setState(() {
-      _currentQuestionIndex++;
-      _loadCurrentQuestion();
-    });
-  }
+  setState(() {
+    _currentQuestionIndex++;
+
+    if (_currentQuestionIndex >= _questions.length) {
+      _questions.shuffle();
+      _currentQuestionIndex = 0;
+    }
+
+    _loadCurrentQuestion();
+  });
+}
 
   void _loadCurrentQuestion() {
     _normalizedExpression = _normalizeExpression(_currentQuestion.expression);
@@ -422,13 +428,13 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       return;
     }
 
-    if (advanceQuestion && _currentQuestionIndex >= _questions.length - 1) {
-      _endDialogTitle = 'ROUND COMPLETE';
-      await _submitFinalScoreOnce();
-      if (!mounted) return;
-      _showEndDialog();
-      return;
-    }
+    // if (advanceQuestion && _currentQuestionIndex >= _questions.length - 1) {
+    //  _endDialogTitle = 'ROUND COMPLETE';
+    //  await _submitFinalScoreOnce();
+    //  if (!mounted) return;
+    //  _showEndDialog();
+    //  return;
+    // }
 
     if (advanceQuestion) {
       _advanceToNextQuestion();

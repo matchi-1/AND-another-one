@@ -137,12 +137,12 @@ mixin GameplayHelpers<T extends StatefulWidget> on State<T> {
 
     if (!mounted || gameFinished) return;
 
-    if (advanceQuestion && currentQuestionIndex >= questionCount - 1) {
-      await submitFinalScoreOnce();
-      if (!mounted) return;
-      showEndDialog();
-      return;
-    }
+    // if (advanceQuestion && currentQuestionIndex >= questionCount - 1) {
+    //   await submitFinalScoreOnce();
+    //   if (!mounted) return;
+    //   showEndDialog();
+    //   return;
+    // }
 
     if (timeLeft <= 0) {
       await _performTimeout();

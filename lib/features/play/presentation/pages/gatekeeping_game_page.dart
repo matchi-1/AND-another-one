@@ -264,7 +264,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
       const gainedTime = 2;
 
       playFlash(isCorrect: true);
-      showScoreDelta('+$gainedTime', Colors.greenAccent);
+      showScoreDelta('+$gainedScore', Colors.greenAccent);
 
       await finishRound(
         scoreDelta: gainedScore,
@@ -276,7 +276,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
       const lostTime = -1;
 
       playWrongDamageFlash();
-      showScoreDelta('$lostTime', Colors.redAccent);
+      showScoreDelta('-$lostScore', Colors.redAccent);
 
       await finishRound(
         scoreDelta: -lostScore,
