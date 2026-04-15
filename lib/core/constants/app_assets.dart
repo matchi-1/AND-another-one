@@ -8,6 +8,7 @@ class AppAssets {
   static const diagramContainerPink = 'assets/images/shared/diagram-container-pink.png';
   static const diagramContainerGreen = 'assets/images/shared/diagram-container-green.png';
   static const diagramContainerGreen1 = 'assets/images/shared/diagram-container-green1.png';
+  static const diagramContainerGreen2 = 'assets/images/shared/diagram-container-green2.png';
   static const soundOn = 'assets/images/shared/sound-on.png';
   static const soundOff = 'assets/images/shared/sound-off.png';
   static const backBtn = 'assets/images/shared/back-btn.png';

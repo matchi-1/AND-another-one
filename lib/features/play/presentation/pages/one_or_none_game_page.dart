@@ -729,7 +729,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
         ),
         SizedBox(height: width * 0.008),
         Text(
-          'LIVES $_livesLeft/$_startingLives',
+          '  LIVES $_livesLeft/$_startingLives',
           style: TextStyle(
             fontSize: width * 0.028,
             fontWeight: FontWeight.w900,
@@ -948,7 +948,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                               children: [
                                 Positioned.fill(
                                   child: Image.asset(
-                                    AppAssets.diagramContainerGreen1,
+                                    AppAssets.diagramContainerGreen2,
                                     fit: BoxFit.fill,
                                   ),
                                 ),
