@@ -644,23 +644,56 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     );
   }
 
-  Widget _buildLivesText(double width) {
-    return Center(
-      child: Text(
-        '$_livesLeft',
-        style: TextStyle(
-          fontSize: width * 0.10,
-          fontWeight: FontWeight.w900,
-          color: _brownText,
-          shadows: const [
-            Shadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 2,
-            ),
-          ],
+  Widget _buildLivesDisplay(double width) {
+    const activeHeartColor = Color(0xFFFF4D6D);
+    final inactiveHeartColor = Colors.white.withOpacity(0.28);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(_startingLives, (index) {
+            final isActive = index < _livesLeft;
+
+            return Padding(
+              padding: EdgeInsets.only(right: width * 0.01),
+              child: Icon(
+                isActive
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                size: width * 0.07,
+                color: isActive ? activeHeartColor : inactiveHeartColor,
+                shadows: const [
+                  Shadow(
+                    color: Colors.black38,
+                    offset: Offset(0, 2),
+                    blurRadius: 3,
+                  ),
+                ],
+              ),
+            );
+          }),
         ),
-      ),
+        SizedBox(height: width * 0.008),
+        Text(
+          'LIVES $_livesLeft/$_startingLives',
+          style: TextStyle(
+            fontSize: width * 0.028,
+            fontWeight: FontWeight.w900,
+            color: _brownText,
+            letterSpacing: 0.8,
+            shadows: const [
+              Shadow(
+                color: Colors.black26,
+                offset: Offset(0, 1.5),
+                blurRadius: 2,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -870,33 +903,39 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                                 ),
                                 Positioned(
                                   left: w * 0.055,
-                                  top: h * 0.045,
-                                  width: w * 0.18,
-                                  height: h * 0.10,
-                                  child: _buildLivesText(w),
+                                  top: h * 0.04,
+                                  width: w * 0.28,
+                                  height: h * 0.13,
+                                  child: _buildLivesDisplay(w),
                                 ),
                                 if (_livesDeltaText != null)
                                   Positioned(
                                     left: w * 0.11,
-                                    top: h * 0.13 + _livesDeltaYOffset,
+                                    top: h * 0.12 + _livesDeltaYOffset,
                                     child: AnimatedOpacity(
-                                      duration:
-                                          const Duration(milliseconds: 250),
+                                      duration: const Duration(milliseconds: 250),
                                       opacity: _livesDeltaOpacity,
-                                      child: Text(
-                                        _livesDeltaText!,
-                                        style: TextStyle(
-                                          fontSize: w * 0.08,
-                                          fontWeight: FontWeight.w900,
-                                          color: const Color(0xFFFFD0D0),
-                                          shadows: const [
-                                            Shadow(
-                                              color: Colors.black38,
-                                              offset: Offset(0, 2),
-                                              blurRadius: 3,
-                                            ),
-                                          ],
-                                        ),
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.favorite_rounded,
+                                            size: w * 0.078,
+                                            color: const Color(0xFFB71C1C),
+                                          ),
+                                          Icon(
+                                            Icons.favorite_border_rounded,
+                                            size: w * 0.085,
+                                            color: const Color(0xFFFFCDD2),
+                                            shadows: const [
+                                              Shadow(
+                                                color: Colors.black38,
+                                                offset: Offset(0, 2),
+                                                blurRadius: 3,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
