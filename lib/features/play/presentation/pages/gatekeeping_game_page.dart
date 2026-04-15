@@ -32,9 +32,9 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
   static const Color _operatorOr = Color(0xFFFD8900);
   static const Color _operatorAnd = Color(0xFF006CFF);
   static const Color _operatorNot = Color(0xFFFA2626);
-  static const Color _operatorNor = Color(0xFFE43AE2);
+  static const Color _operatorXor = Color(0xFFE43AE2);
   static const Color _operatorNand = Color(0xFF9822F2);
-  static const Color _operatorXor = Color(0xFF33B300);
+  static const Color _operatorNor = Color(0xFF33B300);
   static const Color _operatorXnor = Color(0xFF00CEB4);
 
   static const Color _operatorBlue = Color(0xFF00D0FF);
