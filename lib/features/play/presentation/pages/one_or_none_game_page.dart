@@ -64,9 +64,8 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   double _scoreDeltaYOffset = 0.0;
   double _scoreDeltaXOffset = 0.0;
 
-  String? _livesDeltaText;
-  double _livesDeltaOpacity = 0.0;
-  double _livesDeltaYOffset = 0.0;
+  int? _losingHeartIndex;
+  bool _lostHeartAnimating = false;
 
   String? _centerPopupText;
   Color _centerPopupColor = Colors.white;
@@ -378,6 +377,97 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     );
   }
 
+  Future<void> _animateLostHeart() async {
+    if (!mounted || _livesLeft <= 0) return;
+
+    setState(() {
+      _losingHeartIndex = _livesLeft - 1;
+      _lostHeartAnimating = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 320));
+    if (!mounted) return;
+
+    setState(() {
+      _losingHeartIndex = null;
+      _lostHeartAnimating = false;
+    });
+  }
+
+  Widget _buildAnimatedHeart({
+    required bool isActive,
+    required bool isLosing,
+    required double size,
+  }) {
+    const activeFill = Color(0xFFFF4D6D);
+    const activeOutline = Color(0xFFFFB3C1);
+
+    const lostFill = Color(0xFF9E9E9E);
+    const lostOutline = Color(0xFFBDBDBD);
+
+    final inactiveOutline = Colors.white.withOpacity(0.28);
+
+    if (!isActive && !isLosing) {
+      return Icon(
+        Icons.favorite_border_rounded,
+        size: size,
+        color: inactiveOutline,
+        shadows: const [
+          Shadow(
+            color: Colors.black38,
+            offset: Offset(0, 2),
+            blurRadius: 3,
+          ),
+        ],
+      );
+    }
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(
+        begin: 0,
+        end: (isLosing && _lostHeartAnimating) ? 1 : 0,
+      ),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+      builder: (context, t, child) {
+        final fillColor = Color.lerp(activeFill, lostFill, t)!;
+        final outlineColor = Color.lerp(activeOutline, lostOutline, t)!;
+
+        final dropOffset = 14.0 * Curves.easeIn.transform(t);
+        final opacity = 1.0 - (0.85 * t);
+
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(0, dropOffset),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.favorite_rounded,
+                  size: size * 0.92,
+                  color: fillColor,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black38,
+                      offset: Offset(0, 2),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+                Icon(
+                  Icons.favorite_border_rounded,
+                  size: size,
+                  color: outlineColor,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _checkCurrentAnswer(int selectedValue) async {
     if (_roundLocked || _gameFinished) return;
 
@@ -397,8 +487,12 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     } else {
       const lostLives = 1;
 
+      setState(() {
+        _roundLocked = true;
+      });
+
       _playWrongDamageFlash();
-      _showLivesDelta('-$lostLives', Colors.redAccent);
+      await _animateLostHeart();
 
       await _finishRound(
         scoreDelta: 0,
@@ -532,38 +626,6 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     });
   }
 
-  Future<void> _showLivesDelta(String text, Color color) async {
-    if (!mounted) return;
-
-    setState(() {
-      _livesDeltaText = text;
-      _livesDeltaOpacity = 1.0;
-      _livesDeltaYOffset = 0.0;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 60));
-    if (!mounted) return;
-
-    setState(() {
-      _livesDeltaYOffset = -15.0;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-
-    setState(() {
-      _livesDeltaOpacity = 0.0;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 220));
-    if (!mounted) return;
-
-    setState(() {
-      _livesDeltaText = null;
-      _livesDeltaYOffset = 0.0;
-    });
-  }
-
   Future<void> _showCenterPopup(String text, Color color) async {
     if (!mounted) return;
 
@@ -645,9 +707,6 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   }
 
   Widget _buildLivesDisplay(double width) {
-    const activeHeartColor = Color(0xFFFF4D6D);
-    final inactiveHeartColor = Colors.white.withOpacity(0.28);
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -656,22 +715,14 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
           mainAxisSize: MainAxisSize.min,
           children: List.generate(_startingLives, (index) {
             final isActive = index < _livesLeft;
+            final isLosing = index == _losingHeartIndex;
 
             return Padding(
               padding: EdgeInsets.only(right: width * 0.01),
-              child: Icon(
-                isActive
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
+              child: _buildAnimatedHeart(
+                isActive: isActive,
+                isLosing: isLosing,
                 size: width * 0.07,
-                color: isActive ? activeHeartColor : inactiveHeartColor,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black38,
-                    offset: Offset(0, 2),
-                    blurRadius: 3,
-                  ),
-                ],
               ),
             );
           }),
@@ -908,37 +959,6 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                                   height: h * 0.13,
                                   child: _buildLivesDisplay(w),
                                 ),
-                                if (_livesDeltaText != null)
-                                  Positioned(
-                                    left: w * 0.11,
-                                    top: h * 0.12 + _livesDeltaYOffset,
-                                    child: AnimatedOpacity(
-                                      duration: const Duration(milliseconds: 250),
-                                      opacity: _livesDeltaOpacity,
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.favorite_rounded,
-                                            size: w * 0.078,
-                                            color: const Color(0xFFB71C1C),
-                                          ),
-                                          Icon(
-                                            Icons.favorite_border_rounded,
-                                            size: w * 0.085,
-                                            color: const Color(0xFFFFCDD2),
-                                            shadows: const [
-                                              Shadow(
-                                                color: Colors.black38,
-                                                offset: Offset(0, 2),
-                                                blurRadius: 3,
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
                                 Positioned(
                                   right: w * 0.07,
                                   top: h * 0.055,
