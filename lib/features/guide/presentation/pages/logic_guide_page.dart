@@ -73,12 +73,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                   ),
                   Positioned.fill(
                     child: Padding(
-                      padding: EdgeInsets.only(
-                        top: size.width * 0.06,
-                        bottom: size.width * 0.18,
-                        left: size.width * 0.12,
-                        right: size.width * 0.12,
-                      ),
+                      padding: _getDiagramPadding(size.width, currentLesson.id),
                       child: Image.asset(
                         _getImagePath(currentLesson.id),
                         fit: BoxFit.contain,
@@ -86,17 +81,18 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     ),
                   ),
                   Positioned(
-                    bottom: size.width * 0.08,
+                    bottom: _getTitleBottomOffset(size.width, currentLesson.id),
                     left: 20,
                     right: 20,
                     child: Center(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          currentLesson.title,
+                          _getDisplayTitle(currentLesson.id, currentLesson.title),
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: currentLesson.title.contains('Distributive') ? 24 : 28,
+                            fontSize: _getTitleFontSize(currentLesson.id),
+                            height: 1.05,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             fontFamily: 'Nunito',
@@ -124,27 +120,32 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       // Formula box 1
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.pinkButton,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(0xFFFF9F00),
-                            width: 3,
-                          ),
-                        ),
-                        child: Text(
-                          _getFormulaLine(currentLesson.formulas, 0),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: 'Nunito',
+                      Align(
+                        child: FractionallySizedBox(
+                          widthFactor: _getFormulaBoxWidthFactor(currentLesson.id),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.pinkButton,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFFF9F00),
+                                width: 3,
+                              ),
+                            ),
+                            child: Text(
+                              _getFormulaLine(currentLesson.formulas, 0),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontFamily: 'Nunito',
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -154,27 +155,32 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                       // Formula box 2 (if exists)
                       if (_getFormulaLine(currentLesson.formulas, 1)
                           .isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.pinkButton,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: const Color(0xFFFF9F00),
-                              width: 3,
-                            ),
-                          ),
-                          child: Text(
-                            _getFormulaLine(currentLesson.formulas, 1),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Nunito',
-                              color: Colors.white,
+                        Align(
+                          child: FractionallySizedBox(
+                            widthFactor: _getFormulaBoxWidthFactor(currentLesson.id),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.pinkButton,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color(0xFFFF9F00),
+                                  width: 3,
+                                ),
+                              ),
+                              child: Text(
+                                _getFormulaLine(currentLesson.formulas, 1),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Nunito',
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -183,6 +189,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
                       // Explanation box
                       Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 12,
@@ -285,9 +292,100 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   String _getFormulaLine(String formulas, int lineIndex) {
-    final lines = formulas.split('\n');
+    final lines = formulas
+        .split('\n')
+        .map((line) => line.trim())
+        .where((line) => line.isNotEmpty)
+        .toList();
     if (lineIndex >= lines.length) return '';
-    return lines[lineIndex].trim();
+    return lines[lineIndex];
+  }
+
+  EdgeInsets _getDiagramPadding(double width, String lessonId) {
+    // Keep circuit images clear of the frame title and footer badge.
+    final basePadding = EdgeInsets.only(
+      top: width * 0.10,
+      bottom: width * 0.25,
+      left: width * 0.14,
+      right: width * 0.14,
+    );
+
+    if (lessonId == 'double_negation') {
+      // Nudge content slightly lower for better top-frame clearance.
+      return EdgeInsets.only(
+        top: width * 0.13,
+        bottom: width * 0.26,
+        left: width * 0.14,
+        right: width * 0.14,
+      );
+    }
+
+    if (lessonId == 'idempotent_law') {
+      // Idempotent law artwork has taller vertical content and needs tighter bounds.
+      return EdgeInsets.only(
+        top: width * 0.17,
+        bottom: width * 0.29,
+        left: width * 0.16,
+        right: width * 0.16,
+      );
+    }
+
+    if (lessonId == 'distributive_associative') {
+      // Distributive/associative art is also vertically dense, so constrain further.
+      return EdgeInsets.only(
+        top: width * 0.15,
+        bottom: width * 0.30,
+        left: width * 0.16,
+        right: width * 0.16,
+      );
+    }
+
+    if (lessonId == 'demorgans_law') {
+      // De Morgan's art needs more top clearance and a mild lower lift.
+      return EdgeInsets.only(
+        top: width * 0.16,
+        bottom: width * 0.30,
+        left: width * 0.15,
+        right: width * 0.15,
+      );
+    }
+
+    return basePadding;
+  }
+
+  String _getDisplayTitle(String lessonId, String fallbackTitle) {
+    if (lessonId == 'distributive_associative') {
+      return 'Distributive / Associative\nSimplification';
+    }
+    return fallbackTitle;
+  }
+
+  double _getTitleFontSize(String lessonId) {
+    if (lessonId == 'distributive_associative') {
+      return 22;
+    }
+    return 28;
+  }
+
+  double _getTitleBottomOffset(double width, String lessonId) {
+    if (lessonId == 'distributive_associative') {
+      return width * 0.07;
+    }
+
+    if (lessonId == 'double_negation' ||
+        lessonId == 'idempotent_law' ||
+        lessonId == 'absorption_law' ||
+        lessonId == 'demorgans_law') {
+      return width * 0.095;
+    }
+    return width * 0.08;
+  }
+
+  double _getFormulaBoxWidthFactor(String lessonId) {
+    if (lessonId == 'distributive_associative') {
+      return 0.95;
+    }
+    return 0.9;
   }
 
   String _getImagePath(String id) {
