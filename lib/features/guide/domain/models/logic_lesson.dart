@@ -44,5 +44,11 @@ class LogicLessonData {
       formulas: '~(A • B) = ~A + ~B\n\n~(A + B) = ~A • ~B',
       explanation: 'If you remove or add the not gate,\nthe AND becomes OR, vice versa.',
     ),
+    LogicLesson(
+      id: 'symbol_names',
+      title: 'SYMBOL NAMES',
+      formulas: '',
+      explanation: '',
+    ),
   ];
 }
