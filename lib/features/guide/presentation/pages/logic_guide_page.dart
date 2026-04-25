@@ -376,7 +376,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         lessonId == 'idempotent_law' ||
         lessonId == 'absorption_law' ||
         lessonId == 'demorgans_law') {
-      return width * 0.095;
+      return width * 0.11;
     }
     return width * 0.08;
   }
