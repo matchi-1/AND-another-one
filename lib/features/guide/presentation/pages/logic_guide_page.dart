@@ -22,19 +22,18 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   void _nextLesson() {
-    if (_currentLessonIndex < LogicLessonData.lessons.length - 1) {
-      setState(() {
-        _currentLessonIndex++;
-      });
-    }
+    setState(() {
+      _currentLessonIndex =
+          (_currentLessonIndex + 1) % LogicLessonData.lessons.length;
+    });
   }
 
   void _previousLesson() {
-    if (_currentLessonIndex > 0) {
-      setState(() {
-        _currentLessonIndex--;
-      });
-    }
+    setState(() {
+      _currentLessonIndex =
+          (_currentLessonIndex - 1 + LogicLessonData.lessons.length) %
+          LogicLessonData.lessons.length;
+    });
   }
 
   @override
@@ -228,13 +227,11 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                   children: [
                     // Previous button
                     GestureDetector(
-                      onTap: _currentLessonIndex > 0 ? _previousLesson : null,
+                      onTap: _previousLesson,
                       child: Image.asset(
                         AppAssets.backBtn,
                         width: 40,
-                        opacity: AlwaysStoppedAnimation(
-                          _currentLessonIndex > 0 ? 1.0 : 0.5,
-                        ),
+                        opacity: const AlwaysStoppedAnimation(1.0),
                       ),
                     ),
 
@@ -261,21 +258,13 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
                     // Next button
                     GestureDetector(
-                      onTap: _currentLessonIndex <
-                              LogicLessonData.lessons.length - 1
-                          ? _nextLesson
-                          : null,
+                      onTap: _nextLesson,
                       child: Transform.rotate(
                         angle: 3.14159, // 180 degrees in radians
                         child: Image.asset(
                           AppAssets.backBtn,
                           width: 40,
-                          opacity: AlwaysStoppedAnimation(
-                            _currentLessonIndex <
-                                    LogicLessonData.lessons.length - 1
-                                ? 1.0
-                                : 0.5,
-                          ),
+                          opacity: const AlwaysStoppedAnimation(1.0),
                         ),
                       ),
                     ),
