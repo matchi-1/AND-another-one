@@ -16,4 +16,8 @@ class AppAssets {
   static const star2 = 'assets/images/shared/star2.png';
   static const star3 = 'assets/images/shared/star3.png';
   static const star4 = 'assets/images/shared/star4.png';
+  static const bgmHome = 'assets/audio/bgm_home.mp3';
+  static const bgmBasic = 'assets/audio/bgm_basic.mp3';
+  static const bgmLogic = 'assets/audio/bgm_logic.mp3';
+  static const bgmManic = 'assets/audio/bgm_manic.mp3';
 }

@@ -7,6 +7,7 @@ import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
 import '../../../auth/data/auth_service.dart';
+import '../../../../core/audio/bgm_controller.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +19,14 @@ class _HomePageState extends State<HomePage> {
   final AuthService _authService = AuthService();
 
   bool _hasShownRouteMessage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      BgmController.instance.playScene(BgmScene.home);
+    });
+  }
 
   @override
   void didChangeDependencies() {
