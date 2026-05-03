@@ -11,6 +11,8 @@ import '../../../../shared/widgets/music_button.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
 import '../../util/gameplay_helpers.dart';
+import '../../../tutorial/gameplay_tutorial_overlay.dart';
+import '../../../tutorial/gameplay_tutorial_service.dart';
 
 class GatekeepingGamePage extends StatefulWidget {
   const GatekeepingGamePage({
@@ -20,12 +22,94 @@ class GatekeepingGamePage extends StatefulWidget {
 
   final Difficulty difficulty;
 
+  
+
   @override
   State<GatekeepingGamePage> createState() => _GatekeepingGamePageState();
 }
 
 class _GatekeepingGamePageState extends State<GatekeepingGamePage>
     with GameplayHelpers {
+      @override
+void initState() {
+  super.initState();
+  resetWholeGame();
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _maybeShowTutorial();
+  });
+}
+@override
+void dispose() {
+  _tutorialEntry?.remove();
+  super.dispose();
+}
+
+  final GameplayTutorialService _tutorialService = GameplayTutorialService();
+
+  final GlobalKey _diagramKey = GlobalKey();
+  final GlobalKey _expressionKey = GlobalKey();
+  final GlobalKey _buttonsKey = GlobalKey();
+  final GlobalKey _timerKey = GlobalKey();
+
+  OverlayEntry? _tutorialEntry;
+  bool _checkedTutorial = false;
+  Future<void> _maybeShowTutorial({bool force = false}) async {
+  if (!mounted) return;
+
+  if (!force && _checkedTutorial) return;
+  _checkedTutorial = true;
+
+  final alreadySeen = force
+      ? false
+      : await _tutorialService.hasSeen('hasSeenGatekeepingTutorial');
+
+  if (alreadySeen && !force) return;
+  if (!mounted) return;
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    _showGatekeepingTutorial();
+  });
+}
+
+void _showGatekeepingTutorial() {
+  _tutorialEntry?.remove();
+
+  final steps = [
+    GameplayTutorialStep(
+      targetKey: _diagramKey,
+      text: '<diagram highlight>',
+    ),
+    GameplayTutorialStep(
+      targetKey: _expressionKey,
+      text: '<expression highlight>',
+    ),
+    GameplayTutorialStep(
+      targetKey: _buttonsKey,
+      text: '<button highlight>',
+    ),
+    GameplayTutorialStep(
+      targetKey: _timerKey,
+      text: '<timer highlight>',
+    ),
+  ];
+
+  _tutorialEntry = OverlayEntry(
+    builder: (_) => GameplayTutorialOverlay(
+      steps: steps,
+      onFinish: () async {
+        _tutorialEntry?.remove();
+        _tutorialEntry = null;
+        await _tutorialService.markSeen('hasSeenGatekeepingTutorial');
+      },
+    ),
+  );
+
+  Overlay.of(context, rootOverlay: true).insert(_tutorialEntry!);
+}
+
+
   static const int _startingRoundTimeValue = 60;
   static const int _startingPassesValue = 5;
 
@@ -84,11 +168,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
   @override
   int get questionCount => _questions.length;
 
-  @override
-  void initState() {
-    super.initState();
-    resetWholeGame();
-  }
+
 
   @override
   void resetWholeGame() {
@@ -571,6 +651,14 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              visualDensity: VisualDensity.compact,
+                              iconSize: 24,
+                              icon: const Icon(Icons.help_outline, color: Colors.white),
+                              onPressed: () => _showGatekeepingTutorial(),
+                            ),
                             const MusicButton(size: 26),
                           ],
                         ),
@@ -595,7 +683,10 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
                                   top: h * 0.045,
                                   width: w * 0.18,
                                   height: h * 0.10,
-                                  child: _buildTimerText(w),
+                                  child: Container(
+                                    key: _timerKey,
+                                    child: _buildTimerText(w),
+                                  ),
                                 ),
                                 Positioned(
                                   right: w * 0.07,
@@ -653,14 +744,20 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
                                   right: w * 0.12,
                                   top: h * 0.18,
                                   height: h * 0.55,
-                                  child: _buildDiagramPlaceholder(),
+                                  child: Container(
+                                    key: _diagramKey,
+                                    child: _buildDiagramPlaceholder(),
+                                  ),
                                 ),
                                 Positioned(
                                   left: w * 0.12,
                                   right: w * 0.12,
                                   bottom: h * 0.08,
                                   height: h * 0.08,
-                                  child: _buildExpressionBar(),
+                                  child: Container(
+                                    key: _expressionKey,
+                                    child: _buildExpressionBar(),
+                                  ),
                                 ),
                               ],
                             );
@@ -708,10 +805,13 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              _buildChoiceGrid(
-                                buttonWidth: operatorButtonWidth,
-                                buttonHeight: operatorButtonHeight,
-                                gap: gap,
+                              Container(
+                                key: _buttonsKey,
+                                child: _buildChoiceGrid(
+                                  buttonWidth: operatorButtonWidth,
+                                  buttonHeight: operatorButtonHeight,
+                                  gap: gap,
+                                ),
                               ),
                             ],
                           ),
