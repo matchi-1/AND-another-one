@@ -35,9 +35,9 @@ void initState() {
   super.initState();
   resetWholeGame();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _maybeShowTutorial();
-  });
+  //WidgetsBinding.instance.addPostFrameCallback((_) {
+   // _maybeShowTutorial();
+  //});
 }
 @override
 void dispose() {

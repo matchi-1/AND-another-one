@@ -7,6 +7,8 @@ import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../play/data/models/gatekeeping_question.dart';
 import '../../../play/presentation/pages/gatekeeping_game_page.dart';
+import '../../../tutorial/app_tutorial_controller.dart';
+import '../../../tutorial/tutorial_targets.dart';
 
 class GatekeepingSelectPage extends StatelessWidget {
   const GatekeepingSelectPage({super.key});
@@ -24,118 +26,126 @@ class GatekeepingSelectPage extends StatelessWidget {
     return Scaffold(
       body: GameMenuBackground(
         backgroundColor: AppColors.orangeBg,
-        child: SingleChildScrollView(
+        child: TutorialPageReady(
+          routeName: AppRoutes.gatekeepingSelect,
           child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                children: [
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  children: [
 
-                  const SizedBox(height: 100),
+                    const SizedBox(height: 100),
 
-                  Image.asset(
-                    AppAssets.homeLogo,
-                    width: size.width * 0.32,
-                  ),
+                    Image.asset(
+                      AppAssets.homeLogo,
+                      width: size.width * 0.32,
+                    ),
 
-                  const SizedBox(height: 50),
+                    const SizedBox(height: 50),
 
-                  Image.asset(
-                    AppAssets.gatekeepingText,
-                    width: size.width * 0.78,
-                  ),
+                    Image.asset(
+                      AppAssets.gatekeepingText,
+                      width: size.width * 0.78,
+                    ),
 
-                  const SizedBox(height: 18),
+                    const SizedBox(height: 18),
 
-                  BeveledMenuButton(
-                    label: 'HOW TO PLAY?',
-                    color: AppColors.purpleButton,
-                    width: 200,
-                    height: 40,
-                    textColor: btnTextColor,
-                    fontSize: 18,
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.mechanicsGatekeeping);
-                    },
-                  ),
-                  const SizedBox(height: 32),
+                    BeveledMenuButton(
+                      key: TutorialTargets.gateHowToPlay,
+                      label: 'HOW TO PLAY?',
+                      color: AppColors.purpleButton,
+                      width: 200,
+                      height: 40,
+                      textColor: btnTextColor,
+                      fontSize: 18,
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.mechanicsGatekeeping);
+                      },
+                    ),
+                    const SizedBox(height: 32),
 
-                  BeveledMenuButton(
-                    label: 'BASIC',
-                    color: AppColors.yellowButton,
-                    width: btnWidth,
-                    height: btnHeight,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const GatekeepingGamePage(
-                            difficulty: Difficulty.basic,
+                    BeveledMenuButton(
+                      key: TutorialTargets.gateBasic,
+                      label: 'BASIC',
+                      color: AppColors.yellowButton,
+                      width: btnWidth,
+                      height: btnHeight,
+                      textColor: btnTextColor,
+                      fontSize: btnFontSize,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const GatekeepingGamePage(
+                              difficulty: Difficulty.basic,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: btnGap),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: btnGap),
 
-                  BeveledMenuButton(
-                    label: 'LOGIC',
-                    color: AppColors.darkOrangeButton,
-                    width: btnWidth,
-                    height: btnHeight,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const GatekeepingGamePage(
-                            difficulty: Difficulty.logic,
+                    BeveledMenuButton(
+                      key: TutorialTargets.gateLogic,
+                      label: 'LOGIC',
+                      color: AppColors.darkOrangeButton,
+                      width: btnWidth,
+                      height: btnHeight,
+                      textColor: btnTextColor,
+                      fontSize: btnFontSize,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const GatekeepingGamePage(
+                              difficulty: Difficulty.logic,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: btnGap),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: btnGap),
 
-                  BeveledMenuButton(
-                    label: 'MANIC',
-                    color: AppColors.redButton,
-                    width: btnWidth,
-                    height: btnHeight,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const GatekeepingGamePage(
-                            difficulty: Difficulty.manic,
+                    BeveledMenuButton(
+                      key: TutorialTargets.gateManic,
+                      label: 'MANIC',
+                      color: AppColors.redButton,
+                      width: btnWidth,
+                      height: btnHeight,
+                      textColor: btnTextColor,
+                      fontSize: btnFontSize,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const GatekeepingGamePage(
+                              difficulty: Difficulty.manic,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: btnGap + 30),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: btnGap + 30),
 
-                  BeveledMenuButton(
-                    label: 'BACK',
-                    color: AppColors.greyButton,
-                    width: btnWidth - 150,
-                    height: btnHeight - 20,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize - 6,
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.selectMode);
-                    },
-                  ),
-                ],
+                    BeveledMenuButton(
+                      key: TutorialTargets.gateBack,
+                      label: 'BACK',
+                      color: AppColors.greyButton,
+                      width: btnWidth - 150,
+                      height: btnHeight - 20,
+                      textColor: btnTextColor,
+                      fontSize: btnFontSize - 6,
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.selectMode);
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+        )      
       ),
     );
   }

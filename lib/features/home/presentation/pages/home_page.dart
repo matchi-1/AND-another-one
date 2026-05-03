@@ -8,6 +8,8 @@ import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../../core/audio/bgm_controller.dart';
+import '../../../tutorial/app_tutorial_controller.dart';
+import '../../../tutorial/tutorial_targets.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,13 +22,19 @@ class _HomePageState extends State<HomePage> {
 
   bool _hasShownRouteMessage = false;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      BgmController.instance.playScene(BgmScene.home);
-    });
-  }
+@override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    BgmController.instance.playScene(BgmScene.home);
+
+    //if (!mounted) return;
+    //await AppTutorialController.instance.maybeStart(context);
+
+    if (!mounted) return;
+    AppTutorialController.instance.onPageReady(context, AppRoutes.home);
+  });
+}
 
   @override
   void didChangeDependencies() {
@@ -78,9 +86,9 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 30),
 
                   BeveledMenuButton(
+                    key: TutorialTargets.homePlay,
                     label: 'PLAY',
                     color: AppColors.yellowButton,
-                    //shadowColor: const Color(0xFFB57A00),
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,
@@ -92,9 +100,9 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
+                    key: TutorialTargets.homeLogicGuide,
                     label: 'LOGIC GUIDE',
                     color: AppColors.pinkButton,
-                    //shadowColor: const Color(0xFFB52A85),
                     width: btnWidth,
                     height: btnHeight,
                     textColor: btnTextColor,
@@ -106,6 +114,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
+                    key: TutorialTargets.homeLeaderboards,
                     label: 'LEADERBOARDS',
                     color: AppColors.greenButton,
                     width: btnWidth,
@@ -116,39 +125,64 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pushNamed(context, AppRoutes.leaderboards);
                     },
                   ),
-                  const SizedBox(height: btnGap + 30),
 
-                  BeveledMenuButton(
-                    label: 'EXIT',
-                    color: AppColors.greyButton,
-                    width: btnWidth - 150,
-                    height: btnHeight - 20,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize - 6,
-                    onTap: () {
-                      SystemNavigator.pop();
+                  const SizedBox(height: 8),
+
+                  TextButton(
+                    key: TutorialTargets.homeRestart,
+                    onPressed: () async {
+                      await AppTutorialController.instance.start(context, force: true);
                     },
+                    child: const Text(
+                      'Restart Tutorial',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Colors.white,
+                      ),
+                    ),
                   ),
 
-                  const SizedBox(height: btnGap),
+                  const SizedBox(height: btnGap + 16),
 
-                  BeveledMenuButton(
-                    label: 'LOGOUT',
-                    color: AppColors.redButton,
-                    width: btnWidth - 150,
-                    height: btnHeight - 20,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize - 6,
-                    onTap: () async {
-                      await _authService.logout();
-                      if (!mounted) return;
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      BeveledMenuButton(
+                        key: TutorialTargets.homeExit,
+                        label: 'EXIT',
+                        color: AppColors.greyButton,
+                        width: 132,
+                        height: 46,
+                        textColor: btnTextColor,
+                        fontSize: 18,
+                        onTap: () {
+                          SystemNavigator.pop();
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      BeveledMenuButton(
+                        key: TutorialTargets.homeLogout,
+                        label: 'LOGOUT',
+                        color: AppColors.redButton,
+                        width: 132,
+                        height: 46,
+                        textColor: btnTextColor,
+                        fontSize: 18,
+                        onTap: () async {
+                          await _authService.logout();
+                          if (!mounted) return;
 
-                      Navigator.of(this.context).pushNamedAndRemoveUntil(
-                        AppRoutes.login,
+                          Navigator.of(this.context).pushNamedAndRemoveUntil(
+                            AppRoutes.login,
                             (route) => false,
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
+                    ],
+),
 
                   const SizedBox(height: btnGap + 20),
 

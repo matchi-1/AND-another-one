@@ -5,6 +5,8 @@ import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
+import '../../../tutorial/app_tutorial_controller.dart';
+import '../../../tutorial/tutorial_targets.dart';
 
 class ModeSelectPage extends StatelessWidget {
   const ModeSelectPage({super.key});
@@ -22,7 +24,9 @@ class ModeSelectPage extends StatelessWidget {
     return Scaffold(
       body: GameMenuBackground(
         backgroundColor: AppColors.redBg,
-        child: SingleChildScrollView(
+        child: TutorialPageReady(
+          routeName: AppRoutes.selectMode,
+          child: SingleChildScrollView(
           child: SingleChildScrollView(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
@@ -46,6 +50,7 @@ class ModeSelectPage extends StatelessWidget {
                   const SizedBox(height: 30),
 
                   BeveledMenuButton(
+                    key: TutorialTargets.modeGatekeeping,
                     label: 'GATEKEEPING',
                     color: AppColors.orangeButton,
                     width: btnWidth,
@@ -59,6 +64,7 @@ class ModeSelectPage extends StatelessWidget {
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
+                    key: TutorialTargets.modeOneOrNone,
                     label: 'ONE OR NONE',
                     color: AppColors.purpleButton,
                     width: btnWidth,
@@ -72,6 +78,7 @@ class ModeSelectPage extends StatelessWidget {
                   const SizedBox(height: btnGap + 30),
 
                   BeveledMenuButton(
+                    key: TutorialTargets.modeBack,
                     label: 'BACK',
                     color: AppColors.greyButton,
                     width: btnWidth - 150,
@@ -87,6 +94,7 @@ class ModeSelectPage extends StatelessWidget {
             ),
           ),
         ),
+        )
       ),
     );
   }
