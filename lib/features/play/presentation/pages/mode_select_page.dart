@@ -1,4 +1,5 @@
 import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
+import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -94,6 +95,12 @@ class _ModeSelectPageState extends State<ModeSelectPage>
                     onTap: () {
                       Navigator.pop(context);
                     },
+                  ),
+
+                  const SizedBox(height: btnGap + 20),
+
+                  MusicButton(
+                    size: size.width * 0.12,
                   ),
                 ],
               ),
