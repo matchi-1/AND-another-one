@@ -127,7 +127,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
   Widget _buildBottomSectionWithNav(LogicLesson lesson) {
     final navYOffset = lesson.id == 'demorgans_law'
-      ? -28.0
+      ? -24.0
       : lesson.id == 'symbol_names'
         ? 4.0
         : 0.0;
@@ -185,16 +185,17 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           child: Row(
             children: [
               Expanded(
-                child: Image.asset(
+                child: _buildSymbolNamesImage(
                   'assets/images/logic_guide/symbol_names_table.png',
-                  fit: BoxFit.contain,
+                  Alignment.centerRight,
+                  36,
                 ),
               ),
-              const SizedBox(width: 12),
               Expanded(
-                child: Image.asset(
+                child: _buildSymbolNamesImage(
                   'assets/images/logic_guide/symbol_names_diagram.png',
-                  fit: BoxFit.contain,
+                  Alignment.centerLeft,
+                  -36,
                 ),
               ),
             ],
@@ -366,6 +367,24 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildSymbolNamesImage(
+    String assetPath,
+    Alignment alignment,
+    double xOffset,
+  ) {
+    return OverflowBox(
+      alignment: alignment,
+      maxWidth: double.infinity,
+      child: Transform.translate(
+        offset: Offset(xOffset, 0),
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 
