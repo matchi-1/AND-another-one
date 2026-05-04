@@ -11,6 +11,7 @@ mixin GameplayHelpers<T extends StatefulWidget> on State<T> {
   Timer? gameplayTimer;
 
   bool scoreSubmitted = false;
+  
 
   int currentQuestionIndex = 0;
   int timeLeft = 0;

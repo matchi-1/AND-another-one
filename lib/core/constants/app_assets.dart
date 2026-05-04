@@ -20,4 +20,16 @@ class AppAssets {
   static const bgmBasic = 'assets/audio/bgm_basic.mp3';
   static const bgmLogic = 'assets/audio/bgm_logic.mp3';
   static const bgmManic = 'assets/audio/bgm_manic.mp3';
+
+  static const thumbsUp = 'assets/images/sprites/whitehand-thumbsUp.png';
+  static const thumbsDown = 'assets/images/sprites/whitehand-redThumbsDown.png';
+
+  static const handOne = 'assets/images/sprites/whitehand-1.png';
+  static const handTwo = 'assets/images/sprites/whitehand-12.png'; 
+  static const handThree = 'assets/images/sprites/whitehand-ok.png';
+
+  static const andyBasic = 'assets/images/sprites/andy-basic.png';
+  static const andyLogic = 'assets/images/sprites/andy-logic.png';
+  static const andyManic = 'assets/images/sprites/andy-manic.png';
+
 }

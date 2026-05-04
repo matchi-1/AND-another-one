@@ -10,115 +10,528 @@ import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
-import '../../util/gameplay_helpers.dart';
+import '../../../leaderboards/util/leaderboard_service.dart';
 //import '../../../tutorial/gameplay_tutorial_overlay.dart';
 //import '../../../tutorial/gameplay_tutorial_service.dart';
 import 'dart:async';
 import '../../../../core/audio/bgm_controller.dart';
+import '../widgets/gameplay_overlays.dart';
 
 class GatekeepingGamePage extends StatefulWidget {
-  const GatekeepingGamePage({
-    super.key,
-    this.difficulty = Difficulty.basic,
-  });
+  const GatekeepingGamePage({super.key, this.difficulty = Difficulty.basic});
 
   final Difficulty difficulty;
-
-  
 
   @override
   State<GatekeepingGamePage> createState() => _GatekeepingGamePageState();
 }
 
-class _GatekeepingGamePageState extends State<GatekeepingGamePage>
-    with GameplayHelpers {
-      @override
-      void initState() {
-        super.initState();
-        resetWholeGame();
+class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
+  @override
+  void initState() {
+    super.initState();
+    resetWholeGame();
 
-        final scene = switch (widget.difficulty) {
-          Difficulty.basic => BgmScene.basic,
-          Difficulty.logic => BgmScene.logic,
-          Difficulty.manic => BgmScene.manic,
-        };
+    final scene = switch (widget.difficulty) {
+      Difficulty.basic => BgmScene.basic,
+      Difficulty.logic => BgmScene.logic,
+      Difficulty.manic => BgmScene.manic,
+    };
 
-        unawaited(BgmController.instance.playScene(scene));
+    unawaited(BgmController.instance.playScene(scene));
 
-  //WidgetsBinding.instance.addPostFrameCallback((_) {
-   // _maybeShowTutorial();
-  //});
+    //WidgetsBinding.instance.addPostFrameCallback((_) {
+    // _maybeShowTutorial();
+    //});
+  }
+
+  @override
+  void dispose() {
+    //_tutorialEntry?.remove();
+    gameplayTimer?.cancel();
+    super.dispose();
+  }
+
+  
+  final LeaderboardService leaderboardService = LeaderboardService();
+
+  double preGameSpriteOpacity = 0.0;
+  double preGameSpriteScale = 0.005;
+  Duration preGameSpriteScaleDuration = Duration.zero;
+  Duration preGameSpriteFadeDuration = Duration.zero;
+
+  bool showPreGameOverlay = false;
+  bool waitingForStartTap = false;
+  bool countdownRunning = false;
+  String? preGameSpriteAsset;
+
+  String? reactionAssetPath;
+  double reactionOpacity = 0.0;
+  double reactionScale = 0.005;
+  Duration reactionScaleDuration = Duration.zero;
+  Curve reactionScaleCurve = Curves.easeInOutCubic;
+
+  String get _modeLabel => 'GATEKEEPING';
+
+String get _difficultyLabel {
+  switch (widget.difficulty) {
+    case Difficulty.basic:
+      return 'BASIC';
+    case Difficulty.logic:
+      return 'LOGIC';
+    case Difficulty.manic:
+      return 'MANIC';
+  }
 }
-@override
-void dispose() {
-  //_tutorialEntry?.remove();
-  super.dispose();
+
+String get _difficultyAndyAsset {
+  switch (widget.difficulty) {
+    case Difficulty.basic:
+      return AppAssets.andyBasic;
+    case Difficulty.logic:
+      return AppAssets.andyLogic;
+    case Difficulty.manic:
+      return AppAssets.andyManic;
+  }
 }
-/*
-  final GameplayTutorialService _tutorialService = GameplayTutorialService();
 
-  final GlobalKey _diagramKey = GlobalKey();
-  final GlobalKey _expressionKey = GlobalKey();
-  final GlobalKey _buttonsKey = GlobalKey();
-  final GlobalKey _timerKey = GlobalKey();
+String get _pregameReminderText =>
+    '<placeholder reminder for $_modeLabel on $_difficultyLabel>';
 
-  OverlayEntry? _tutorialEntry;
-  bool _checkedTutorial = false;
-  Future<void> _maybeShowTutorial({bool force = false}) async {
+void _preparePreGameIntro({bool notify = true}) {
+  roundLocked = true;
+  showPreGameOverlay = true;
+  waitingForStartTap = true;
+  countdownRunning = false;
+  preGameSpriteAsset = null;
+  preGameSpriteOpacity = 0.0;
+  preGameSpriteScale = 0.005;
+  preGameSpriteScaleDuration = Duration.zero;
+  preGameSpriteFadeDuration = Duration.zero;
+
+  if (notify && mounted) {
+    setState(() {});
+  }
+}
+Future<void> _playCountdownSprite(String assetPath) async {
   if (!mounted) return;
 
-  if (!force && _checkedTutorial) return;
-  _checkedTutorial = true;
+  // Start tiny and visible
+  setState(() {
+    preGameSpriteAsset = assetPath;
+    preGameSpriteOpacity = 1.0;
+    preGameSpriteScale = 0.005;
+    preGameSpriteScaleDuration = Duration.zero;
+    preGameSpriteFadeDuration = Duration.zero;
+  });
 
-  final alreadySeen = force
-      ? false
-      : await _tutorialService.hasSeen('hasSeenGatekeepingTutorial');
-
-  if (alreadySeen && !force) return;
+  // Let Flutter paint the tiny starting state first
+  await Future<void>.delayed(const Duration(milliseconds: 16));
   if (!mounted) return;
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
+  // Zoom in: 100 ms
+  setState(() {
+    preGameSpriteScale = 1.0;
+    preGameSpriteScaleDuration = const Duration(milliseconds: 100);
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
+
+  // Stay visible at normal size: 700 ms
+  await Future<void>.delayed(const Duration(milliseconds: 700));
+  if (!mounted) return;
+
+  // Fade out only: 200 ms
+  setState(() {
+    preGameSpriteOpacity = 0.0;
+    preGameSpriteFadeDuration = const Duration(milliseconds: 200);
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 200));
+  if (!mounted) return;
+}
+
+Future<void> _handlePreGameTap() async {
+  if (!showPreGameOverlay || !waitingForStartTap || countdownRunning) return;
+
+  setState(() {
+    waitingForStartTap = false;
+    countdownRunning = true;
+  });
+
+  await _runPreGameCountdown();
+}
+
+Future<void> _runPreGameCountdown() async {
+  final sequence = <String>[
+    AppAssets.handThree,
+    AppAssets.handTwo,
+    AppAssets.handOne,
+    _difficultyAndyAsset,
+  ];
+
+  for (final asset in sequence) {
+    await _playCountdownSprite(asset);
     if (!mounted) return;
-    _showGatekeepingTutorial();
+  }
+
+  if (!mounted) return;
+
+  setState(() {
+    showPreGameOverlay = false;
+    waitingForStartTap = false;
+    countdownRunning = false;
+    preGameSpriteAsset = null;
+    preGameSpriteOpacity = 0.0;
+    preGameSpriteScale = 0.005;
+    preGameSpriteScaleDuration = Duration.zero;
+    preGameSpriteFadeDuration = Duration.zero;
+    roundLocked = false;
   });
 }
 
-void _showGatekeepingTutorial() {
-  _tutorialEntry?.remove();
+  Future<void> showReactionFeedback({required bool isCorrect}) async {
+    if (!mounted) return;
 
-  final steps = [
-    GameplayTutorialStep(
-      targetKey: _diagramKey,
-      text: '<diagram highlight>',
-    ),
-    GameplayTutorialStep(
-      targetKey: _expressionKey,
-      text: '<expression highlight>',
-    ),
-    GameplayTutorialStep(
-      targetKey: _buttonsKey,
-      text: '<button highlight>',
-    ),
-    GameplayTutorialStep(
-      targetKey: _timerKey,
-      text: '<timer highlight>',
-    ),
-  ];
+    setState(() {
+      flashColor = isCorrect ? Colors.green : Colors.red;
+      flashOpacity = 0.0;
 
-  _tutorialEntry = OverlayEntry(
-    builder: (_) => GameplayTutorialOverlay(
-      steps: steps,
-      onFinish: () async {
-        _tutorialEntry?.remove();
-        _tutorialEntry = null;
-        await _tutorialService.markSeen('hasSeenGatekeepingTutorial');
+      reactionAssetPath =
+          isCorrect ? AppAssets.thumbsUp : AppAssets.thumbsDown;
+      reactionOpacity = 1.0;
+      reactionScale = 0.005;
+      reactionScaleDuration = Duration.zero;
+      reactionScaleCurve = Curves.easeInOutCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    if (!mounted) return;
+
+    setState(() {
+      flashOpacity = 0.55;
+      reactionScale = 1.0;
+      reactionScaleDuration = const Duration(milliseconds: 100);
+      reactionScaleCurve = Curves.easeOutCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
+
+    setState(() {
+      reactionScale = 1.04;
+      reactionScaleDuration = const Duration(milliseconds: 300);
+      reactionScaleCurve = Curves.easeInOutCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+
+    setState(() {
+      flashOpacity = 0.0;
+      reactionScale = 0.005;
+      reactionScaleDuration = const Duration(milliseconds: 100);
+      reactionScaleCurve = Curves.easeInCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
+
+    setState(() {
+      reactionAssetPath = null;
+      reactionOpacity = 0.0;
+      reactionScale = 0.005;
+      reactionScaleDuration = Duration.zero;
+      reactionScaleCurve = Curves.easeInOutCubic;
+    });
+  }
+
+  Timer? gameplayTimer;
+
+  bool scoreSubmitted = false;
+
+  int currentQuestionIndex = 0;
+  int timeLeft = 0;
+  int score = 0;
+  int passesLeft = 0;
+
+  bool roundLocked = false;
+  bool gameFinished = false;
+
+  Color flashColor = Colors.transparent;
+  double flashOpacity = 0.0;
+
+  String? scoreDeltaText;
+  Color scoreDeltaColor = Colors.white;
+  double scoreDeltaOpacity = 0.0;
+  double scoreDeltaYOffset = 0.0;
+  double scoreDeltaXOffset = 0.0;
+
+  String? centerPopupText;
+  Color centerPopupColor = Colors.white;
+  double centerPopupOpacity = 0.0;
+  double centerPopupScale = 0.9;
+
+  void initializeSharedRun() {
+    scoreSubmitted = false;
+    gameplayTimer?.cancel();
+
+    currentQuestionIndex = 0;
+    score = 0;
+    passesLeft = startingPasses;
+    gameFinished = false;
+    roundLocked = false;
+    timeLeft = startingRoundTime;
+
+    loadCurrentQuestion();
+    startGameplayTimer();
+    setState(() {});
+  }
+
+  void startGameplayTimer() {
+    gameplayTimer?.cancel();
+
+    gameplayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || roundLocked || gameFinished) return;
+
+      if (timeLeft <= 1) {
+        setState(() {
+          timeLeft = 0;
+        });
+        handleTimeout();
+      } else {
+        setState(() {
+          timeLeft--;
+        });
+      }
+    });
+  }
+
+  Future<void> handlePass() async {
+    if (roundLocked || gameFinished) return;
+    if (passesLeft <= 0) return;
+
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      passesLeft--;
+    });
+
+    showCenterPopup('PASS', const Color(0xFFFFB347));
+
+    await finishRound(scoreDelta: -10, timeDelta: 0, advanceQuestion: true);
+  }
+
+  Future<void> handleTimeout() async {
+    if (gameFinished) return;
+    await _performTimeout();
+  }
+
+  Future<void> _performTimeout() async {
+    if (gameFinished) return;
+
+    HapticFeedback.heavyImpact();
+
+    setState(() {
+      gameFinished = true;
+      roundLocked = true;
+      timeLeft = 0;
+    });
+
+    gameplayTimer?.cancel();
+    await submitFinalScoreOnce();
+
+    if (!mounted) return;
+    showEndDialog();
+  }
+
+  Future<void> finishRound({
+    required int scoreDelta,
+    required int timeDelta,
+    required bool advanceQuestion,
+  }) async {
+    setState(() {
+      roundLocked = true;
+      score = (score + scoreDelta).clamp(0, 999999);
+      timeLeft = (timeLeft + timeDelta).clamp(0, 999999);
+    });
+
+    await Future.delayed(const Duration(milliseconds: 850));
+
+    if (!mounted || gameFinished) return;
+
+    // if (advanceQuestion && currentQuestionIndex >= questionCount - 1) {
+    //   await submitFinalScoreOnce();
+    //   if (!mounted) return;
+    //   showEndDialog();
+    //   return;
+    // }
+
+    if (timeLeft <= 0) {
+      await _performTimeout();
+      return;
+    }
+
+    if (advanceQuestion) {
+      setState(() {
+        roundLocked = false;
+        goToNextQuestion();
+      });
+    } else {
+      setState(() {
+        onRetryCurrentQuestion();
+        roundLocked = false;
+      });
+    }
+  }
+
+  Future<void> playFlash({bool isCorrect = false}) async {
+    if (!mounted) return;
+    setState(() {
+      flashColor = isCorrect ? Colors.green : Colors.red;
+      flashOpacity = isCorrect ? 0.65 : 0.75;
+    });
+
+    await Future.delayed(Duration(milliseconds: isCorrect ? 300 : 135));
+    if (!mounted) return;
+
+    setState(() {
+      flashOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 135));
+  }
+
+  Future<void> playWrongDamageFlash() async {
+    await playFlash();
+    await Future.delayed(const Duration(milliseconds: 40));
+    await playFlash();
+  }
+
+  Future<void> showScoreDelta(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaText = text;
+      scoreDeltaColor = color;
+      scoreDeltaOpacity = 1.0;
+      scoreDeltaYOffset = 0.0;
+      scoreDeltaXOffset = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 60));
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaYOffset = -15.0;
+      scoreDeltaXOffset = -10.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaText = null;
+      scoreDeltaYOffset = 0.0;
+      scoreDeltaXOffset = 0.0;
+    });
+  }
+
+  Future<void> showCenterPopup(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      centerPopupText = text;
+      centerPopupColor = color;
+      centerPopupOpacity = 1.0;
+      centerPopupScale = 1.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 450));
+    if (!mounted) return;
+
+    setState(() {
+      centerPopupOpacity = 0.0;
+      centerPopupScale = 1.08;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 180));
+    if (!mounted) return;
+
+    setState(() {
+      centerPopupText = null;
+      centerPopupScale = 0.9;
+    });
+  }
+
+  Future<void> submitFinalScoreOnce() async {
+    if (scoreSubmitted) return;
+    scoreSubmitted = true;
+
+    await leaderboardService.submitScore(
+      modeId: modeId,
+      difficultyId: difficultyId,
+      score: score,
+    );
+  }
+
+  void showEndDialog() {
+    gameplayTimer?.cancel();
+    gameFinished = true;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'ROUND COMPLETE',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22),
+          ),
+          content: Text(
+            'Final Score: $score',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                resetWholeGame();
+              },
+              child: const Text(
+                'PLAY AGAIN',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'EXIT',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        );
       },
-    ),
-  );
-
-  Overlay.of(context, rootOverlay: true).insert(_tutorialEntry!);
-}
-*/
+    );
+  }
 
   static const int _startingRoundTimeValue = 60;
   static const int _startingPassesValue = 5;
@@ -178,8 +591,6 @@ void _showGatekeepingTutorial() {
   @override
   int get questionCount => _questions.length;
 
-
-
   @override
   void resetWholeGame() {
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
@@ -193,6 +604,7 @@ void _showGatekeepingTutorial() {
     }
 
     initializeSharedRun();
+    _preparePreGameIntro();
   }
 
   @override
@@ -343,6 +755,10 @@ void _showGatekeepingTutorial() {
   Future<void> _checkCurrentAnswer() async {
     if (roundLocked || gameFinished) return;
 
+      setState(() {
+        roundLocked = true;
+      });
+
     final correctAnswers = _correctAnswersForCurrentQuestion();
     final isCorrect = _listEquals(
       _playerAnswers.map((e) => e ?? '').toList(),
@@ -353,7 +769,8 @@ void _showGatekeepingTutorial() {
       const gainedScore = 20;
       const gainedTime = 2;
 
-      playFlash(isCorrect: true);
+      //playFlash(isCorrect: true);
+      await showReactionFeedback(isCorrect: true);
       showScoreDelta('+$gainedScore', Colors.greenAccent);
 
       await finishRound(
@@ -365,7 +782,8 @@ void _showGatekeepingTutorial() {
       const lostScore = 20;
       const lostTime = -1;
 
-      playWrongDamageFlash();
+      //playWrongDamageFlash();
+      await showReactionFeedback(isCorrect: false);
       showScoreDelta('-$lostScore', Colors.redAccent);
 
       await finishRound(
@@ -397,11 +815,7 @@ void _showGatekeepingTutorial() {
           fontWeight: FontWeight.w900,
           color: _brownText,
           shadows: const [
-            Shadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 2,
-            ),
+            Shadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
           ],
         ),
       ),
@@ -417,11 +831,7 @@ void _showGatekeepingTutorial() {
           fontWeight: FontWeight.w900,
           color: const Color(0xFFE6F7D9),
           shadows: const [
-            Shadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 2,
-            ),
+            Shadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
           ],
         ),
       ),
@@ -526,10 +936,7 @@ void _showGatekeepingTutorial() {
     return Center(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: children,
-        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: children),
       ),
     );
   }
@@ -543,10 +950,7 @@ void _showGatekeepingTutorial() {
       decoration: BoxDecoration(
         color: AppColors.beigeBg,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: const Color(0xFFD8C6B5),
-          width: 2,
-        ),
+        border: Border.all(color: const Color(0xFFD8C6B5), width: 2),
       ),
       child: Text(
         'PASSES LEFT: $passesLeft',
@@ -666,8 +1070,11 @@ void _showGatekeepingTutorial() {
                               constraints: const BoxConstraints(),
                               visualDensity: VisualDensity.compact,
                               iconSize: 24,
-                              icon: const Icon(Icons.help_outline, color: Colors.white),
-                              onPressed: () => ()//_showGatekeepingTutorial(),
+                              icon: const Icon(
+                                Icons.help_outline,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => (), //_showGatekeepingTutorial(),
                             ),
                             const MusicButton(size: 26),
                           ],
@@ -710,7 +1117,9 @@ void _showGatekeepingTutorial() {
                                     right: w * 0.11,
                                     top: h * 0.13 + scoreDeltaYOffset,
                                     child: AnimatedOpacity(
-                                      duration: const Duration(milliseconds: 250),
+                                      duration: const Duration(
+                                        milliseconds: 250,
+                                      ),
                                       opacity: scoreDeltaOpacity,
                                       child: Stack(
                                         alignment: Alignment.center,
@@ -723,7 +1132,10 @@ void _showGatekeepingTutorial() {
                                               foreground: Paint()
                                                 ..style = PaintingStyle.stroke
                                                 ..strokeWidth = 4
-                                                ..color = scoreDeltaText!.startsWith('-')
+                                                ..color =
+                                                    scoreDeltaText!.startsWith(
+                                                      '-',
+                                                    )
                                                     ? const Color(0xFFD50000)
                                                     : const Color(0xFF0FAF2A),
                                             ),
@@ -733,7 +1145,10 @@ void _showGatekeepingTutorial() {
                                             style: TextStyle(
                                               fontSize: w * 0.09,
                                               fontWeight: FontWeight.w900,
-                                              color: scoreDeltaText!.startsWith('-')
+                                              color:
+                                                  scoreDeltaText!.startsWith(
+                                                    '-',
+                                                  )
                                                   ? const Color(0xFFFFD0D0)
                                                   : const Color(0xFFBEFFC9),
                                               shadows: const [
@@ -804,7 +1219,6 @@ void _showGatekeepingTutorial() {
                                   Expanded(child: _buildPassStrip()),
                                   const SizedBox(width: 8),
                                   BeveledMenuButton(
-
                                     label: '←',
                                     color: _backspaceGrey,
                                     width: 80,
@@ -832,15 +1246,39 @@ void _showGatekeepingTutorial() {
                   ),
                 ),
               ),
+
               Positioned.fill(
                 child: IgnorePointer(
                   child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 320),
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeInOut,
                     opacity: flashOpacity,
                     child: ColoredBox(color: flashColor),
                   ),
                 ),
               ),
+
+              if (reactionAssetPath != null)
+                IgnorePointer(
+                  child: Center(
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 100),
+                      curve: Curves.easeInOutCubic,
+                      opacity: reactionOpacity,
+                      child: AnimatedScale(
+                        duration: reactionScaleDuration,
+                        curve: reactionScaleCurve,
+                        scale: reactionScale,
+                        child: Image.asset(
+                          reactionAssetPath!,
+                          width: 190,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
               if (centerPopupText != null)
                 IgnorePointer(
                   child: Center(
@@ -873,6 +1311,19 @@ void _showGatekeepingTutorial() {
                     ),
                   ),
                 ),
+                if (showPreGameOverlay)
+                  PreGameOverlay(
+                    modeLabel: _modeLabel,
+                    difficultyLabel: _difficultyLabel,
+                    reminderText: _pregameReminderText,
+                    waitingForTap: waitingForStartTap,
+                    spriteAssetPath: preGameSpriteAsset,
+                    onTap: _handlePreGameTap,
+                    spriteOpacity: preGameSpriteOpacity,
+                    spriteScale: preGameSpriteScale,
+                    spriteScaleDuration: preGameSpriteScaleDuration,
+                    spriteFadeDuration: preGameSpriteFadeDuration,
+                  ),
             ],
           ),
         ),
@@ -882,13 +1333,9 @@ void _showGatekeepingTutorial() {
 }
 
 class _ExpressionPart {
-  const _ExpressionPart.text(this.text)
-      : answer = null,
-        isSlot = false;
+  const _ExpressionPart.text(this.text) : answer = null, isSlot = false;
 
-  const _ExpressionPart.slot(this.answer)
-      : text = null,
-        isSlot = true;
+  const _ExpressionPart.slot(this.answer) : text = null, isSlot = true;
 
   final String? text;
   final String? answer;
@@ -899,18 +1346,36 @@ class _OperatorConfig {
   final String symbol;
   final Color color;
 
-  const _OperatorConfig({
-    required this.symbol,
-    required this.color,
-  });
+  const _OperatorConfig({required this.symbol, required this.color});
 }
 
 const Map<String, _OperatorConfig> _operatorConfigs = {
-  'OR': _OperatorConfig(symbol: '+', color: _GatekeepingGamePageState._operatorOr),
-  'AND': _OperatorConfig(symbol: '•', color: _GatekeepingGamePageState._operatorAnd),
-  'NOT': _OperatorConfig(symbol: '¬', color: _GatekeepingGamePageState._operatorNot),
-  'NOR': _OperatorConfig(symbol: '↓', color: _GatekeepingGamePageState._operatorNor),
-  'NAND': _OperatorConfig(symbol: '↑', color: _GatekeepingGamePageState._operatorNand),
-  'XOR': _OperatorConfig(symbol: '⊕', color: _GatekeepingGamePageState._operatorXor),
-  'XNOR': _OperatorConfig(symbol: '⊙', color: _GatekeepingGamePageState._operatorXnor),
+  'OR': _OperatorConfig(
+    symbol: '+',
+    color: _GatekeepingGamePageState._operatorOr,
+  ),
+  'AND': _OperatorConfig(
+    symbol: '•',
+    color: _GatekeepingGamePageState._operatorAnd,
+  ),
+  'NOT': _OperatorConfig(
+    symbol: '¬',
+    color: _GatekeepingGamePageState._operatorNot,
+  ),
+  'NOR': _OperatorConfig(
+    symbol: '↓',
+    color: _GatekeepingGamePageState._operatorNor,
+  ),
+  'NAND': _OperatorConfig(
+    symbol: '↑',
+    color: _GatekeepingGamePageState._operatorNand,
+  ),
+  'XOR': _OperatorConfig(
+    symbol: '⊕',
+    color: _GatekeepingGamePageState._operatorXor,
+  ),
+  'XNOR': _OperatorConfig(
+    symbol: '⊙',
+    color: _GatekeepingGamePageState._operatorXnor,
+  ),
 };

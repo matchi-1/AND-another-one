@@ -879,8 +879,8 @@ class GatekeepingQuestionRepository {
     GatekeepingQuestion(
       id: 'manic_26',
       imagePath: _diagramPath(Difficulty.manic, 'manic_26.png'),
-      expression: 'A __AND B __AND C',
-      answers: ['AND', 'AND'],
+      expression: 'A __NAND B __AND C',
+      answers: ['NAND', 'AND'],
       difficulty: Difficulty.manic,
     ),
     GatekeepingQuestion(

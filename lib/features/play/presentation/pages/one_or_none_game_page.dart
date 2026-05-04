@@ -27,6 +27,12 @@ class OneOrNoneGamePage extends StatefulWidget {
 }
 
 class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
+
+  bool showPreGameOverlay = false;
+  bool waitingForStartTap = false;
+  bool countdownRunning = false;
+  String? preGameSpriteAsset;
+
   static const int _startingPasses = 5;
   static const int _startingLives = 3;
 
@@ -99,6 +105,70 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
 
     unawaited(BgmController.instance.playScene(scene));
   }
+
+  String? reactionAssetPath;
+  double reactionOpacity = 0.0;
+  double reactionScale = 0.005;
+  Duration reactionScaleDuration = Duration.zero;
+  Curve reactionScaleCurve = Curves.easeInOutCubic;
+  Color flashColor = Colors.transparent;
+  double flashOpacity = 0.0;
+
+  Future<void> showReactionFeedback({required bool isCorrect}) async {
+  if (!mounted) return;
+
+  setState(() {
+    flashColor = isCorrect ? Colors.green : Colors.red;
+    flashOpacity = 0.0;
+
+    reactionAssetPath =
+        isCorrect ? AppAssets.thumbsUp : AppAssets.thumbsDown;
+    reactionOpacity = 1.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = Duration.zero;
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 16));
+  if (!mounted) return;
+
+  setState(() {
+    flashOpacity = 0.55;
+    reactionScale = 1.0;
+    reactionScaleDuration = const Duration(milliseconds: 100);
+    reactionScaleCurve = Curves.easeOutCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
+
+  setState(() {
+    reactionScale = 1.04;
+    reactionScaleDuration = const Duration(milliseconds: 300);
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 300));
+  if (!mounted) return;
+
+  setState(() {
+    flashOpacity = 0.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = const Duration(milliseconds: 100);
+    reactionScaleCurve = Curves.easeInCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
+
+  setState(() {
+    reactionAssetPath = null;
+    reactionOpacity = 0.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = Duration.zero;
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
+}
 
   void _resetWholeGame() {
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
@@ -485,7 +555,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     if (isCorrect) {
       const gainedScore = 20;
 
-      _playFlash(isCorrect: true);
+      showReactionFeedback(isCorrect: true);
       _showScoreDelta('+$gainedScore', Colors.greenAccent);
 
       await _finishRound(
@@ -500,7 +570,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
         _roundLocked = true;
       });
 
-      _playWrongDamageFlash();
+      await showReactionFeedback(isCorrect: false);
       await _animateLostHeart();
 
       await _finishRound(
