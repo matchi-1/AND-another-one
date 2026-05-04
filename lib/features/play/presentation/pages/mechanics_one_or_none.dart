@@ -437,149 +437,6 @@ class _StepCard extends StatelessWidget {
   }
 }
 
-class _OneOrNoneMockScreen extends StatefulWidget {
-  const _OneOrNoneMockScreen();
-
-  @override
-  State<_OneOrNoneMockScreen> createState() => _OneOrNoneMockScreenState();
-}
-
-class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
-  String _resultLabel = 'PASS';
-  Color _resultColor = AppColors.greyButton;
-
-  void _showPass() {
-    setState(() {
-      _resultLabel = 'PASS';
-      _resultColor = AppColors.greyButton;
-    });
-  }
-
-  void _showWrong() {
-    setState(() {
-      _resultLabel = 'WRONG';
-      _resultColor = AppColors.redButton;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.beigeBg,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: const [
-              Expanded(
-                child: _HudPill(
-                  label: 'TIMER',
-                  value: '07',
-                  color: AppColors.orangeButton,
-                ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: _HudPill(
-                  label: 'SCORE',
-                  value: '920',
-                  color: AppColors.pinkButton,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            height: 185,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 18,
-                  top: 55,
-                  child: Text('A', style: _inputStyle),
-                ),
-                Positioned(
-                  left: 18,
-                  top: 115,
-                  child: Text('B', style: _inputStyle),
-                ),
-                const Positioned(
-                  left: 88,
-                  top: 78,
-                  child: _MiniGate(label: 'XOR'),
-                ),
-                const Positioned(
-                  left: 188,
-                  top: 78,
-                  child: _MiniGate(label: 'NOT'),
-                ),
-                Positioned(
-                  right: 22,
-                  top: 88,
-                  child: Text(
-                    'FINAL',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.95),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-                const Positioned.fill(child: _CircuitLines()),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _ControlChip(
-                  label: '0',
-                  color: AppColors.redButton,
-                  onTap: _showWrong,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ControlChip(
-                  label: '1',
-                  color: AppColors.greenButton,
-                  onTap: _showWrong,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ControlChip(
-                  label: 'PASS',
-                  color: AppColors.greyButton,
-                  onTap: _showPass,
-                  resultLabel: _resultLabel,
-                  resultColor: _resultColor,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  static const TextStyle _inputStyle = TextStyle(
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: FontWeight.w900,
-  );
-}
-
 class _DifficultyCard extends StatelessWidget {
   final String title;
   final Color color;
@@ -847,6 +704,21 @@ class _CircuitPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _OneOrNoneMockScreen extends StatelessWidget {
+  const _OneOrNoneMockScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.asset(
+        'assets/images/how_to_play/oneornonemode.png',
+        fit: BoxFit.contain,
+      ),
+    );
+  }
 }
 
 class _ControlChip extends StatelessWidget {
