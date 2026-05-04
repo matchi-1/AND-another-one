@@ -16,10 +16,21 @@ class AppAssets {
   static const star2 = 'assets/images/shared/star2.png';
   static const star3 = 'assets/images/shared/star3.png';
   static const star4 = 'assets/images/shared/star4.png';
+
   static const bgmHome = 'assets/audio/bgm_home.mp3';
   static const bgmBasic = 'assets/audio/bgm_basic.mp3';
   static const bgmLogic = 'assets/audio/bgm_logic.mp3';
   static const bgmManic = 'assets/audio/bgm_manic.mp3';
+  static const bgmLogic2 = 'assets/audio/bgm_logic_2.mp3';
+  static const bgmBasic2 = 'assets/audio/bgm_basic_2.mp3';
+
+  static const sfxCorrect = 'assets/audio/sfx-correct.mp3';
+  static const sfxWrong = 'assets/audio/sfx-wrong.mp3';
+  static const sfxGameOver = 'assets/audio/sfx-gameOver.mp3';
+  static const sfxOperatorTap = 'assets/audio/sfx-beep1-louder.mp3';
+  static const sfxOperatorTap2 = 'assets/audio/sfx-beep2.mp3';
+  static const sfxBackspace = 'assets/audio/sfx-backspace-louder.mp3';
+  static const sfxPass = 'assets/audio/sfx-pass.mp3';
 
   static const thumbsUp = 'assets/images/sprites/whitehand-thumbsUp.png';
   static const thumbsDown = 'assets/images/sprites/whitehand-redThumbsDown.png';
@@ -31,5 +42,6 @@ class AppAssets {
   static const andyBasic = 'assets/images/sprites/andy-basic.png';
   static const andyLogic = 'assets/images/sprites/andy-logic.png';
   static const andyManic = 'assets/images/sprites/andy-manic.png';
+  
 
 }

@@ -15,7 +15,9 @@ import '../../../leaderboards/util/leaderboard_service.dart';
 //import '../../../tutorial/gameplay_tutorial_service.dart';
 import 'dart:async';
 import '../../../../core/audio/bgm_controller.dart';
+import '../../../../core/audio/sfx_controller.dart';
 import '../widgets/gameplay_overlays.dart';
+
 
 class GatekeepingGamePage extends StatefulWidget {
   const GatekeepingGamePage({super.key, this.difficulty = Difficulty.basic});
@@ -312,6 +314,8 @@ Future<void> _runPreGameCountdown() async {
     if (roundLocked || gameFinished) return;
     if (passesLeft <= 0) return;
 
+    await SfxController.instance.playPass();
+
     HapticFeedback.mediumImpact();
 
     setState(() {
@@ -343,6 +347,9 @@ Future<void> _runPreGameCountdown() async {
     await submitFinalScoreOnce();
 
     if (!mounted) return;
+
+    await SfxController.instance.playGameOver();
+    
     showEndDialog();
   }
 
@@ -484,6 +491,7 @@ Future<void> _runPreGameCountdown() async {
   }
 
   void showEndDialog() {
+    
     gameplayTimer?.cancel();
     gameFinished = true;
 
@@ -705,7 +713,9 @@ Future<void> _runPreGameCountdown() async {
     if (roundLocked || gameFinished) return;
     if (_activeSlotIndex >= _playerAnswers.length) return;
 
+    
     HapticFeedback.selectionClick();
+    unawaited(SfxController.instance.playOperatorTap());
 
     setState(() {
       _playerAnswers[_activeSlotIndex] = operator;
@@ -745,6 +755,7 @@ Future<void> _runPreGameCountdown() async {
     if (lastFilled == null) return;
 
     HapticFeedback.selectionClick();
+    unawaited(SfxController.instance.playBackspace());
 
     setState(() {
       _playerAnswers[lastFilled] = null;
@@ -770,6 +781,7 @@ Future<void> _runPreGameCountdown() async {
       const gainedTime = 2;
 
       //playFlash(isCorrect: true);
+      unawaited(SfxController.instance.playCorrect());
       await showReactionFeedback(isCorrect: true);
       showScoreDelta('+$gainedScore', Colors.greenAccent);
 
@@ -783,6 +795,7 @@ Future<void> _runPreGameCountdown() async {
       const lostTime = -1;
 
       //playWrongDamageFlash();
+      unawaited(SfxController.instance.playWrong());
       await showReactionFeedback(isCorrect: false);
       showScoreDelta('-$lostScore', Colors.redAccent);
 

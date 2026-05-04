@@ -41,9 +41,9 @@ class BgmController {
       case BgmScene.home:
         return AppAssets.bgmHome;
       case BgmScene.basic:
-        return AppAssets.bgmBasic;
+        return AppAssets.bgmBasic2;
       case BgmScene.logic:
-        return AppAssets.bgmLogic;
+        return AppAssets.bgmLogic2;
       case BgmScene.manic:
         return AppAssets.bgmManic;
     }
