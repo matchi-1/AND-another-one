@@ -34,6 +34,7 @@ class AppAssets {
 
   static const thumbsUp = 'assets/images/sprites/whitehand-thumbsUp.png';
   static const thumbsDown = 'assets/images/sprites/whitehand-redThumbsDown.png';
+  static const handPass = 'assets/images/sprites/hand-pass.png';
 
   static const handOne = 'assets/images/sprites/whitehand-1.png';
   static const handTwo = 'assets/images/sprites/whitehand-12.png'; 

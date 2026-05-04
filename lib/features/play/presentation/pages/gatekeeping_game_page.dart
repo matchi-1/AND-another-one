@@ -193,61 +193,63 @@ Future<void> _runPreGameCountdown() async {
   });
 }
 
-  Future<void> showReactionFeedback({required bool isCorrect}) async {
+  Future<void> showActionFeedback({
+    required Color flash,
+    required String asset,
+  }) async {
     if (!mounted) return;
 
-    setState(() {
-      flashColor = isCorrect ? Colors.green : Colors.red;
-      flashOpacity = 0.0;
+  setState(() {
+    flashColor = flash;
+    flashOpacity = 0.0;
 
-      reactionAssetPath =
-          isCorrect ? AppAssets.thumbsUp : AppAssets.thumbsDown;
-      reactionOpacity = 1.0;
-      reactionScale = 0.005;
-      reactionScaleDuration = Duration.zero;
-      reactionScaleCurve = Curves.easeInOutCubic;
-    });
+    reactionAssetPath = asset;
+    reactionOpacity = 1.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = Duration.zero;
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
 
-    await Future<void>.delayed(const Duration(milliseconds: 16));
-    if (!mounted) return;
+  await Future<void>.delayed(const Duration(milliseconds: 16));
+  if (!mounted) return;
 
-    setState(() {
-      flashOpacity = 0.55;
-      reactionScale = 1.0;
-      reactionScaleDuration = const Duration(milliseconds: 100);
-      reactionScaleCurve = Curves.easeOutCubic;
-    });
+  setState(() {
+    flashOpacity = 0.55;
+    reactionScale = 1.0;
+    reactionScaleDuration = const Duration(milliseconds: 100);
+    reactionScaleCurve = Curves.easeOutCubic;
+  });
 
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-    if (!mounted) return;
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
 
-    setState(() {
-      reactionScale = 1.04;
-      reactionScaleDuration = const Duration(milliseconds: 300);
-      reactionScaleCurve = Curves.easeInOutCubic;
-    });
+  setState(() {
+    reactionScale = 1.04;
+    reactionScaleDuration = const Duration(milliseconds: 600);
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
 
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    if (!mounted) return;
+  await Future<void>.delayed(const Duration(milliseconds: 450));
+  if (!mounted) return;
 
-    setState(() {
-      flashOpacity = 0.0;
-      reactionScale = 0.005;
-      reactionScaleDuration = const Duration(milliseconds: 100);
-      reactionScaleCurve = Curves.easeInCubic;
-    });
+  setState(() {
+    flashOpacity = 0.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = const Duration(milliseconds: 100);
+    reactionScaleCurve = Curves.easeInCubic;
+  });
 
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-    if (!mounted) return;
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
 
-    setState(() {
-      reactionAssetPath = null;
-      reactionOpacity = 0.0;
-      reactionScale = 0.005;
-      reactionScaleDuration = Duration.zero;
-      reactionScaleCurve = Curves.easeInOutCubic;
-    });
-  }
+  setState(() {
+    reactionAssetPath = null;
+    reactionOpacity = 0.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = Duration.zero;
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
+}
 
   Timer? gameplayTimer;
 
@@ -322,7 +324,12 @@ Future<void> _runPreGameCountdown() async {
       passesLeft--;
     });
 
-    showCenterPopup('PASS', const Color(0xFFFFB347));
+    //showCenterPopup('PASS', const Color(0xFFFFB347));
+
+    await showActionFeedback(
+      flash: const Color(0xFFFFB347),
+      asset: AppAssets.handPass,
+    );
 
     await finishRound(scoreDelta: -10, timeDelta: 0, advanceQuestion: true);
   }
@@ -782,7 +789,10 @@ Future<void> _runPreGameCountdown() async {
 
       //playFlash(isCorrect: true);
       unawaited(SfxController.instance.playCorrect());
-      await showReactionFeedback(isCorrect: true);
+      await showActionFeedback(
+        flash: Colors.green,
+        asset: AppAssets.thumbsUp,
+      );
       showScoreDelta('+$gainedScore', Colors.greenAccent);
 
       await finishRound(
@@ -796,7 +806,10 @@ Future<void> _runPreGameCountdown() async {
 
       //playWrongDamageFlash();
       unawaited(SfxController.instance.playWrong());
-      await showReactionFeedback(isCorrect: false);
+      await showActionFeedback(
+        flash: Colors.red,
+        asset: AppAssets.thumbsDown,
+      );
       showScoreDelta('-$lostScore', Colors.redAccent);
 
       await finishRound(
