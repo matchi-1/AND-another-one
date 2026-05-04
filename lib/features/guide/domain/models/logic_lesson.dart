@@ -42,7 +42,7 @@ class LogicLessonData {
       id: 'demorgans_law',
       title: 'De Morgan\'s Law',
       formulas: '~(A • B) = ~A + ~B\n\n~(A + B) = ~A • ~B',
-      explanation: 'If you remove or add the not gate,\nthe AND becomes OR, vice versa.',
+      explanation: 'Adding/Removing a NOT gate flips the operation, the AND becomes OR, vice versa.',
     ),
     LogicLesson(
       id: 'symbol_names',

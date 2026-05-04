@@ -103,62 +103,9 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               const SizedBox(height: 20),
 
               // beige rectangle container for explanation content
-              _buildBottomSection(currentLesson),
+              _buildBottomSectionWithNav(currentLesson),
 
               const SizedBox(height: 20),
-
-              // Navigation buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Previous button
-                    GestureDetector(
-                      onTap: _previousLesson,
-                      child: Image.asset(
-                        AppAssets.backBtn,
-                        width: 40,
-                        opacity: const AlwaysStoppedAnimation(1.0),
-                      ),
-                    ),
-
-                    // Lesson counter
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.pinkButton,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${_currentLessonIndex + 1} / ${LogicLessonData.lessons.length}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Nunito',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-
-                    // Next button
-                    GestureDetector(
-                      onTap: _nextLesson,
-                      child: Transform.rotate(
-                        angle: 3.14159, // 180 degrees in radians
-                        child: Image.asset(
-                          AppAssets.backBtn,
-                          width: 40,
-                          opacity: const AlwaysStoppedAnimation(1.0),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
               const SizedBox(height: 40),
             ],
@@ -178,148 +125,184 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     return lines[lineIndex];
   }
 
+  Widget _buildBottomSectionWithNav(LogicLesson lesson) {
+    final navYOffset = lesson.id == 'demorgans_law'
+      ? -24.0
+      : lesson.id == 'symbol_names'
+        ? 4.0
+        : 0.0;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _buildBottomSection(lesson),
+        ),
+        Positioned.fill(
+          child: Transform.translate(
+            offset: Offset(0, navYOffset),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildNavButton(isNext: false),
+                  _buildNavButton(isNext: true),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNavButton({required bool isNext}) {
+    return GestureDetector(
+      onTap: isNext ? _nextLesson : _previousLesson,
+      child: Transform.rotate(
+        angle: isNext ? 3.14159 : 0,
+        child: Image.asset(
+          AppAssets.backBtn,
+          width: 36,
+          opacity: const AlwaysStoppedAnimation(1.0),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomSection(LogicLesson lesson) {
     if (lesson.id == 'symbol_names') {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.beigeBg,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: SizedBox(
-            height: 220,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Image.asset(
-                    'assets/images/logic_guide/symbol_names_table.png',
-                    fit: BoxFit.contain,
-                  ),
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.beigeBg,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: SizedBox(
+          height: 220,
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildSymbolNamesImage(
+                  'assets/images/logic_guide/symbol_names_table.png',
+                  Alignment.centerRight,
+                  36,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Image.asset(
-                    'assets/images/logic_guide/symbol_names_diagram.png',
-                    fit: BoxFit.contain,
-                  ),
+              ),
+              Expanded(
+                child: _buildSymbolNamesImage(
+                  'assets/images/logic_guide/symbol_names_diagram.png',
+                  Alignment.centerLeft,
+                  -36,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.beigeBg,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Formula box 1
-            Align(
-              child: FractionallySizedBox(
-                widthFactor: _getFormulaBoxWidthFactor(lesson.id),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.pinkButton,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFFFF9F00),
-                      width: 3,
-                    ),
-                  ),
-                  child: Text(
-                    _getFormulaLine(lesson.formulas, 0),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Nunito',
-                    ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.beigeBg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Formula box 1
+          Align(
+            child: FractionallySizedBox(
+              widthFactor: _getFormulaBoxWidthFactor(lesson.id),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.pinkButton,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFFF9F00),
+                    width: 3,
                   ),
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Formula box 2 (if exists)
-            if (_getFormulaLine(lesson.formulas, 1).isNotEmpty)
-              Align(
-                child: FractionallySizedBox(
-                  widthFactor: _getFormulaBoxWidthFactor(lesson.id),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.pinkButton,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: const Color(0xFFFF9F00),
-                        width: 3,
-                      ),
-                    ),
-                    child: Text(
-                      _getFormulaLine(lesson.formulas, 1),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _getFormulaLine(lesson.formulas, 0),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'Nunito',
                         color: Colors.white,
+                        fontFamily: 'Nunito',
                       ),
                     ),
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 12),
-
-            // Explanation box
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1B6B3D),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFFFF9F00),
-                  width: 3,
-                ),
-              ),
-              child: Text(
-                lesson.explanation,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Nunito',
-                  color: Colors.white,
+                    if (_getFormulaLine(lesson.formulas, 1).isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      const Text(
+                        'will be equivalent to',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _getFormulaLine(lesson.formulas, 1),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Explanation box
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1B6B3D),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFFFF9F00),
+                width: 3,
+              ),
+            ),
+            child: Text(
+              lesson.explanation,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Nunito',
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -384,6 +367,24 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildSymbolNamesImage(
+    String assetPath,
+    Alignment alignment,
+    double xOffset,
+  ) {
+    return OverflowBox(
+      alignment: alignment,
+      maxWidth: double.infinity,
+      child: Transform.translate(
+        offset: Offset(xOffset, 0),
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 
