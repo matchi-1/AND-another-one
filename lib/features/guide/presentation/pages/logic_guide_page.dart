@@ -126,6 +126,11 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   Widget _buildBottomSectionWithNav(LogicLesson lesson) {
+    final navYOffset = lesson.id == 'demorgans_law'
+      ? -28.0
+      : lesson.id == 'symbol_names'
+        ? 4.0
+        : 0.0;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -134,14 +139,17 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           child: _buildBottomSection(lesson),
         ),
         Positioned.fill(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildNavButton(isNext: false),
-                _buildNavButton(isNext: true),
-              ],
+          child: Transform.translate(
+            offset: Offset(0, navYOffset),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildNavButton(isNext: false),
+                  _buildNavButton(isNext: true),
+                ],
+              ),
             ),
           ),
         ),
@@ -222,53 +230,48 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     width: 3,
                   ),
                 ),
-                child: Text(
-                  _getFormulaLine(lesson.formulas, 0),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Nunito',
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _getFormulaLine(lesson.formulas, 0),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Nunito',
+                      ),
+                    ),
+                    if (_getFormulaLine(lesson.formulas, 1).isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      const Text(
+                        'will be equivalent to',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _getFormulaLine(lesson.formulas, 1),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
           ),
-
-          const SizedBox(height: 12),
-
-          // Formula box 2 (if exists)
-          if (_getFormulaLine(lesson.formulas, 1).isNotEmpty)
-            Align(
-              child: FractionallySizedBox(
-                widthFactor: _getFormulaBoxWidthFactor(lesson.id),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.pinkButton,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFFFF9F00),
-                      width: 3,
-                    ),
-                  ),
-                  child: Text(
-                    _getFormulaLine(lesson.formulas, 1),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Nunito',
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
 
           const SizedBox(height: 12),
 
