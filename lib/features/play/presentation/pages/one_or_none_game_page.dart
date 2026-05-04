@@ -1066,6 +1066,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                                     textColor: Colors.white,
                                     fontSize: 20,
                                     onTap: _handlePass,
+                                    enabled: _passesLeft > 0,
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(child: _buildPassStrip()),

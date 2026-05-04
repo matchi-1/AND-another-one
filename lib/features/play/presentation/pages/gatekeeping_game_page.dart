@@ -795,6 +795,7 @@ void _showGatekeepingTutorial() {
                                     height: 50,
                                     textColor: Colors.white,
                                     fontSize: 20,
+                                    enabled: passesLeft > 0,
                                     onTap: () {
                                       handlePass();
                                     },
