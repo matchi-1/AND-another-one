@@ -54,6 +54,34 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
     super.dispose();
   }
 
+  bool showBackConfirmOverlay = false;
+
+  void _onBackPressed() {
+  if (gameFinished) {
+    Navigator.pop(context);
+    return;
+  }
+
+  setState(() {
+    roundLocked = true;
+    showBackConfirmOverlay = true;
+  });
+}
+
+void _closeBackOverlay() {
+  if (!mounted) return;
+
+  setState(() {
+    showBackConfirmOverlay = false;
+    roundLocked = false;
+  });
+}
+
+void _confirmExitGame() {
+  if (!mounted) return;
+  Navigator.pop(context);
+}
+
   
   final LeaderboardService leaderboardService = LeaderboardService();
 
@@ -1089,8 +1117,10 @@ Future<void> _runPreGameCountdown() async {
                                 width: 24,
                                 height: 24,
                               ),
-                              onPressed: () => Navigator.pop(context),
+                              onPressed: _onBackPressed,
                             ),
+
+                            /*
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -1102,6 +1132,9 @@ Future<void> _runPreGameCountdown() async {
                               ),
                               onPressed: () => (), //_showGatekeepingTutorial(),
                             ),
+
+                            */
+
                             const MusicButton(size: 26),
                           ],
                         ),
@@ -1337,6 +1370,86 @@ Future<void> _runPreGameCountdown() async {
                     ),
                   ),
                 ),
+
+                if (showBackConfirmOverlay)
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.black.withOpacity(0.72),
+                      child: Center(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 28),
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2B1B10),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.16),
+                              width: 2,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black45,
+                                blurRadius: 10,
+                                offset: Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'PAUSED',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              const Text(
+                                '<placeholder textbox overlay>',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.35,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  BeveledMenuButton(
+                                    label: 'RESUME',
+                                    color: AppColors.greenButton,
+                                    width: 130,
+                                    height: 48,
+                                    textColor: Colors.white,
+                                    fontSize: 18,
+                                    onTap: _closeBackOverlay,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  BeveledMenuButton(
+                                    label: 'EXIT',
+                                    color: AppColors.redButton,
+                                    width: 130,
+                                    height: 48,
+                                    textColor: Colors.white,
+                                    fontSize: 18,
+                                    onTap: _confirmExitGame,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                 if (showPreGameOverlay)
                   PreGameOverlay(
                     modeLabel: _modeLabel,
