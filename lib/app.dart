@@ -1,3 +1,4 @@
+import 'package:and_another_one/core/navigation/route_observer.dart';
 import 'package:and_another_one/features/play/presentation/pages/gatekeeping_tutorial_preview_page.dart';
 import 'package:and_another_one/features/play/presentation/pages/one_or_none_game_page.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class AndAnotherOneApp extends StatelessWidget {
       title: 'AND Another One',
       theme: AppTheme.lightTheme,
       initialRoute: AppRoutes.login,
+      navigatorObservers: [appRouteObserver],
       routes: {
         AppRoutes.login: (_) => const LoginPage(),
         AppRoutes.register: (_) => const RegisterPage(),

@@ -88,36 +88,28 @@ class AppTutorialController {
     if (seen) return;
     if (!context.mounted) return;
 
-    await start(context, force: false);
+    await start(context);
   }
 
-  Future<void> start(BuildContext context, {bool force = false}) async {
-    _removeOverlay();
-    _active = true;
-    _pageIndex = 0;
+  Future<void> start(BuildContext context) async {
+  _removeOverlay();
+  _active = true;
+  _pageIndex = 0;
 
-    if (!force) {
-      final seen = await _service.hasSeen(_flagName);
-      if (seen) {
-        _active = false;
-        return;
-      }
-    }
+  final firstRoute = _flow.first.routeName;
+  final currentRoute = ModalRoute.of(context)?.settings.name;
 
-    if (!context.mounted) return;
-
-    final currentRoute = ModalRoute.of(context)?.settings.name;
-    final firstRoute = _flow.first.routeName;
-
-    if (currentRoute == firstRoute) {
-      onPageReady(context, firstRoute);
-    } else {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        firstRoute,
-        (route) => false,
-      );
-    }
+  if (currentRoute == firstRoute) {
+    onPageReady(context, firstRoute);
+    return;
   }
+
+  if (!context.mounted) return;
+  Navigator.of(context).pushNamedAndRemoveUntil(
+    firstRoute,
+    (route) => false,
+  );
+}
 
   void onPageReady(BuildContext context, String currentRouteName) {
     if (!_active) return;
@@ -160,7 +152,7 @@ class AppTutorialController {
           final nextRoute = _flow[_pageIndex].routeName;
 
           if (!context.mounted) return;
-          Navigator.of(context).pushNamed(nextRoute);
+          Navigator.of(context).pushReplacementNamed(nextRoute);
         },
       ),
     );
@@ -169,18 +161,19 @@ class AppTutorialController {
   }
 
   Future<void> _finishTutorial(BuildContext context) async {
-    _removeOverlay();
-    _active = false;
-    _pageIndex = 0;
+  _removeOverlay();
+  _active = false;
+  _pageIndex = 0;
 
-    await _service.markSeen(_flagName);
+  final currentRoute = ModalRoute.of(context)?.settings.name;
+  if (currentRoute == AppRoutes.home) return;
 
-    if (!context.mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.home,
-      (route) => false,
-    );
-  }
+  if (!context.mounted) return;
+  Navigator.of(context).pushNamedAndRemoveUntil(
+    AppRoutes.home,
+    (route) => false,
+  );
+}
 
   Future<void> stop(BuildContext context, {bool markSeen = true}) async {
     _removeOverlay();

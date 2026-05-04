@@ -12,18 +12,30 @@ class MusicButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: BgmController.instance.isOn,
-      builder: (context, isOn, _) {
-        return GestureDetector(
-          onTap: () {
-            BgmController.instance.toggle();
-          },
-          child: Image.asset(
-            isOn ? AppAssets.soundOn : AppAssets.soundOff,
-            width: size,
-            height: size,
-            fit: BoxFit.contain,
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        BgmController.instance.isOn,
+        BgmController.instance.isBusy,
+      ]),
+      builder: (context, _) {
+        final isOn = BgmController.instance.isOn.value;
+        final isBusy = BgmController.instance.isBusy.value;
+
+        return IgnorePointer(
+          ignoring: isBusy,
+          child: Opacity(
+            opacity: isBusy ? 0.65 : 1.0,
+            child: GestureDetector(
+              onTap: () async {
+                await BgmController.instance.toggle();
+              },
+              child: Image.asset(
+                isOn ? AppAssets.soundOn : AppAssets.soundOff,
+                width: size,
+                height: size,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
         );
       },

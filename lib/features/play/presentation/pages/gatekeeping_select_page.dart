@@ -1,3 +1,4 @@
+import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -10,9 +11,14 @@ import '../../../play/presentation/pages/gatekeeping_game_page.dart';
 import '../../../tutorial/app_tutorial_controller.dart';
 import '../../../tutorial/tutorial_targets.dart';
 
-class GatekeepingSelectPage extends StatelessWidget {
+class GatekeepingSelectPage extends StatefulWidget {
   const GatekeepingSelectPage({super.key});
+    @override
+  State<GatekeepingSelectPage> createState() => _GatekeepingSelectPageState();
+}
 
+class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
+    with RouteAware, HomeBgmRouteMixin {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -137,7 +143,7 @@ class GatekeepingSelectPage extends StatelessWidget {
                       textColor: btnTextColor,
                       fontSize: btnFontSize - 6,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.selectMode);
+                        Navigator.pop(context);
                       },
                     ),
                   ],

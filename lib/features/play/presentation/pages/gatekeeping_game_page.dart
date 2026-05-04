@@ -11,8 +11,10 @@ import '../../../../shared/widgets/music_button.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
 import '../../util/gameplay_helpers.dart';
-import '../../../tutorial/gameplay_tutorial_overlay.dart';
-import '../../../tutorial/gameplay_tutorial_service.dart';
+//import '../../../tutorial/gameplay_tutorial_overlay.dart';
+//import '../../../tutorial/gameplay_tutorial_service.dart';
+import 'dart:async';
+import '../../../../core/audio/bgm_controller.dart';
 
 class GatekeepingGamePage extends StatefulWidget {
   const GatekeepingGamePage({
@@ -31,9 +33,17 @@ class GatekeepingGamePage extends StatefulWidget {
 class _GatekeepingGamePageState extends State<GatekeepingGamePage>
     with GameplayHelpers {
       @override
-void initState() {
-  super.initState();
-  resetWholeGame();
+      void initState() {
+        super.initState();
+        resetWholeGame();
+
+        final scene = switch (widget.difficulty) {
+          Difficulty.basic => BgmScene.basic,
+          Difficulty.logic => BgmScene.logic,
+          Difficulty.manic => BgmScene.manic,
+        };
+
+        unawaited(BgmController.instance.playScene(scene));
 
   //WidgetsBinding.instance.addPostFrameCallback((_) {
    // _maybeShowTutorial();
@@ -41,10 +51,10 @@ void initState() {
 }
 @override
 void dispose() {
-  _tutorialEntry?.remove();
+  //_tutorialEntry?.remove();
   super.dispose();
 }
-
+/*
   final GameplayTutorialService _tutorialService = GameplayTutorialService();
 
   final GlobalKey _diagramKey = GlobalKey();
@@ -108,7 +118,7 @@ void _showGatekeepingTutorial() {
 
   Overlay.of(context, rootOverlay: true).insert(_tutorialEntry!);
 }
-
+*/
 
   static const int _startingRoundTimeValue = 60;
   static const int _startingPassesValue = 5;
@@ -657,7 +667,7 @@ void _showGatekeepingTutorial() {
                               visualDensity: VisualDensity.compact,
                               iconSize: 24,
                               icon: const Icon(Icons.help_outline, color: Colors.white),
-                              onPressed: () => _showGatekeepingTutorial(),
+                              onPressed: () => ()//_showGatekeepingTutorial(),
                             ),
                             const MusicButton(size: 26),
                           ],
@@ -684,7 +694,7 @@ void _showGatekeepingTutorial() {
                                   width: w * 0.18,
                                   height: h * 0.10,
                                   child: Container(
-                                    key: _timerKey,
+                                    //key: _timerKey,
                                     child: _buildTimerText(w),
                                   ),
                                 ),
@@ -745,7 +755,7 @@ void _showGatekeepingTutorial() {
                                   top: h * 0.18,
                                   height: h * 0.55,
                                   child: Container(
-                                    key: _diagramKey,
+                                    //key: _diagramKey,
                                     child: _buildDiagramPlaceholder(),
                                   ),
                                 ),
@@ -755,7 +765,7 @@ void _showGatekeepingTutorial() {
                                   bottom: h * 0.08,
                                   height: h * 0.08,
                                   child: Container(
-                                    key: _expressionKey,
+                                    //key: _expressionKey,
                                     child: _buildExpressionBar(),
                                   ),
                                 ),
@@ -806,7 +816,7 @@ void _showGatekeepingTutorial() {
                               ),
                               const SizedBox(height: 8),
                               Container(
-                                key: _buttonsKey,
+                                //key: _buttonsKey,
                                 child: _buildChoiceGrid(
                                   buttonWidth: operatorButtonWidth,
                                   buttonHeight: operatorButtonHeight,

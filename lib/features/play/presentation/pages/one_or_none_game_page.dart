@@ -11,6 +11,8 @@ import '../../../../shared/widgets/music_button.dart';
 import '../../../leaderboards/util/leaderboard_service.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
+import 'dart:async';
+import '../../../../core/audio/bgm_controller.dart';
 
 class OneOrNoneGamePage extends StatefulWidget {
   const OneOrNoneGamePage({
@@ -89,6 +91,13 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   void initState() {
     super.initState();
     _resetWholeGame();
+    final scene = switch (widget.difficulty) {
+      Difficulty.basic => BgmScene.basic,
+      Difficulty.logic => BgmScene.logic,
+      Difficulty.manic => BgmScene.manic,
+    };
+
+    unawaited(BgmController.instance.playScene(scene));
   }
 
   void _resetWholeGame() {

@@ -16,11 +16,14 @@ class BgmController {
 
   final AudioPlayer _player = AudioPlayer();
   final ValueNotifier<bool> isOn = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> isBusy = ValueNotifier<bool>(false);
 
   bool _initialized = false;
-  bool _busy = false;
 
   BgmScene? _currentScene;
+  BgmScene? _requestedScene;
+  Future<void>? _transitionFuture;
+
   double _currentVolume = 0.0;
   final double _targetVolume = 0.80;
 
@@ -40,7 +43,7 @@ class BgmController {
       case BgmScene.basic:
         return AppAssets.bgmBasic;
       case BgmScene.logic:
-        return AppAssets.bgmBasic;
+        return AppAssets.bgmLogic;
       case BgmScene.manic:
         return AppAssets.bgmManic;
     }
@@ -49,39 +52,92 @@ class BgmController {
   Future<void> playScene(BgmScene scene) async {
     await init();
 
-    if (_busy) return;
-    if (_currentScene == scene && _player.playing) return;
+    _requestedScene = scene;
 
-    _busy = true;
+    if (_transitionFuture != null) {
+      return _transitionFuture!;
+    }
+
+    _transitionFuture = _processSceneQueue();
     try {
-      await _fadeTo(0.0, const Duration(milliseconds: 250));
-      await _player.pause();
+      await _transitionFuture;
+    } finally {
+      _transitionFuture = null;
+    }
+  }
 
-      _currentScene = scene;
-      await _player.setAsset(_assetFor(scene));
+  Future<void> _processSceneQueue() async {
+    isBusy.value = true;
+    try {
+      while (_requestedScene != null) {
+        final scene = _requestedScene!;
+        _requestedScene = null;
 
-      if (isOn.value) {
-        await _player.play();
-        await _fadeTo(_targetVolume, const Duration(milliseconds: 350));
+        final asset = _assetFor(scene);
+        final firstLoad = _currentScene == null;
+
+        // If already on this exact scene and already playing correctly, skip.
+        if (_currentScene == scene &&
+            ((isOn.value && _player.playing) || (!isOn.value && !_player.playing))) {
+          continue;
+        }
+
+        _currentScene = scene;
+
+        if (firstLoad) {
+          await _player.setAsset(asset);
+          await _player.setVolume(0.0);
+          _currentVolume = 0.0;
+
+          if (isOn.value) {
+            unawaited(_player.play());
+            await _fadeTo(_targetVolume, const Duration(milliseconds: 120));
+          }
+          continue;
+        }
+
+        // Full stop is more reliable than pause when swapping assets quickly.
+        await _fadeTo(0.0, const Duration(milliseconds: 80));
+        await _player.stop();
+
+        await _player.setAsset(asset);
+        await _player.setVolume(0.0);
+        _currentVolume = 0.0;
+
+        if (isOn.value) {
+          unawaited(_player.play());
+          await _fadeTo(_targetVolume, const Duration(milliseconds: 120));
+        }
       }
     } finally {
-      _busy = false;
+      isBusy.value = false;
     }
   }
 
   Future<void> toggle() async {
     await init();
 
-    if (isOn.value) {
-      isOn.value = false;
-      await _fadeTo(0.0, const Duration(milliseconds: 250));
-      await _player.pause();
-    } else {
-      isOn.value = true;
-      if (_currentScene != null) {
-        await _player.play();
-        await _fadeTo(_targetVolume, const Duration(milliseconds: 350));
+    if (isBusy.value) return;
+
+    isBusy.value = true;
+    try {
+      if (isOn.value) {
+        isOn.value = false;
+        await _fadeTo(0.0, const Duration(milliseconds: 80));
+        await _player.pause();
+      } else {
+        isOn.value = true;
+
+        if (_currentScene != null) {
+          await _player.setVolume(0.0);
+          _currentVolume = 0.0;
+
+          unawaited(_player.play());
+          await _fadeTo(_targetVolume, const Duration(milliseconds: 120));
+        }
       }
+    } finally {
+      isBusy.value = false;
     }
   }
 
@@ -100,12 +156,22 @@ class BgmController {
   }
 
   Future<void> stop() async {
-    await _fadeTo(0.0, const Duration(milliseconds: 200));
-    await _player.stop();
+    await init();
+    if (isBusy.value) return;
+
+    isBusy.value = true;
+    try {
+      await _fadeTo(0.0, const Duration(milliseconds: 80));
+      await _player.stop();
+      _currentVolume = 0.0;
+    } finally {
+      isBusy.value = false;
+    }
   }
 
   Future<void> dispose() async {
     await _player.dispose();
     isOn.dispose();
+    isBusy.dispose();
   }
 }

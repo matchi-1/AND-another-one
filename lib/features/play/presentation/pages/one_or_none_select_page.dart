@@ -1,3 +1,4 @@
+import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
 import 'package:and_another_one/features/play/presentation/pages/one_or_none_game_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,8 +9,14 @@ import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../data/models/gatekeeping_question.dart';
 
-class OneOrNoneSelectPage extends StatelessWidget {
+class OneOrNoneSelectPage extends StatefulWidget {
   const OneOrNoneSelectPage({super.key});
+  @override
+  State<OneOrNoneSelectPage> createState() => _OneOrNoneSelectPageState();
+}
+
+class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
+    with RouteAware, HomeBgmRouteMixin {
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +135,7 @@ class OneOrNoneSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize - 6,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.selectMode);
+                      Navigator.pop(context);
                     },
                   ),
                 ],

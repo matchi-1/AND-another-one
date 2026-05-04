@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -10,6 +13,7 @@ import '../../../auth/data/auth_service.dart';
 import '../../../../core/audio/bgm_controller.dart';
 import '../../../tutorial/app_tutorial_controller.dart';
 import '../../../tutorial/tutorial_targets.dart';
+import '../../../../core/navigation/route_observer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,7 +21,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with RouteAware, HomeBgmRouteMixin {
   final AuthService _authService = AuthService();
 
   bool _hasShownRouteMessage = false;
@@ -25,13 +29,15 @@ class _HomePageState extends State<HomePage> {
 @override
 void initState() {
   super.initState();
+  unawaited(BgmController.instance.playScene(BgmScene.home));
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    BgmController.instance.playScene(BgmScene.home);
+
+    if (!mounted) return;
+    //BgmController.instance.playScene(BgmScene.home);
 
     //if (!mounted) return;
     //await AppTutorialController.instance.maybeStart(context);
 
-    if (!mounted) return;
     AppTutorialController.instance.onPageReady(context, AppRoutes.home);
   });
 }
@@ -39,6 +45,11 @@ void initState() {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      appRouteObserver.subscribe(this, route);
+    }
 
     if (_hasShownRouteMessage) return;
 
@@ -54,6 +65,17 @@ void initState() {
         );
       });
     }
+  }
+  @override
+  void dispose() {
+    appRouteObserver.unsubscribe(this);
+    super.dispose();
+  }
+  
+  @override
+  void didPopNext() {
+    // Called when a route above Home is popped and Home becomes visible again.
+    unawaited(BgmController.instance.playScene(BgmScene.home));
   }
 
   @override
@@ -131,7 +153,7 @@ void initState() {
                   TextButton(
                     key: TutorialTargets.homeRestart,
                     onPressed: () async {
-                      await AppTutorialController.instance.start(context, force: true);
+                      await AppTutorialController.instance.start(context);
                     },
                     child: const Text(
                       'Restart Tutorial',

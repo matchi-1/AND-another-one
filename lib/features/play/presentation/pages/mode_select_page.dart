@@ -1,3 +1,4 @@
+import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -8,8 +9,13 @@ import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../tutorial/app_tutorial_controller.dart';
 import '../../../tutorial/tutorial_targets.dart';
 
-class ModeSelectPage extends StatelessWidget {
+class ModeSelectPage extends StatefulWidget {
   const ModeSelectPage({super.key});
+  @override
+  State<ModeSelectPage> createState() => _ModeSelectPageState();
+}
+class _ModeSelectPageState extends State<ModeSelectPage>
+    with RouteAware, HomeBgmRouteMixin {
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +92,7 @@ class ModeSelectPage extends StatelessWidget {
                     textColor: btnTextColor,
                     fontSize: btnFontSize - 6,
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.home);
+                      Navigator.pop(context);
                     },
                   ),
                 ],
