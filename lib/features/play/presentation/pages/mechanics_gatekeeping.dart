@@ -73,7 +73,7 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                               title: 'BASIC',
                               color: AppColors.yellowButton,
                               body:
-                              'Simpler circuits and beginner-friendly recognition tasks.',
+                              'Simple circuits and beginner recognition tasks.',
                             ),
                           ),
                           SizedBox(width: 10),
@@ -415,11 +415,170 @@ class _GatekeepingMockScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.asset(
-        'assets/images/how_to_play/how_to_play_gatekeeping_screen_guide.png',
-        fit: BoxFit.contain,
+    return Column(
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/how_to_play/how_to_play_gatekeeping_screen_guide.png',
+                fit: BoxFit.contain,
+                width: double.infinity,
+              ),
+            ),
+            Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final h = constraints.maxHeight;
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // A: Timer
+                      _buildHighlight(
+                        w: w, h: h,
+                        left: 0.05, top: 0.02, width: 0.22, height: 0.085,
+                        label: 'A',
+                        badgeAlign: Alignment.topRight,
+                        badgeOffset: const Offset(16, -16),
+                      ),
+                      // B: Score
+                      _buildHighlight(
+                        w: w, h: h,
+                        left: 0.58, top: 0.02, width: 0.37, height: 0.085,
+                        label: 'B',
+                        badgeAlign: Alignment.topLeft,
+                        badgeOffset: const Offset(-16, -16),
+                      ),
+                      // C: Diagram
+                      _buildHighlight(
+                        w: w, h: h,
+                        left: 0.04, top: 0.12, width: 0.92, height: 0.40,
+                        label: 'C',
+                        badgeAlign: Alignment.bottomRight,
+                        badgeOffset: const Offset(16, 16),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.beigeBg,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFFF9F00), width: 3),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildLegendRow('A', 'Timer'),
+              const SizedBox(height: 10),
+              _buildLegendRow('B', 'Score'),
+              const SizedBox(height: 10),
+              _buildLegendRow('C', 'Diagram'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHighlight({
+    required double w,
+    required double h,
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+    required String label,
+    required Alignment badgeAlign,
+    required Offset badgeOffset,
+  }) {
+    return Positioned(
+      left: w * left,
+      top: h * top,
+      width: w * width,
+      height: h * height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.redButton, width: 4),
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          Align(
+            alignment: badgeAlign,
+            child: Transform.translate(
+              offset: badgeOffset,
+              child: _LegendBadge(label),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegendRow(String letter, String label) {
+    return Row(
+      children: [
+        _LegendBadge(letter),
+        const SizedBox(width: 12),
+        Text(
+          '=  $label',
+          style: const TextStyle(
+            color: Color(0xFF333333),
+            fontSize: 18,
+            fontFamily: 'Nunito',
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LegendBadge extends StatelessWidget {
+  final String letter;
+  const _LegendBadge(this.letter);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: AppColors.redButton,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black45,
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          letter,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'Nunito',
+            height: 1.1,
+          ),
+        ),
       ),
     );
   }
