@@ -52,6 +52,16 @@ class AppAssets {
 
   static const andyGatekeeping = 'assets/images/sprites/andy-gatekeeping.png';
   static const andyOneOrNone = 'assets/images/sprites/andy-one-or-none.png';
-  
 
+  // game overlays
+  static const andyGameOverBasic = 'assets/images/game_overlay/game-over-overlay-basic.png';
+  static const andyGameOverLogic = 'assets/images/game_overlay/game-over-overlay-logic.png';
+  static const andyGameOverManic = 'assets/images/game_overlay/game-over-overlay-manic.png';
+  
+  // difficulty notice - in game
+  static const andyGuideGameBasic = 'assets/images/game_overlay/guide-game-overlay-basic.png';
+  static const andyGuideGameLogic = 'assets/images/game_overlay/guide-game-overlay-logic.png';
+  static const andyGuideGameManic= 'assets/images/game_overlay/guide-game-overlay-manic.png';
+
+  static const andyPauseGame= 'assets/images/game_overlay/pause-game-overlay.png';
 }

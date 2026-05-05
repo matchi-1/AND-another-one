@@ -17,6 +17,7 @@ import 'dart:async';
 import '../../../../core/audio/bgm_controller.dart';
 import '../../../../core/audio/sfx_controller.dart';
 import '../widgets/gameplay_overlays.dart';
+import '../../../../core/navigation/app_routes.dart';
 
 
 class GatekeepingGamePage extends StatefulWidget {
@@ -105,27 +106,41 @@ void _confirmExitGame() {
 
   String get _modeLabel => 'GATEKEEPING';
 
-String get _difficultyLabel {
-  switch (widget.difficulty) {
-    case Difficulty.basic:
-      return 'BASIC';
-    case Difficulty.logic:
-      return 'LOGIC';
-    case Difficulty.manic:
-      return 'MANIC';
+  String get _difficultyLabel {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 'BASIC';
+      case Difficulty.logic:
+        return 'LOGIC';
+      case Difficulty.manic:
+        return 'MANIC';
+    }
   }
-}
 
-String get _difficultyAndyAsset {
-  switch (widget.difficulty) {
-    case Difficulty.basic:
-      return AppAssets.andyBasic;
-    case Difficulty.logic:
-      return AppAssets.andyLogic;
-    case Difficulty.manic:
-      return AppAssets.andyManic;
+  String get _difficultyAndyAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyBasic;
+      case Difficulty.logic:
+        return AppAssets.andyLogic;
+      case Difficulty.manic:
+        return AppAssets.andyManic;
+    }
   }
-}
+
+  String get _gameOverOverlayAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyGameOverBasic;
+      case Difficulty.logic:
+        return AppAssets.andyGameOverLogic;
+      case Difficulty.manic:
+        return AppAssets.andyGameOverManic;
+    }
+  }
+
+  int get passesUsed => startingPasses - passesLeft;
+
 
 String get _pregameReminderText =>
     '<placeholder reminder for $_modeLabel on $_difficultyLabel>';
@@ -291,6 +306,8 @@ Future<void> _runPreGameCountdown() async {
   int timeLeft = 0;
   int score = 0;
   int passesLeft = 0;
+  int correctCount = 0;
+  int wrongAttempts = 0;
 
   bool roundLocked = false;
   bool gameFinished = false;
@@ -316,6 +333,10 @@ Future<void> _runPreGameCountdown() async {
     currentQuestionIndex = 0;
     score = 0;
     passesLeft = startingPasses;
+    correctCount = 0;
+    wrongAttempts = 0;
+
+    showGameResultOverlay = false;
     gameFinished = false;
     roundLocked = false;
     timeLeft = startingRoundTime;
@@ -822,6 +843,8 @@ Future<void> _runPreGameCountdown() async {
     );
 
     if (isCorrect) {
+      correctCount++;
+
       const gainedScore = 20;
       const gainedTime = 2;
 
@@ -839,6 +862,8 @@ Future<void> _runPreGameCountdown() async {
         advanceQuestion: true,
       );
     } else {
+      wrongAttempts++;
+
       const lostScore = 20;
       const lostTime = -1;
 
@@ -1389,23 +1414,29 @@ Future<void> _runPreGameCountdown() async {
                     onExit: _confirmExitGame,
                   ),
 
-                  if (showGameResultOverlay)
-                    GameResultOverlay(
-                      title: gameResultTitle,
-                      scoreText: 'Final Score: $score',
-                      onPlayAgain: () {
-                        setState(() {
-                          showGameResultOverlay = false;
-                        });
-                        resetWholeGame();
-                      },
-                      onExit: () {
-                        setState(() {
-                          showGameResultOverlay = false;
-                        });
-                        Navigator.pop(context);
-                      },
-                    ),
+                if (showGameResultOverlay)
+                  GameResultOverlay(
+                    backgroundAssetPath: _gameOverOverlayAsset,
+                    modeLabel: 'Gatekeeping',
+                    difficultyLabel: _difficultyLabel,
+                    score: score,
+                    correctCount: correctCount,
+                    wrongAttempts: wrongAttempts,
+                    passesUsed: passesUsed,
+                    onRetry: () {
+                      resetWholeGame();
+                    },
+                    onLeaderboards: () {
+                      Navigator.pushNamed(context, AppRoutes.leaderboards);
+                    },
+                    onBackToMenu: () {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.home,
+                            (route) => false,
+                      );
+                    },
+                  ),
 
                 if (showPreGameOverlay)
                   PreGameOverlay(

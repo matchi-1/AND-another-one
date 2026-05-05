@@ -68,6 +68,7 @@ flutter:
     - assets/images/logic_guide/
     - assets/audio/
     - assets/images/sprites/
+    - assets/images/game_overlay/
 
 
 
