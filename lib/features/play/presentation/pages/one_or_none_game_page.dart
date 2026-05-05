@@ -1001,22 +1001,16 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              visualDensity: VisualDensity.compact,
-                              iconSize: 24,
-                              icon: Image.asset(
-                                AppAssets.backBtn,
-                                width: 24,
-                                height: 24,
-                              ),
-                              onPressed: () => Navigator.pop(context),
+                            PauseIconButton(
+                              // !!! Change this later to this, similar to gatekeeping
+                              // onTap: _onPausePressed,
+                              onTap: () => Navigator.pop(context),
                             ),
                             const MusicButton(size: 26),
                           ],
                         ),
                       ),
+
                       AspectRatio(
                         aspectRatio: 0.78,
                         child: LayoutBuilder(
