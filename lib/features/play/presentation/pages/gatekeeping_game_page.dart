@@ -1406,13 +1406,25 @@ Future<void> _runPreGameCountdown() async {
                   ),
                 ),
 
-                if (showBackConfirmOverlay)
-                  PauseOverlay(
-                    title: 'PAUSED',
-                    message: '<placeholder textbox overlay>',
-                    onResume: _closeBackOverlay,
-                    onExit: _confirmExitGame,
-                  ),
+              if (showBackConfirmOverlay)
+                PauseOverlay(
+                  backgroundAssetPath: AppAssets.andyPauseGame,
+                  onResume: _closeBackOverlay,
+                  onRetry: () {
+                    setState(() {
+                      showBackConfirmOverlay = false;
+                    });
+
+                    resetWholeGame();
+                  },
+                  onExitToMenu: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.home,
+                          (route) => false,
+                    );
+                  },
+                ),
 
                 if (showGameResultOverlay)
                   GameResultOverlay(
