@@ -37,11 +37,15 @@ class AppAssets {
 
   static const handOne = 'assets/images/sprites/whitehand-1.png';
   static const handTwo = 'assets/images/sprites/whitehand-12.png'; 
-  static const handThree = 'assets/images/sprites/whitehand-ok.png';
+  static const handThree = 'assets/images/sprites/whitehand-oks.png';
 
   static const andyBasic = 'assets/images/sprites/andy-basic.png';
   static const andyLogic = 'assets/images/sprites/andy-logic.png';
   static const andyManic = 'assets/images/sprites/andy-manic.png';
+
+  static const andyPlay = 'assets/images/sprites/andy-play.png';
+  static const andyLogicGuide = 'assets/images/sprites/andy-logic-guide.png';
+  static const andyLeaderboards = 'assets/images/sprites/andy-settings.png';
   
 
 }
