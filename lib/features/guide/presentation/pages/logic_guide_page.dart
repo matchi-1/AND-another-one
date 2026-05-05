@@ -137,9 +137,9 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
   Widget _buildBottomSectionWithNav(LogicLesson lesson, Size size) {
     final navYOffset = lesson.id == 'demorgans_law'
-      ? -24.0
+      ? 0.0
       : lesson.id == 'symbol_names'
-        ? -4.0
+        ? 0.0
         : 0.0;
     return Stack(
       alignment: Alignment.center,
@@ -148,7 +148,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
             height: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             decoration: BoxDecoration(
               color: AppColors.beigeBg,
               borderRadius: BorderRadius.circular(8),
@@ -233,7 +233,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 4,
+                vertical: 3,
               ),
               decoration: BoxDecoration(
                 color: AppColors.pinkButton,
@@ -293,7 +293,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 4,
+            vertical: 3,
           ),
           decoration: BoxDecoration(
             color: const Color(0xFF1B6B3D),
