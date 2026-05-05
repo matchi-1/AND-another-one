@@ -410,8 +410,42 @@ class _StepCard extends StatelessWidget {
   }
 }
 
-class _GatekeepingMockScreen extends StatelessWidget {
+class _GatekeepingMockScreen extends StatefulWidget {
   const _GatekeepingMockScreen();
+
+  @override
+  State<_GatekeepingMockScreen> createState() => _GatekeepingMockScreenState();
+}
+
+class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
+  int _timeLeft = 60;
+  int _scoreMultiplier = 1;
+  String _difficultyLevel = 'BASIC';
+
+  void _handleCorrectAnswer() {
+    setState(() {
+      _timeLeft += 1;
+    });
+  }
+
+  void _handleIncorrectAnswer() {
+    setState(() {
+      _timeLeft -= 2;
+    });
+  }
+
+  String get _diagramDescription {
+    switch (_difficultyLevel) {
+      case 'BASIC':
+        return 'As is expression';
+      case 'LOGIC':
+        return 'Simplified';
+      case 'MANIC':
+        return 'Expanded';
+      default:
+        return 'As is expression';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -460,6 +494,30 @@ class _GatekeepingMockScreen extends StatelessWidget {
                         badgeAlign: Alignment.bottomRight,
                         badgeOffset: const Offset(16, 16),
                       ),
+                      // D: Equation Display
+                      _buildHighlight(
+                        w: w, h: h,
+                        left: 0.12, top: 0.52, width: 0.76, height: 0.065,
+                        label: 'D',
+                        badgeAlign: Alignment.topLeft,
+                        badgeOffset: const Offset(-16, -16),
+                      ),
+                      // E: Action Buttons
+                      _buildHighlight(
+                        w: w, h: h,
+                        left: 0.035, top: 0.61, width: 0.93, height: 0.09,
+                        label: 'E',
+                        badgeAlign: Alignment.topLeft,
+                        badgeOffset: const Offset(-16, -16),
+                      ),
+                      // F: Choice Buttons
+                      _buildHighlight(
+                        w: w, h: h,
+                        left: 0.035, top: 0.71, width: 0.93, height: 0.27,
+                        label: 'F',
+                        badgeAlign: Alignment.bottomRight,
+                        badgeOffset: const Offset(16, 16),
+                      ),
                     ],
                   );
                 },
@@ -480,10 +538,269 @@ class _GatekeepingMockScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildLegendRow('A', 'Timer'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
+              const Text(
+                'You start the round with exactly 60 seconds.',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.orangeButton.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.orangeButton, width: 2),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timer_outlined, color: AppColors.orangeButton, size: 22),
+                      const SizedBox(width: 8),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return ScaleTransition(scale: animation, child: child);
+                        },
+                        child: Text(
+                          '$_timeLeft s',
+                          key: ValueKey<int>(_timeLeft),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.orangeButton,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF333333),
+                    height: 1.8,
+                  ),
+                  children: [
+                    const TextSpan(text: 'If your answer is correct, you gain '),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: GestureDetector(
+                        onTap: _handleCorrectAnswer,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.greenButton,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
+                            ],
+                          ),
+                          child: const Text(
+                            '+1s',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'Nunito',
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const TextSpan(text: '.\nIf your answer is wrong, you lose '),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: GestureDetector(
+                        onTap: _handleIncorrectAnswer,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.redButton,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
+                            ],
+                          ),
+                          child: const Text(
+                            '-2s',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'Nunito',
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const TextSpan(text: '.'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
               _buildLegendRow('B', 'Score'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Text(
+                    'Score Multiplier:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.yellowButton,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'x$_scoreMultiplier',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Nunito',
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
               _buildLegendRow('C', 'Diagram'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Text(
+                    'Difficulty:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Row(
+                    children: ['BASIC', 'LOGIC', 'MANIC'].map((level) {
+                      final isSelected = _difficultyLevel == level;
+                      Color activeColor;
+                      switch(level) {
+                        case 'BASIC': activeColor = AppColors.yellowButton; break;
+                        case 'LOGIC': activeColor = AppColors.purpleButton; break;
+                        case 'MANIC': activeColor = AppColors.redButton; break;
+                        default: activeColor = AppColors.purpleButton;
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _difficultyLevel = level;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? activeColor : Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected ? activeColor : const Color(0xFFCCCCCC),
+                                width: 2,
+                              ),
+                            ),
+                            child: Text(
+                              level,
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontWeight: FontWeight.w900,
+                                color: isSelected ? Colors.white : const Color(0xFF666666),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  'Diagram Type: $_diagramDescription',
+                  key: ValueKey<String>(_diagramDescription),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF333333),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              _buildLegendRow('D', 'Expression Display'),
+              const SizedBox(height: 8),
+              const Text(
+                'Shows the current logical expression to solve.',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              _buildLegendRow('E', 'Action Buttons'),
+              const SizedBox(height: 8),
+              const Text(
+                'Use Pass to skip, or Backspace to undo your last input.',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              _buildLegendRow('F', 'Choice Buttons'),
+              const SizedBox(height: 8),
+              const Text(
+                'Interactive buttons to fill in the missing logic operators.',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF333333),
+                ),
+              ),
             ],
           ),
         ),
