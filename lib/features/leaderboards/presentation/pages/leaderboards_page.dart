@@ -442,7 +442,7 @@ class _LeaderboardBoard extends StatefulWidget {
 
 class _LeaderboardBoardState extends State<_LeaderboardBoard> {
   static const int _firstPageRows = 2; // ranks 4 and 5 only
-  static const int _otherPageRows = 7; // page 2 onward
+  static const int _otherPageRows = 6; // page 2 onward
 
   int _currentPage = 0;
 
