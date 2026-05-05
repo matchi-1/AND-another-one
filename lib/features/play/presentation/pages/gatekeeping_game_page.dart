@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../../../shared/widgets/pause_icon_button.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
 import '../../../leaderboards/util/leaderboard_service.dart';
@@ -1166,17 +1167,8 @@ Future<void> _runPreGameCountdown() async {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              visualDensity: VisualDensity.compact,
-                              iconSize: 24,
-                              icon: Image.asset(
-                                AppAssets.backBtn,
-                                width: 24,
-                                height: 24,
-                              ),
-                              onPressed: _onBackPressed,
+                            PauseIconButton(
+                              onTap: _onBackPressed,
                             ),
 
                             /*

@@ -13,6 +13,7 @@ import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
 import 'dart:async';
 import '../../../../core/audio/bgm_controller.dart';
+import '../../../../shared/widgets/pause_icon_button.dart';
 
 class OneOrNoneGamePage extends StatefulWidget {
   const OneOrNoneGamePage({
