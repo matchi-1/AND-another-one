@@ -159,7 +159,7 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
                 },
                 child: IgnorePointer(
                   child: Image.asset(
-                    'assets/images/tutorial/mascot.png',
+                    'assets/images/sprites/andy-play.png',
                     fit: BoxFit.contain,
                   ),
                 ),

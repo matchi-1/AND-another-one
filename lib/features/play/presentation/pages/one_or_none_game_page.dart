@@ -1,19 +1,22 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/audio/bgm_controller.dart';
+import '../../../../core/audio/sfx_controller.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../../../shared/widgets/pause_icon_button.dart';
 import '../../../leaderboards/util/leaderboard_service.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
-import 'dart:async';
-import '../../../../core/audio/bgm_controller.dart';
-import '../../../../shared/widgets/pause_icon_button.dart';
+import '../widgets/gameplay_overlays.dart';
 
 class OneOrNoneGamePage extends StatefulWidget {
   const OneOrNoneGamePage({
@@ -29,10 +32,36 @@ class OneOrNoneGamePage extends StatefulWidget {
 
 class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
 
-  bool showPreGameOverlay = false;
-  bool waitingForStartTap = false;
-  bool countdownRunning = false;
-  String? preGameSpriteAsset;
+  int _hotstreakCount = 0;
+  int _multiplierTierIndex = 0;
+  int _multiplierStepProgress = 0; // 2 correct answers = tier up
+
+  static const List<double> _multiplierTiers = [
+    1.0,
+    1.25,
+    1.5,
+    1.75,
+    2.0,
+    3.0,
+  ];
+
+  double get _currentMultiplier => _multiplierTiers[_multiplierTierIndex];
+
+  String get _multiplierLabel {
+    final value = _currentMultiplier;
+    return 'x${value.toStringAsFixed(value % 1 == 0 ? 1 : 2)}';
+  }
+
+  int get _baseScore {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 100;
+      case Difficulty.logic:
+        return 200;
+      case Difficulty.manic:
+        return 300;
+    }
+  }
 
   static const int _startingPasses = 5;
   static const int _startingLives = 3;
@@ -59,29 +88,51 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   int _livesLeft = _startingLives;
   int _correctOutput = 0;
 
+  int _correctCount = 0;
+  int _wrongAttempts = 0;
+
   bool _roundLocked = false;
   bool _gameFinished = false;
   bool _scoreSubmitted = false;
 
-  String _endDialogTitle = 'ROUND COMPLETE';
+  bool _showPauseOverlay = false;
+  bool _showGameResultOverlay = false;
+
+  String _gameResultTitle = 'ROUND COMPLETE';
 
   Color _flashColor = Colors.transparent;
   double _flashOpacity = 0.0;
+
+  String? _reactionAssetPath;
+  double _reactionOpacity = 0.0;
+  double _reactionScale = 0.005;
+  Duration _reactionScaleDuration = Duration.zero;
+  Curve _reactionScaleCurve = Curves.easeInOutCubic;
 
   String? _scoreDeltaText;
   double _scoreDeltaOpacity = 0.0;
   double _scoreDeltaYOffset = 0.0;
   double _scoreDeltaXOffset = 0.0;
 
+  String? _livesDeltaText;
+  double _livesDeltaOpacity = 0.0;
+  double _livesDeltaYOffset = 0.0;
+
   int? _losingHeartIndex;
   bool _lostHeartAnimating = false;
 
-  String? _centerPopupText;
-  Color _centerPopupColor = Colors.white;
-  double _centerPopupOpacity = 0.0;
-  double _centerPopupScale = 0.9;
+  bool _showPreGameOverlay = false;
+  bool _waitingForStartTap = false;
+  bool _countdownRunning = false;
+  String? _preGameSpriteAsset;
+  double _preGameSpriteOpacity = 0.0;
+  double _preGameSpriteScale = 0.005;
+  Duration _preGameSpriteScaleDuration = Duration.zero;
+  Duration _preGameSpriteFadeDuration = Duration.zero;
 
   GatekeepingQuestion get _currentQuestion => _questions[_currentQuestionIndex];
+
+  String get _modeLabel => 'ONE OR NONE';
 
   String get _difficultyId {
     switch (widget.difficulty) {
@@ -94,10 +145,68 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     }
   }
 
+  String get _difficultyLabel {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 'BASIC';
+      case Difficulty.logic:
+        return 'LOGIC';
+      case Difficulty.manic:
+        return 'MANIC';
+    }
+  }
+
+  String get _difficultyAndyAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyBasic;
+      case Difficulty.logic:
+        return AppAssets.andyLogic;
+      case Difficulty.manic:
+        return AppAssets.andyManic;
+    }
+  }
+
+  String get _guideOverlayAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyGuideGameBasic;
+      case Difficulty.logic:
+        return AppAssets.andyGuideGameLogic;
+      case Difficulty.manic:
+        return AppAssets.andyGuideGameManic;
+    }
+  }
+
+  String get _gameOverOverlayAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyGameOverBasic;
+      case Difficulty.logic:
+        return AppAssets.andyGameOverLogic;
+      case Difficulty.manic:
+        return AppAssets.andyGameOverManic;
+    }
+  }
+
+  String get _difficultyDescription {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 'Solve the shown circuit by deciding whether its final output is 1 or 0 using the displayed input values.';
+      case Difficulty.logic:
+        return 'The final output still depends on the shown input values, but more advanced logic gates are used.';
+      case Difficulty.manic:
+        return 'Use the shown values and more complex logic combinations to determine whether the final output is 1 or 0.';
+    }
+  }
+
+  int get _passesUsed => _startingPasses - _passesLeft;
+
   @override
   void initState() {
     super.initState();
     _resetWholeGame();
+
     final scene = switch (widget.difficulty) {
       Difficulty.basic => BgmScene.basic,
       Difficulty.logic => BgmScene.logic,
@@ -107,69 +216,23 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     unawaited(BgmController.instance.playScene(scene));
   }
 
-  String? reactionAssetPath;
-  double reactionOpacity = 0.0;
-  double reactionScale = 0.005;
-  Duration reactionScaleDuration = Duration.zero;
-  Curve reactionScaleCurve = Curves.easeInOutCubic;
-  Color flashColor = Colors.transparent;
-  double flashOpacity = 0.0;
+  void _onPausePressed() {
+    if (_gameFinished) return;
 
-  Future<void> showReactionFeedback({required bool isCorrect}) async {
-  if (!mounted) return;
+    setState(() {
+      _roundLocked = true;
+      _showPauseOverlay = true;
+    });
+  }
 
-  setState(() {
-    flashColor = isCorrect ? Colors.green : Colors.red;
-    flashOpacity = 0.0;
+  void _closePauseOverlay() {
+    if (!mounted) return;
 
-    reactionAssetPath =
-        isCorrect ? AppAssets.thumbsUp : AppAssets.thumbsDown;
-    reactionOpacity = 1.0;
-    reactionScale = 0.005;
-    reactionScaleDuration = Duration.zero;
-    reactionScaleCurve = Curves.easeInOutCubic;
-  });
-
-  await Future<void>.delayed(const Duration(milliseconds: 16));
-  if (!mounted) return;
-
-  setState(() {
-    flashOpacity = 0.55;
-    reactionScale = 1.0;
-    reactionScaleDuration = const Duration(milliseconds: 100);
-    reactionScaleCurve = Curves.easeOutCubic;
-  });
-
-  await Future<void>.delayed(const Duration(milliseconds: 100));
-  if (!mounted) return;
-
-  setState(() {
-    reactionScale = 1.04;
-    reactionScaleDuration = const Duration(milliseconds: 300);
-    reactionScaleCurve = Curves.easeInOutCubic;
-  });
-
-  await Future<void>.delayed(const Duration(milliseconds: 300));
-  if (!mounted) return;
-
-  setState(() {
-    flashOpacity = 0.0;
-    reactionScale = 0.005;
-    reactionScaleDuration = const Duration(milliseconds: 100);
-    reactionScaleCurve = Curves.easeInCubic;
-  });
-
-  await Future<void>.delayed(const Duration(milliseconds: 100));
-  if (!mounted) return;
-
-  setState(() {
-    reactionAssetPath = null;
-    reactionOpacity = 0.0;
-    reactionScale = 0.005;
-    reactionScaleDuration = Duration.zero;
-    reactionScaleCurve = Curves.easeInOutCubic;
-  });
-}
+    setState(() {
+      _showPauseOverlay = false;
+      _roundLocked = false;
+    });
+  }
 
   void _resetWholeGame() {
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
@@ -182,34 +245,188 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       });
       return;
     }
-
+    _hotstreakCount = 0;
+    _multiplierTierIndex = 0;
+    _multiplierStepProgress = 0;
     _scoreSubmitted = false;
     _currentQuestionIndex = 0;
     _score = 0;
     _passesLeft = _startingPasses;
     _livesLeft = _startingLives;
+    _correctCount = 0;
+    _wrongAttempts = 0;
     _roundLocked = false;
     _gameFinished = false;
-    _endDialogTitle = 'ROUND COMPLETE';
+    _showPauseOverlay = false;
+    _showGameResultOverlay = false;
+    _gameResultTitle = 'ROUND COMPLETE';
 
     _loadCurrentQuestion();
+    _preparePreGameIntro();
     setState(() {});
   }
 
-  void _advanceToNextQuestion() {
-  if (_questions.isEmpty) return;
+  void _preparePreGameIntro() {
+    setState(() {
+      _roundLocked = true;
+      _showPreGameOverlay = true;
+      _waitingForStartTap = true;
+      _countdownRunning = false;
+      _preGameSpriteAsset = null;
+      _preGameSpriteOpacity = 0.0;
+      _preGameSpriteScale = 0.005;
+      _preGameSpriteScaleDuration = Duration.zero;
+      _preGameSpriteFadeDuration = Duration.zero;
+    });
+  }
 
-  setState(() {
-    _currentQuestionIndex++;
+  Future<void> _playCountdownSprite(String assetPath) async {
+    if (!mounted) return;
 
-    if (_currentQuestionIndex >= _questions.length) {
-      _questions.shuffle();
-      _currentQuestionIndex = 0;
+    setState(() {
+      _preGameSpriteAsset = assetPath;
+      _preGameSpriteOpacity = 1.0;
+      _preGameSpriteScale = 0.005;
+      _preGameSpriteScaleDuration = Duration.zero;
+      _preGameSpriteFadeDuration = Duration.zero;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    if (!mounted) return;
+
+    setState(() {
+      _preGameSpriteScale = 1.0;
+      _preGameSpriteScaleDuration = const Duration(milliseconds: 100);
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
+
+    await Future<void>.delayed(const Duration(milliseconds: 700));
+    if (!mounted) return;
+
+    setState(() {
+      _preGameSpriteOpacity = 0.0;
+      _preGameSpriteFadeDuration = const Duration(milliseconds: 200);
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+  }
+
+  Future<void> _handlePreGameTap() async {
+    if (!_showPreGameOverlay || !_waitingForStartTap || _countdownRunning) {
+      return;
     }
 
-    _loadCurrentQuestion();
-  });
-}
+    setState(() {
+      _waitingForStartTap = false;
+      _countdownRunning = true;
+    });
+
+    unawaited(SfxController.instance.playCountdown());
+    await _runPreGameCountdown();
+  }
+
+  Future<void> _runPreGameCountdown() async {
+    final sequence = <String>[
+      AppAssets.handThree,
+      AppAssets.handTwo,
+      AppAssets.handOne,
+      _difficultyAndyAsset,
+    ];
+
+    for (final asset in sequence) {
+      await _playCountdownSprite(asset);
+      if (!mounted) return;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _showPreGameOverlay = false;
+      _waitingForStartTap = false;
+      _countdownRunning = false;
+      _preGameSpriteAsset = null;
+      _preGameSpriteOpacity = 0.0;
+      _preGameSpriteScale = 0.005;
+      _preGameSpriteScaleDuration = Duration.zero;
+      _preGameSpriteFadeDuration = Duration.zero;
+      _roundLocked = false;
+    });
+  }
+
+  Future<void> _showActionFeedback({
+    required Color flash,
+    required String asset,
+  }) async {
+    if (!mounted) return;
+
+    setState(() {
+      _flashColor = flash;
+      _flashOpacity = 0.0;
+
+      _reactionAssetPath = asset;
+      _reactionOpacity = 1.0;
+      _reactionScale = 0.005;
+      _reactionScaleDuration = Duration.zero;
+      _reactionScaleCurve = Curves.easeInOutCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    if (!mounted) return;
+
+    setState(() {
+      _flashOpacity = 0.55;
+      _reactionScale = 1.0;
+      _reactionScaleDuration = const Duration(milliseconds: 100);
+      _reactionScaleCurve = Curves.easeOutCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
+
+    setState(() {
+      _reactionScale = 1.04;
+      _reactionScaleDuration = const Duration(milliseconds: 600);
+      _reactionScaleCurve = Curves.easeInOutCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    if (!mounted) return;
+
+    setState(() {
+      _flashOpacity = 0.0;
+      _reactionScale = 0.005;
+      _reactionScaleDuration = const Duration(milliseconds: 100);
+      _reactionScaleCurve = Curves.easeInCubic;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
+
+    setState(() {
+      _reactionAssetPath = null;
+      _reactionOpacity = 0.0;
+      _reactionScale = 0.005;
+      _reactionScaleDuration = Duration.zero;
+      _reactionScaleCurve = Curves.easeInOutCubic;
+    });
+  }
+
+  void _advanceToNextQuestion() {
+    if (_questions.isEmpty) return;
+
+    setState(() {
+      _currentQuestionIndex++;
+
+      if (_currentQuestionIndex >= _questions.length) {
+        _questions.shuffle();
+        _currentQuestionIndex = 0;
+      }
+
+      _loadCurrentQuestion();
+    });
+  }
 
   void _loadCurrentQuestion() {
     _normalizedExpression = _normalizeExpression(_currentQuestion.expression);
@@ -442,16 +659,21 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     if (_roundLocked || _gameFinished) return;
     if (_passesLeft <= 0) return;
 
-    HapticFeedback.mediumImpact();
-
     setState(() {
+      _roundLocked = true;
       _passesLeft--;
     });
 
-    _showCenterPopup('PASS', const Color(0xFFFFB347));
+    unawaited(SfxController.instance.playPass());
+    HapticFeedback.mediumImpact();
+
+    await _showActionFeedback(
+      flash: const Color(0xFFFFB347),
+      asset: AppAssets.handPass,
+    );
 
     await _finishRound(
-      scoreDelta: -10,
+      scoreDelta: 0,
       livesDelta: 0,
       advanceQuestion: true,
     );
@@ -551,12 +773,32 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   Future<void> _checkCurrentAnswer(int selectedValue) async {
     if (_roundLocked || _gameFinished) return;
 
+    setState(() {
+      _roundLocked = true;
+    });
+
     final isCorrect = selectedValue == _correctOutput;
 
     if (isCorrect) {
-      const gainedScore = 20;
+      _hotstreakCount++;
+      _multiplierStepProgress++;
 
-      showReactionFeedback(isCorrect: true);
+      if (_multiplierStepProgress >= 2 &&
+          _multiplierTierIndex < _multiplierTiers.length - 1) {
+        _multiplierTierIndex++;
+        _multiplierStepProgress = 0;
+      }
+
+      final gainedScore = (_baseScore * _currentMultiplier).round();
+
+      _correctCount++;
+
+      unawaited(SfxController.instance.playCorrect());
+      await _showActionFeedback(
+        flash: Colors.green,
+        asset: AppAssets.thumbsUp,
+      );
+
       _showScoreDelta('+$gainedScore', Colors.greenAccent);
 
       await _finishRound(
@@ -567,15 +809,26 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     } else {
       const lostLives = 1;
 
-      setState(() {
-        _roundLocked = true;
-      });
+      _wrongAttempts++;
 
-      await showReactionFeedback(isCorrect: false);
+      _hotstreakCount = 0;
+      _multiplierStepProgress = 0;
+
+      if (_multiplierTierIndex > 0) {
+        _multiplierTierIndex--;
+      }
+
+      unawaited(SfxController.instance.playWrong());
+      await _showActionFeedback(
+        flash: Colors.red,
+        asset: AppAssets.thumbsDown,
+      );
+
+      _showLivesDelta('-$lostLives', Colors.redAccent);
       await _animateLostHeart();
 
       await _finishRound(
-        scoreDelta: 0,
+        scoreDelta: -_baseScore,
         livesDelta: -lostLives,
         advanceQuestion: false,
       );
@@ -602,14 +855,6 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       return;
     }
 
-    // if (advanceQuestion && _currentQuestionIndex >= _questions.length - 1) {
-    //  _endDialogTitle = 'ROUND COMPLETE';
-    //  await _submitFinalScoreOnce();
-    //  if (!mounted) return;
-    //  _showEndDialog();
-    //  return;
-    // }
-
     if (advanceQuestion) {
       _advanceToNextQuestion();
     } else {
@@ -626,13 +871,18 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     setState(() {
       _gameFinished = true;
       _roundLocked = true;
-      _endDialogTitle = 'GAME OVER';
     });
 
     await _submitFinalScoreOnce();
 
     if (!mounted) return;
-    _showEndDialog();
+
+    await SfxController.instance.playGameOver();
+
+    setState(() {
+      _gameResultTitle = 'GAME OVER';
+      _showGameResultOverlay = true;
+    });
   }
 
   Future<void> _submitFinalScoreOnce() async {
@@ -644,31 +894,6 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       difficultyId: _difficultyId,
       score: _score,
     );
-  }
-
-  Future<void> _playFlash({bool isCorrect = false}) async {
-    if (!mounted) return;
-    setState(() {
-      _flashColor = isCorrect ? Colors.green : Colors.red;
-      _flashOpacity = isCorrect ? 0.65 : 0.75;
-    });
-
-    await Future.delayed(
-      Duration(milliseconds: isCorrect ? 300 : 135),
-    );
-    if (!mounted) return;
-
-    setState(() {
-      _flashOpacity = 0.0;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 135));
-  }
-
-  Future<void> _playWrongDamageFlash() async {
-    await _playFlash();
-    await Future.delayed(const Duration(milliseconds: 40));
-    await _playFlash();
   }
 
   Future<void> _showScoreDelta(String text, Color color) async {
@@ -705,86 +930,41 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _scoreDeltaXOffset = 0.0;
     });
   }
+  
 
-  Future<void> _showCenterPopup(String text, Color color) async {
+  Future<void> _showLivesDelta(String text, Color color) async {
     if (!mounted) return;
 
     setState(() {
-      _centerPopupText = text;
-      _centerPopupColor = color;
-      _centerPopupOpacity = 1.0;
-      _centerPopupScale = 1.0;
+      _livesDeltaText = text;
+      _livesDeltaOpacity = 1.0;
+      _livesDeltaYOffset = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 450));
+    await Future.delayed(const Duration(milliseconds: 60));
     if (!mounted) return;
 
     setState(() {
-      _centerPopupOpacity = 0.0;
-      _centerPopupScale = 1.08;
+      _livesDeltaYOffset = -15.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 180));
+    await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     setState(() {
-      _centerPopupText = null;
-      _centerPopupScale = 0.9;
+      _livesDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    setState(() {
+      _livesDeltaText = null;
+      _livesDeltaYOffset = 0.0;
     });
   }
 
-  void _showEndDialog() {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            _endDialogTitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 22,
-            ),
-          ),
-          content: Text(
-            'Final Score: $_score',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 20,
-            ),
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _resetWholeGame();
-              },
-              child: const Text(
-                'PLAY AGAIN',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'EXIT',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  
 
   Widget _buildLivesDisplay(double width) {
     return Column(
@@ -880,24 +1060,6 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       child: Container(
         width: double.infinity,
         alignment: Alignment.center,
-        /*
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: _valuesGreen,
-          border: Border.all(
-            color: Colors.white.withOpacity(0.35),
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 2,
-            ),
-          ],
-        ),
-        */
         child: Text(
           _valuesText(),
           textAlign: TextAlign.center,
@@ -955,6 +1117,46 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     );
   }
 
+  Widget _buildMultiplierText(double width) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.18),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFFFFE28A).withOpacity(0.7),
+            width: 1.4,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Mult: $_multiplierLabel',
+              style: TextStyle(
+                fontSize: width * 0.035,
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFFFFE28A),
+                height: 1.0,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Streak: $_hotstreakCount',
+              style: TextStyle(
+                fontSize: width * 0.035,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                height: 1.0,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_questions.isEmpty) {
@@ -980,7 +1182,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     final double gap = 12;
     final double choiceButtonWidth =
         (size.width - (sidePadding * 2) - gap) / 2;
-    const double choiceButtonHeight = 142;
+    const double choiceButtonHeight = 180;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -1002,15 +1204,12 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             PauseIconButton(
-                              // !!! Change this later to this, similar to gatekeeping
-                              // onTap: _onPausePressed,
-                              onTap: () => Navigator.pop(context),
+                              onTap: _onPausePressed,
                             ),
                             const MusicButton(size: 26),
                           ],
                         ),
                       ),
-
                       AspectRatio(
                         aspectRatio: 0.78,
                         child: LayoutBuilder(
@@ -1033,6 +1232,41 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                                   height: h * 0.13,
                                   child: _buildLivesDisplay(w),
                                 ),
+                                if (_livesDeltaText != null)
+                                  Positioned(
+                                    left: w * 0.11,
+                                    top: h * 0.13 + _livesDeltaYOffset,
+                                    child: AnimatedOpacity(
+                                      duration:
+                                          const Duration(milliseconds: 250),
+                                      opacity: _livesDeltaOpacity,
+                                      child: Text(
+                                        _livesDeltaText!,
+                                        style: TextStyle(
+                                          fontSize: w * 0.08,
+                                          fontWeight: FontWeight.w900,
+                                          color: const Color(0xFFFFD0D0),
+                                          shadows: const [
+                                            Shadow(
+                                              color: Colors.black38,
+                                              offset: Offset(0, 2),
+                                              blurRadius: 3,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  Positioned(
+                                    left: w * 0.315,
+                                    right: w * 0.4,
+                                    top: h * 0.02,
+                                    height: h * 0.11,
+                                    child: _buildMultiplierText(w),
+                                  ),
+
+
                                 Positioned(
                                   right: w * 0.07,
                                   top: h * 0.055,
@@ -1130,8 +1364,8 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                                     height: 50,
                                     textColor: Colors.white,
                                     fontSize: 20,
-                                    onTap: _handlePass,
                                     enabled: _passesLeft > 0,
+                                    onTap: _handlePass,
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(child: _buildPassStrip()),
@@ -1169,46 +1403,76 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                   ),
                 ),
               ),
+
               Positioned.fill(
                 child: IgnorePointer(
                   child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 320),
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeInOut,
                     opacity: _flashOpacity,
                     child: ColoredBox(color: _flashColor),
                   ),
                 ),
               ),
-              if (_centerPopupText != null)
-                IgnorePointer(
-                  child: Center(
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 180),
-                      opacity: _centerPopupOpacity,
-                      child: AnimatedScale(
-                        duration: const Duration(milliseconds: 180),
-                        scale: _centerPopupScale,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.45),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            _centerPopupText!,
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w900,
-                              color: _centerPopupColor,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+
+              if (_reactionAssetPath != null)
+                ReactionSpriteLayer(
+                  assetPath: _reactionAssetPath!,
+                  opacity: _reactionOpacity,
+                  scale: _reactionScale,
+                  scaleDuration: _reactionScaleDuration,
+                  scaleCurve: _reactionScaleCurve,
+                ),
+
+              if (_showPauseOverlay)
+                PauseOverlay(
+                  backgroundAssetPath: AppAssets.andyPauseGame,
+                  onResume: _closePauseOverlay,
+                  onRetry: _resetWholeGame,
+                  onExitToMenu: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.home,
+                      (route) => false,
+                    );
+                  },
+                ),
+
+              if (_showGameResultOverlay)
+                GameResultOverlay(
+                  backgroundAssetPath: _gameOverOverlayAsset,
+                  modeLabel: 'One or None',
+                  difficultyLabel: _difficultyLabel,
+                  score: _score,
+                  correctCount: _correctCount,
+                  wrongAttempts: _wrongAttempts,
+                  passesUsed: _passesUsed,
+                  onRetry: _resetWholeGame,
+                  onLeaderboards: () {
+                    Navigator.pushNamed(context, AppRoutes.leaderboards);
+                  },
+                  onBackToMenu: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.home,
+                      (route) => false,
+                    );
+                  },
+                ),
+
+              if (_showPreGameOverlay)
+                PreGameOverlay(
+                  modeLabel: _modeLabel,
+                  difficultyLabel: _difficultyLabel,
+                  difficultyDescription: _difficultyDescription,
+                  guideOverlayAssetPath: _guideOverlayAsset,
+                  waitingForTap: _waitingForStartTap,
+                  spriteAssetPath: _preGameSpriteAsset,
+                  onTap: _handlePreGameTap,
+                  spriteOpacity: _preGameSpriteOpacity,
+                  spriteScale: _preGameSpriteScale,
+                  spriteScaleDuration: _preGameSpriteScaleDuration,
+                  spriteFadeDuration: _preGameSpriteFadeDuration,
                 ),
             ],
           ),
