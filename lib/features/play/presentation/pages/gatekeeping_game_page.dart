@@ -1095,7 +1095,7 @@ Future<void> _runPreGameCountdown() async {
     final double gap = 8;
     final double operatorButtonWidth =
         (size.width - (sidePadding * 2) - gap) / 2;
-    final double operatorButtonHeight = 100;
+    final double operatorButtonHeight = 85;
 
     return Scaffold(
       body: GameMenuBackground(

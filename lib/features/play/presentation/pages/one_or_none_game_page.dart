@@ -979,7 +979,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     final double gap = 12;
     final double choiceButtonWidth =
         (size.width - (sidePadding * 2) - gap) / 2;
-    const double choiceButtonHeight = 180;
+    const double choiceButtonHeight = 142;
 
     return Scaffold(
       body: GameMenuBackground(
