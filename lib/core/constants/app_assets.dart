@@ -21,16 +21,14 @@ class AppAssets {
   static const bgmBasic = 'assets/audio/bgm_basic.mp3';
   static const bgmLogic = 'assets/audio/bgm_logic.mp3';
   static const bgmManic = 'assets/audio/bgm_manic.mp3';
-  static const bgmLogic2 = 'assets/audio/bgm_logic_2.mp3';
-  static const bgmBasic2 = 'assets/audio/bgm_basic_2.mp3';
 
   static const sfxCountdown = 'assets/audio/sfx-countdown.mp3';
   static const sfxCorrect = 'assets/audio/sfx-correct.mp3';
   static const sfxWrong = 'assets/audio/sfx-wrong.mp3';
   static const sfxGameOver = 'assets/audio/sfx-gameOver.mp3';
-  static const sfxOperatorTap = 'assets/audio/sfx-beep1-louder.mp3';
+  static const sfxOperatorTap = 'assets/audio/sfx-beep1.mp3';
   static const sfxOperatorTap2 = 'assets/audio/sfx-beep2.mp3';
-  static const sfxBackspace = 'assets/audio/sfx-backspace-louder.mp3';
+  static const sfxBackspace = 'assets/audio/sfx-backspace.mp3';
   static const sfxPass = 'assets/audio/sfx-pass.mp3';
 
   static const thumbsUp = 'assets/images/sprites/whitehand-thumbsUp.png';
