@@ -87,6 +87,37 @@ void _confirmExitGame() {
   bool showGameResultOverlay = false;
   String gameResultTitle = 'ROUND COMPLETE';
 
+  int hotstreakCount = 0;
+  int multiplierTierIndex = 0;
+  int multiplierStepProgress = 0; // 0 or 1; 2 correct answers = tier up
+
+  static const List<double> _multiplierTiers = [
+    1.0,
+    1.25,
+    1.5,
+    1.75,
+    2.0,
+    3.0,
+  ];
+
+  double get currentMultiplier => _multiplierTiers[multiplierTierIndex];
+
+  String get multiplierLabel {
+    final value = currentMultiplier;
+    return 'x${value.toStringAsFixed(value % 1 == 0 ? 1 : 2)}';
+  }
+
+  int get baseScore {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 100;
+      case Difficulty.logic:
+        return 200;
+      case Difficulty.manic:
+        return 300;
+    }
+  }
+
   final LeaderboardService leaderboardService = LeaderboardService();
 
   double preGameSpriteOpacity = 0.0;
@@ -354,6 +385,9 @@ Future<void> _runPreGameCountdown() async {
   double centerPopupScale = 0.9;
 
   void initializeSharedRun() {
+    hotstreakCount = 0;
+    multiplierTierIndex = 0;
+    multiplierStepProgress = 0;
     scoreSubmitted = false;
     gameplayTimer?.cancel();
 
@@ -461,13 +495,6 @@ Future<void> _runPreGameCountdown() async {
 
     if (!mounted || gameFinished) return;
 
-    // if (advanceQuestion && currentQuestionIndex >= questionCount - 1) {
-    //   await submitFinalScoreOnce();
-    //   if (!mounted) return;
-    //   showEndDialog();
-    //   return;
-    // }
-
     if (timeLeft <= 0) {
       await _performTimeout();
       return;
@@ -486,28 +513,7 @@ Future<void> _runPreGameCountdown() async {
     }
   }
 
-  Future<void> playFlash({bool isCorrect = false}) async {
-    if (!mounted) return;
-    setState(() {
-      flashColor = isCorrect ? Colors.green : Colors.red;
-      flashOpacity = isCorrect ? 0.65 : 0.75;
-    });
 
-    await Future.delayed(Duration(milliseconds: isCorrect ? 300 : 135));
-    if (!mounted) return;
-
-    setState(() {
-      flashOpacity = 0.0;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 135));
-  }
-
-  Future<void> playWrongDamageFlash() async {
-    await playFlash();
-    await Future.delayed(const Duration(milliseconds: 40));
-    await playFlash();
-  }
 
   Future<void> showScoreDelta(String text, Color color) async {
     if (!mounted) return;
@@ -578,32 +584,6 @@ Future<void> _runPreGameCountdown() async {
     });
   }
 
-  Future<void> showCenterPopup(String text, Color color) async {
-    if (!mounted) return;
-
-    setState(() {
-      centerPopupText = text;
-      centerPopupColor = color;
-      centerPopupOpacity = 1.0;
-      centerPopupScale = 1.0;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 450));
-    if (!mounted) return;
-
-    setState(() {
-      centerPopupOpacity = 0.0;
-      centerPopupScale = 1.08;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 180));
-    if (!mounted) return;
-
-    setState(() {
-      centerPopupText = null;
-      centerPopupScale = 0.9;
-    });
-  }
 
   Future<void> submitFinalScoreOnce() async {
     if (scoreSubmitted) return;
@@ -616,56 +596,6 @@ Future<void> _runPreGameCountdown() async {
     );
   }
 
-  void showEndDialog() {
-
-    gameplayTimer?.cancel();
-    gameFinished = true;
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            'ROUND COMPLETE',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22),
-          ),
-          content: Text(
-            'Final Score: $score',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                resetWholeGame();
-              },
-              child: const Text(
-                'PLAY AGAIN',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'EXIT',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   static const int _startingRoundTimeValue = 60;
   static const int _startingPassesValue = 5;
@@ -903,10 +833,19 @@ Future<void> _runPreGameCountdown() async {
     );
 
     if (isCorrect) {
-      correctCount++;
-
-      const gainedScore = 20;
       const gainedTime = 2;
+
+      correctCount++;
+      hotstreakCount++;
+      multiplierStepProgress++;
+
+      if (multiplierStepProgress >= 2 &&
+          multiplierTierIndex < _multiplierTiers.length - 1) {
+        multiplierTierIndex++;
+        multiplierStepProgress = 0;
+      }
+
+      final gainedScore = (baseScore * currentMultiplier).round();
 
       //playFlash(isCorrect: true);
       unawaited(SfxController.instance.playCorrect());
@@ -923,10 +862,17 @@ Future<void> _runPreGameCountdown() async {
         advanceQuestion: true,
       );
     } else {
-      wrongAttempts++;
-
-      const lostScore = 20;
       const lostTime = -1;
+
+      wrongAttempts++;
+      hotstreakCount = 0;
+      multiplierStepProgress = 0;
+
+      if (multiplierTierIndex > 0) {
+        multiplierTierIndex--;
+      }
+
+      final lostScore = baseScore;
 
       //playWrongDamageFlash();
       unawaited(SfxController.instance.playWrong());
@@ -988,6 +934,63 @@ Future<void> _runPreGameCountdown() async {
       ),
     );
   }
+  
+  Widget _buildMultiplierText(double width) {
+  return Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFFE28A).withOpacity(0.7),
+          width: 1.4,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            'Mult: $multiplierLabel',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: width * 0.040,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFFFFE28A),
+              height: 1.0,
+              shadows: const [
+                Shadow(
+                  color: Colors.black38,
+                  offset: Offset(0, 1.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Streak: $hotstreakCount',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: width * 0.040,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              height: 1.0,
+              shadows: const [
+                Shadow(
+                  color: Colors.black38,
+                  offset: Offset(0, 1.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildDiagramPlaceholder() {
     return Container(
@@ -1299,6 +1302,15 @@ Future<void> _runPreGameCountdown() async {
                                       ),
                                     ),
                                   ),
+
+                                  Positioned(
+                                    left: w * 0.24,
+                                    right: w * 0.4,
+                                    top: h * 0.02,
+                                    height: h * 0.11,
+                                    child: _buildMultiplierText(w),
+                                  ),
+
                                 Positioned(
                                   right: w * 0.07,
                                   top: h * 0.055,
