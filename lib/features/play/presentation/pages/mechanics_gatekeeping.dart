@@ -136,30 +136,6 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 22),
-
-                      BeveledMenuButton(
-                        label: 'VIEW LEADERBOARDS',
-                        color: AppColors.purpleButton,
-                        width: double.infinity,
-                        height: 62,
-                        textColor: Colors.white,
-                        fontSize: 20,
-                        onTap: () {
-                          Navigator.pushNamed(context, AppRoutes.leaderboards);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      BeveledMenuButton(
-                        label: 'BACK',
-                        color: AppColors.greyButton,
-                        width: double.infinity,
-                        height: 58,
-                        textColor: Colors.white,
-                        fontSize: 20,
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
                     ],
                   ),
                 ),
