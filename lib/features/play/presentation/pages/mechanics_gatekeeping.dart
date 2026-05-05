@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -166,7 +169,11 @@ class _TopBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              unawaited(SfxController.instance.playMenuBack());
+            Navigator.pop(context);
+            },
+            
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 30),
           ),
           Expanded(

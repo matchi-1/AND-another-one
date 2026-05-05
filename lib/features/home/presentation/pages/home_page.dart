@@ -266,6 +266,7 @@ class _HomePageState extends State<HomePage>
                         textColor: btnTextColor,
                         fontSize: 18,
                         onTap: () async {
+                          unawaited(SfxController.instance.playGameOver());
                           await _authService.logout();
                           if (!mounted) return;
 

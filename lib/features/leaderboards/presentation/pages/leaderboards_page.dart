@@ -326,6 +326,7 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                 fontSize: 13,
                 onTap: () {
                   setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
                     selectedMode = LeaderboardMode.gatekeeping;
                   });
                 },
@@ -344,6 +345,7 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                 fontSize: 13,
                 onTap: () {
                   setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
                     selectedMode = LeaderboardMode.oneOrNone;
                   });
                 },
@@ -374,6 +376,7 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                 fontSize: 13,
                 onTap: () {
                   setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
                     selectedDifficulty = LeaderboardDifficulty.basic;
                   });
                 },
@@ -392,6 +395,7 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                 fontSize: 13,
                 onTap: () {
                   setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
                     selectedDifficulty = LeaderboardDifficulty.logic;
                   });
                 },
@@ -410,6 +414,7 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
                 fontSize: 13,
                 onTap: () {
                   setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
                     selectedDifficulty = LeaderboardDifficulty.manic;
                   });
                 },
@@ -590,6 +595,7 @@ class _LeaderboardBoardState extends State<_LeaderboardBoard> {
                       ? null
                       : () {
                     setState(() {
+                      unawaited(SfxController.instance.playMenuPress());
                       _currentPage--;
                     });
                   },
@@ -597,6 +603,7 @@ class _LeaderboardBoardState extends State<_LeaderboardBoard> {
                       ? null
                       : () {
                     setState(() {
+                      unawaited(SfxController.instance.playMenuPress());
                       _currentPage++;
                     });
                   },

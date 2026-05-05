@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,6 +25,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   void _nextLesson() {
+    unawaited(SfxController.instance.playMenuPress());
     setState(() {
       _currentLessonIndex =
           (_currentLessonIndex + 1) % LogicLessonData.lessons.length;
@@ -29,6 +33,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   void _previousLesson() {
+    unawaited(SfxController.instance.playMenuPress());
     setState(() {
       _currentLessonIndex =
           (_currentLessonIndex - 1 + LogicLessonData.lessons.length) %
@@ -56,7 +61,10 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     width: 48,
                     child: IconButton(
                       icon: Image.asset(AppAssets.backBtn, width: 30),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        unawaited(SfxController.instance.playMenuBack());
+                        Navigator.pop(context);
+                      },
                     ),
                   ),
                   Expanded(

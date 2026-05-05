@@ -59,6 +59,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
   bool showBackConfirmOverlay = false;
 
   void _onPausePressed() {
+    unawaited(SfxController.instance.playMenuPress());
   if (gameFinished) {
     Navigator.pop(context);
     return;
@@ -71,6 +72,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 }
 
 void _closeBackOverlay() {
+  unawaited(SfxController.instance.playMenuBack());
   if (!mounted) return;
 
   setState(() {
@@ -79,10 +81,7 @@ void _closeBackOverlay() {
   });
 }
 
-void _confirmExitGame() {
-  if (!mounted) return;
-  Navigator.pop(context);
-}
+
 
   bool showGameResultOverlay = false;
   String gameResultTitle = 'ROUND COMPLETE';
@@ -657,6 +656,7 @@ Future<void> _runPreGameCountdown() async {
 
   @override
   void resetWholeGame() {
+    unawaited(SfxController.instance.playPlaySelect());
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
       widget.difficulty,
     );
@@ -1530,6 +1530,7 @@ Future<void> _runPreGameCountdown() async {
                     resetWholeGame();
                   },
                   onExitToMenu: () {
+                    unawaited(SfxController.instance.playGameOver());
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       AppRoutes.home,
@@ -1551,9 +1552,11 @@ Future<void> _runPreGameCountdown() async {
                       resetWholeGame();
                     },
                     onLeaderboards: () {
+                      unawaited(SfxController.instance.playMenuPress());
                       Navigator.pushNamed(context, AppRoutes.leaderboards);
                     },
                     onBackToMenu: () {
+                      unawaited(SfxController.instance.playMenuBack());
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         AppRoutes.home,

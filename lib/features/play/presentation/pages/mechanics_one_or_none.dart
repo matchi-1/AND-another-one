@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -135,31 +138,6 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                           'Each difficulty and mode has its own leaderboard because score multipliers vary.',
                         ],
                       ),
-                      const SizedBox(height: 22),
-
-                      BeveledMenuButton(
-                        label: 'VIEW LEADERBOARDS',
-                        color: AppColors.orangeButton,
-                        width: double.infinity,
-                        height: 62,
-                        textColor: Colors.white,
-                        fontSize: 20,
-                        onTap: () {
-                          Navigator.pushNamed(context, AppRoutes.leaderboards);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      BeveledMenuButton(
-                        label: 'BACK',
-                        color: AppColors.greyButton,
-                        width: double.infinity,
-                        height: 58,
-                        textColor: Colors.white,
-                        fontSize: 20,
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
                     ],
                   ),
                 ),
@@ -190,7 +168,10 @@ class _TopBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              unawaited(SfxController.instance.playMenuBack());
+              Navigator.pop(context);
+            },
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
           ),
           Expanded(

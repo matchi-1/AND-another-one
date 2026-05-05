@@ -217,6 +217,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   }
 
   void _onPausePressed() {
+    unawaited(SfxController.instance.playMenuPress());
     if (_gameFinished) return;
 
     setState(() {
@@ -226,6 +227,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   }
 
   void _closePauseOverlay() {
+    unawaited(SfxController.instance.playMenuBack());
     if (!mounted) return;
 
     setState(() {
@@ -235,6 +237,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   }
 
   void _resetWholeGame() {
+    unawaited(SfxController.instance.playPlaySelect());
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
       widget.difficulty,
     );
@@ -1430,6 +1433,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                   onResume: _closePauseOverlay,
                   onRetry: _resetWholeGame,
                   onExitToMenu: () {
+                    unawaited(SfxController.instance.playGameOver());
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       AppRoutes.home,
@@ -1449,9 +1453,11 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                   passesUsed: _passesUsed,
                   onRetry: _resetWholeGame,
                   onLeaderboards: () {
+                    unawaited(SfxController.instance.playMenuPress());
                     Navigator.pushNamed(context, AppRoutes.leaderboards);
                   },
                   onBackToMenu: () {
+                    unawaited(SfxController.instance.playMenuBack());
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       AppRoutes.home,

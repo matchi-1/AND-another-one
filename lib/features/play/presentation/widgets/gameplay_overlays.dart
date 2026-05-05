@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -266,8 +269,10 @@ class _PauseOverlayState extends State<PauseOverlay> {
     switch (_confirmMode) {
       case _PauseConfirmMode.retry:
         return widget.onRetry;
+
       case _PauseConfirmMode.exit:
         return widget.onExitToMenu;
+
       case _PauseConfirmMode.none:
         return () {};
     }
@@ -344,6 +349,7 @@ class _PauseOverlayState extends State<PauseOverlay> {
           fontSize: 17,
           onTap: () {
             setState(() {
+              unawaited(SfxController.instance.playMenuPress());
               _confirmMode = _PauseConfirmMode.retry;
             });
           },
@@ -360,6 +366,7 @@ class _PauseOverlayState extends State<PauseOverlay> {
           fontSize: 17,
           onTap: () {
             setState(() {
+              unawaited(SfxController.instance.playMenuPress());
               _confirmMode = _PauseConfirmMode.exit;
             });
           },
@@ -418,6 +425,7 @@ class _PauseOverlayState extends State<PauseOverlay> {
               fontSize: 18,
               onTap: () {
                 setState(() {
+                  unawaited(SfxController.instance.playMenuBack());
                   _confirmMode = _PauseConfirmMode.none;
                 });
               },
