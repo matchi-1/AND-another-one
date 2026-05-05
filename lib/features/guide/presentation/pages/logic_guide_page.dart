@@ -152,7 +152,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
             height: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.beigeBg,
               borderRadius: BorderRadius.circular(8),
@@ -436,7 +436,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                   (row) => TableRow(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 1),
                         child: Center(
                           child: Text(
                             row.$1,
@@ -450,7 +450,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.symmetric(vertical: 1),
                         child: Center(
                           child: Image.asset(
                             row.$2,
@@ -587,9 +587,9 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       return 22;
     }
     if (lessonId == 'symbol_names') {
-      return 28;
+      return 24;
     }
-    return 28;
+    return 24;
   }
 
   double _getTitleAlignmentY(String lessonId) {
