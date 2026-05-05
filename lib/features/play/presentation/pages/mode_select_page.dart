@@ -129,6 +129,7 @@ class _ModeSelectPageState extends State<ModeSelectPage>
                       andyBottom: -5,
                       andySideOffset: -30,
                       onTap: () {
+                        unawaited(SfxController.instance.playMenuPress());
                         Navigator.pushNamed(context, AppRoutes.gatekeepingSelect);
                       },
                     ),
