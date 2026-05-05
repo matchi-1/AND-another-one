@@ -12,7 +12,7 @@ class AppColors {
   static const darkOrangeButton = Color(0xFFEF7711);
   static const purpleButton = Color(0xFF8733EB);
   static const pinkButton = Color(0xFFEF40B3);
-  static const greenButton = Color(0xFF2DBB00);
+  static const greenButton = Color(0xFF1B8A00);
   static const greyButton = Color(0xFF9C9C9C);
   static const redButton = Color(0xFFE82C2C);
   static const whiteText = Colors.white;
