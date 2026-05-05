@@ -97,11 +97,11 @@ class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 children: [
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
 
                   Image.asset(
                     AppAssets.homeLogo,
-                    width: size.width * 0.32,
+                    width: size.width * 0.28,
                   ),
 
                   const SizedBox(height: 50),
@@ -111,7 +111,7 @@ class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
                     width: size.width * 0.6,
                   ),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
 
                   BeveledMenuButton(
                     label: 'HOW TO PLAY?',

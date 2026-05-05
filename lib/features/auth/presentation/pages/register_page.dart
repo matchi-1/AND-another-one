@@ -102,7 +102,7 @@ class _RegisterPageState extends State<RegisterPage> {
               constraints: const BoxConstraints(maxWidth: 380),
               child: Column(
                 children: [
-                  Image.asset(AppAssets.homeLogo, width: size.width * 0.65),
+                  Image.asset(AppAssets.homeLogo, width: size.width * 0.55),
                   const SizedBox(height: 28),
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -184,7 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   
                   const SizedBox(height: btnGap + 20),
 
-                  MusicButton(size: size.width * 0.12),
+                  MusicButton(size: size.width * 0.10),
 
                 ],
               ),

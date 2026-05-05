@@ -87,7 +87,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
     const double btnWidth = 300;
     const double btnHeight = 70;
     const double btnFontSize = 28;
-    const double btnGap = 5;
+    const double btnGap = 0;
     const Color btnTextColor = Colors.white;
 
     return Scaffold(
@@ -108,7 +108,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       width: size.width * 0.32,
                     ),
 
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 40),
 
                     Image.asset(
                       AppAssets.gatekeepingText,

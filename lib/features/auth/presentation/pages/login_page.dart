@@ -135,7 +135,7 @@ class _LoginPageState extends State<LoginPage>  with RouteAware, HomeBgmRouteMix
                 children: [
                   Image.asset(
                     AppAssets.homeLogo,
-                    width: size.width * 0.65,
+                    width: size.width * 0.55,
                   ),
                   const SizedBox(height: 28),
                   Container(
@@ -219,7 +219,7 @@ class _LoginPageState extends State<LoginPage>  with RouteAware, HomeBgmRouteMix
 
                   const SizedBox(height: btnGap + 20),
 
-                  MusicButton(size: size.width * 0.12),
+                  MusicButton(size: size.width * 0.10),
                   
                 ],
               ),
