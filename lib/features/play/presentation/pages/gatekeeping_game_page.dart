@@ -432,12 +432,12 @@ Future<void> _runPreGameCountdown() async {
     if (!mounted) return;
 
     await SfxController.instance.playGameOver();
-    
+
     setState(() {
       gameResultTitle = 'ROUND COMPLETE';
       showGameResultOverlay = true;
     });
-    
+
   }
 
   Future<void> finishRound({
@@ -578,7 +578,7 @@ Future<void> _runPreGameCountdown() async {
   }
 
   void showEndDialog() {
-    
+
     gameplayTimer?.cancel();
     gameFinished = true;
 
@@ -800,7 +800,7 @@ Future<void> _runPreGameCountdown() async {
     if (roundLocked || gameFinished) return;
     if (_activeSlotIndex >= _playerAnswers.length) return;
 
-    
+
     HapticFeedback.selectionClick();
     unawaited(SfxController.instance.playOperatorTap());
 
@@ -1060,7 +1060,10 @@ Future<void> _runPreGameCountdown() async {
       decoration: BoxDecoration(
         color: AppColors.beigeBg,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFFD8C6B5), width: 2),
+        border: Border.all(
+          color: const Color(0xFFD8C6B5),
+          width: 2,
+        ),
       ),
       child: Text(
         'PASSES LEFT: $passesLeft',
@@ -1334,12 +1337,12 @@ Future<void> _runPreGameCountdown() async {
                                   Expanded(child: _buildPassStrip()),
                                   const SizedBox(width: 8),
                                   BeveledMenuButton(
-                                    label: '←',
+                                    label: '⌫',
                                     color: _backspaceGrey,
                                     width: 80,
                                     height: 50,
                                     textColor: Colors.white,
-                                    fontSize: 30,
+                                    fontSize: 26,
                                     onTap: _handleBackspace,
                                   ),
                                 ],

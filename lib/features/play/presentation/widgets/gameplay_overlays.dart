@@ -599,7 +599,7 @@ class GameResultOverlay extends StatelessWidget {
                         width: cardWidth * 0.5,
                         height: 40,
                         textColor: Colors.white,
-                        fontSize: 17,
+                        fontSize: 16,
                         onTap: onRetry,
                       ),
 
@@ -611,7 +611,7 @@ class GameResultOverlay extends StatelessWidget {
                         width: cardWidth * 0.5,
                         height: 40,
                         textColor: Colors.white,
-                        fontSize: 17,
+                        fontSize: 16,
                         onTap: onLeaderboards,
                       ),
 
