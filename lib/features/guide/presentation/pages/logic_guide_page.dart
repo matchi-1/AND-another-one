@@ -260,7 +260,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     _getFormulaLine(lesson.formulas, 0),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       fontFamily: 'Nunito',
@@ -283,7 +283,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                       _getFormulaLine(lesson.formulas, 1),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Nunito',
                         color: Colors.white,
@@ -317,7 +317,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             lesson.explanation,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               fontFamily: 'Nunito',
               color: Colors.white,
@@ -590,12 +590,12 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
   double _getTitleFontSize(String lessonId) {
     if (lessonId == 'distributive_associative') {
-      return 22;
+      return 16;
     }
     if (lessonId == 'symbol_names') {
-      return 24;
+      return 18;
     }
-    return 24;
+    return 18;
   }
 
   double _getTitleAlignmentY(String lessonId) {
