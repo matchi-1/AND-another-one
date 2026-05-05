@@ -114,7 +114,21 @@ class SfxController {
   }
 
   Future<void> playCountdown() async {
-    await _play(_countdownPlayer);
+    await init();
+
+    if (!BgmController.instance.isOn.value) return;
+
+    try {
+      unawaited(BgmController.instance.duckBgm());
+
+      await _countdownPlayer.stop();
+      await _countdownPlayer.seek(Duration.zero);
+      unawaited(_countdownPlayer.play());
+
+      _countdownPlayer.playerStateStream
+          .firstWhere((state) => state.processingState == ProcessingState.completed)
+          .then((_) => BgmController.instance.restoreBgm());
+    } catch (_) {}
   }
 
   Future<void> playMenuPress() async {
