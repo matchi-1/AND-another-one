@@ -441,9 +441,29 @@ class _LeaderboardBoard extends StatefulWidget {
 }
 
 class _LeaderboardBoardState extends State<_LeaderboardBoard> {
-  static const int _pageSize = 6;
+  static const int _firstPageRows = 2; // ranks 4 and 5 only
+  static const int _otherPageRows = 7; // page 2 onward
+
   int _currentPage = 0;
+
   bool get _showPinnedTopThree => _currentPage == 0;
+
+  int _totalPagesForRemaining(int remainingCount) {
+    if (remainingCount <= _firstPageRows) return 1;
+
+    final afterFirstPage = remainingCount - _firstPageRows;
+    return 1 + (afterFirstPage / _otherPageRows).ceil();
+  }
+
+  int _startIndexForPage(int page) {
+    if (page == 0) return 0;
+
+    return _firstPageRows + ((page - 1) * _otherPageRows);
+  }
+
+  int _rowCountForPage(int page) {
+    return page == 0 ? _firstPageRows : _otherPageRows;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -506,18 +526,18 @@ class _LeaderboardBoardState extends State<_LeaderboardBoard> {
           final topThree = mappedEntries.take(3).toList();
           final remaining = mappedEntries.skip(3).toList();
 
-          final totalPages = remaining.isEmpty
-              ? 1
-              : (remaining.length / _pageSize).ceil();
+          final totalPages = _totalPagesForRemaining(remaining.length);
 
           if (_currentPage >= totalPages) {
             _currentPage = totalPages - 1;
           }
 
-          final startIndex = _currentPage * _pageSize;
+          final startIndex = _startIndexForPage(_currentPage);
+          final rowCount = _rowCountForPage(_currentPage);
+
           final pagedEntries = remaining
               .skip(startIndex)
-              .take(_pageSize)
+              .take(rowCount)
               .toList();
 
           return Column(
@@ -527,7 +547,7 @@ class _LeaderboardBoardState extends State<_LeaderboardBoard> {
                   entries: topThree,
                   accentColor: widget.difficultyAccentColor,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
               ],
 
               _LeaderboardHeader(
@@ -544,22 +564,24 @@ class _LeaderboardBoardState extends State<_LeaderboardBoard> {
                   message: 'More ranks will appear after more scores.',
                   compact: true,
                 )
-                    : ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: pagedEntries.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
+                    : Column(
+                  children: List.generate(pagedEntries.length, (index) {
                     final rank = startIndex + index + 4;
 
-                    return _LeaderboardRow(
-                      rank: rank,
-                      entry: pagedEntries[index],
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index == pagedEntries.length - 1 ? 0 : 8,
+                      ),
+                      child: _LeaderboardRow(
+                        rank: rank,
+                        entry: pagedEntries[index],
+                      ),
                     );
-                  },
+                  }),
                 ),
               ),
 
-              if (remaining.isNotEmpty) ...[
+              if (remaining.isNotEmpty && totalPages > 1) ...[
                 const SizedBox(height: 8),
                 _PaginationControls(
                   currentPage: _currentPage,
@@ -611,7 +633,7 @@ class _TopPodiumPanel extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 25),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.16),
         borderRadius: BorderRadius.circular(22),
@@ -624,17 +646,20 @@ class _TopPodiumPanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.auto_awesome_rounded,
-                color: accentColor,
-                size: 18,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black38,
-                    blurRadius: 2,
-                    offset: Offset(0, 1),
-                  ),
-                ],
+              Container(
+                width: 14,
+                height: 14,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFC107),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black38,
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 6),
               const Expanded(
@@ -753,7 +778,7 @@ class _PodiumTile extends StatelessWidget {
           Icon(
             icon,
             color: darkText,
-            size: rank == 1 ? 30 : 25,
+            size: rank == 1 ? 38 : 32,
             shadows: const [
               Shadow(
                 color: Colors.black26,
@@ -1046,7 +1071,7 @@ class _TinyScorePill extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           color: darkText ? const Color(0xFF4A2F00) : Colors.white,
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: FontWeight.w900,
         ),
       ),
