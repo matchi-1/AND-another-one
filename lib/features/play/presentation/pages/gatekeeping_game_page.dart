@@ -343,6 +343,11 @@ Future<void> _runPreGameCountdown() async {
   double scoreDeltaYOffset = 0.0;
   double scoreDeltaXOffset = 0.0;
 
+  String? timeDeltaText;
+  Color timeDeltaColor = Colors.white;
+  double timeDeltaOpacity = 0.0;
+  double timeDeltaYOffset = 0.0;
+
   String? centerPopupText;
   Color centerPopupColor = Colors.white;
   double centerPopupOpacity = 0.0;
@@ -537,6 +542,39 @@ Future<void> _runPreGameCountdown() async {
       scoreDeltaText = null;
       scoreDeltaYOffset = 0.0;
       scoreDeltaXOffset = 0.0;
+    });
+  }
+
+  Future<void> showTimeDelta(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaText = text;
+      timeDeltaColor = color;
+      timeDeltaOpacity = 1.0;
+      timeDeltaYOffset = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 60));
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaYOffset = -15.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaText = null;
+      timeDeltaYOffset = 0.0;
     });
   }
 
@@ -877,6 +915,7 @@ Future<void> _runPreGameCountdown() async {
         asset: AppAssets.thumbsUp,
       );
       showScoreDelta('+$gainedScore', Colors.greenAccent);
+      showTimeDelta('+$gainedTime s', Colors.greenAccent);
 
       await finishRound(
         scoreDelta: gainedScore,
@@ -896,6 +935,7 @@ Future<void> _runPreGameCountdown() async {
         asset: AppAssets.thumbsDown,
       );
       showScoreDelta('-$lostScore', Colors.redAccent);
+      showTimeDelta('${lostTime}s', Colors.redAccent);
 
       await finishRound(
         scoreDelta: -lostScore,
@@ -1215,6 +1255,50 @@ Future<void> _runPreGameCountdown() async {
                                     child: _buildTimerText(w),
                                   ),
                                 ),
+                                if (timeDeltaText != null)
+                                  Positioned(
+                                    left: w * 0.15,
+                                    top: h * 0.15 + timeDeltaYOffset,
+                                    child: AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 250),
+                                      opacity: timeDeltaOpacity,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Text(
+                                            timeDeltaText!,
+                                            style: TextStyle(
+                                              fontSize: w * 0.06,
+                                              fontWeight: FontWeight.w900,
+                                              foreground: Paint()
+                                                ..style = PaintingStyle.stroke
+                                                ..strokeWidth = 3
+                                                ..color = timeDeltaText!.startsWith('-')
+                                                    ? const Color(0xFFD50000)
+                                                    : const Color(0xFF0FAF2A),
+                                            ),
+                                          ),
+                                          Text(
+                                            timeDeltaText!,
+                                            style: TextStyle(
+                                              fontSize: w * 0.06,
+                                              fontWeight: FontWeight.w900,
+                                              color: timeDeltaText!.startsWith('-')
+                                                  ? const Color(0xFFFFD0D0)
+                                                  : const Color(0xFFBEFFC9),
+                                              shadows: const [
+                                                Shadow(
+                                                  color: Colors.black38,
+                                                  offset: Offset(0, 2),
+                                                  blurRadius: 3,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 Positioned(
                                   right: w * 0.07,
                                   top: h * 0.055,
