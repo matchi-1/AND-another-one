@@ -49,7 +49,8 @@ class PreGameOverlay extends StatelessWidget {
     super.key,
     required this.modeLabel,
     required this.difficultyLabel,
-    required this.reminderText,
+    required this.difficultyDescription,
+    required this.guideOverlayAssetPath,
     required this.waitingForTap,
     required this.spriteAssetPath,
     required this.onTap,
@@ -61,14 +62,33 @@ class PreGameOverlay extends StatelessWidget {
 
   final String modeLabel;
   final String difficultyLabel;
-  final String reminderText;
+  final String difficultyDescription;
+  final String guideOverlayAssetPath;
+
   final bool waitingForTap;
   final String? spriteAssetPath;
   final VoidCallback onTap;
+
   final double spriteOpacity;
   final double spriteScale;
   final Duration spriteScaleDuration;
   final Duration spriteFadeDuration;
+
+  double get _contentTopFactor {
+    switch (difficultyLabel.toUpperCase()) {
+      case 'BASIC':
+        return 0.535;
+
+      case 'LOGIC':
+        return 0.510;
+
+      case 'MANIC':
+        return 0.490;
+
+      default:
+        return 0.535;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,91 +100,115 @@ class PreGameOverlay extends StatelessWidget {
           child: SafeArea(
             child: Center(
               child: waitingForTap
-    ? Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 26),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              modeLabel,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.0,
-              ),
+                  ? _buildGuideCard(context)
+                  : _buildCountdownSprite(),
             ),
-            const SizedBox(height: 8),
-            Text(
-              difficultyLabel,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFFFFE28A),
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.8,
-              ),
-            ),
-            const SizedBox(height: 22),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 16,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.18),
-                  width: 1.5,
-                ),
-              ),
-              child: Text(
-                reminderText,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  height: 1.35,
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
-            const Text(
-              'Tap anywhere to start',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.4,
-              ),
-            ),
-          ],
+          ),
         ),
-      )
-    : Center(
-        child: spriteAssetPath == null
-            ? const SizedBox.shrink()
-            : AnimatedOpacity(
-                duration: spriteFadeDuration,
-                curve: Curves.easeInOutCubic,
-                opacity: spriteOpacity,
-                child: AnimatedScale(
-                  duration: spriteScaleDuration,
-                  curve: Curves.easeOutCubic,
-                  scale: spriteScale,
-                  child: Image.asset(
-                    spriteAssetPath!,
-                    height: 180,
-                    fit: BoxFit.contain,
+      ),
+    );
+  }
+
+  Widget _buildGuideCard(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    final double cardWidth = (size.width * 1.25).clamp(360.0, 470.0);
+    final double cardHeight = cardWidth * 1.75;
+
+    return SizedBox(
+      width: cardWidth,
+      height: cardHeight,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              guideOverlayAssetPath,
+              fit: BoxFit.contain,
+            ),
+          ),
+
+          Positioned(
+            top: cardHeight * _contentTopFactor,
+            left: cardWidth * 0.12,
+            right: cardWidth * 0.12,
+            child: Column(
+              children: [
+                Text(
+                  '$modeLabel: $difficultyLabel',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFFFFE28A),
+                    fontSize: cardWidth * 0.042,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.7,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black38,
+                        blurRadius: 2,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-      ),
+
+                const SizedBox(height: 14),
+
+                Text(
+                  difficultyDescription,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: cardWidth * 0.032,
+                    fontWeight: FontWeight.w500,
+                    height: 1.25,
+                    letterSpacing: 0.15,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black26,
+                        blurRadius: 2,
+                        offset: Offset(0, 1.5),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Text(
+                  'Tap anywhere to start',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.78),
+                    fontSize: cardWidth * 0.030,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountdownSprite() {
+    return Center(
+      child: spriteAssetPath == null
+          ? const SizedBox.shrink()
+          : AnimatedOpacity(
+        duration: spriteFadeDuration,
+        curve: Curves.easeInOutCubic,
+        opacity: spriteOpacity,
+        child: AnimatedScale(
+          duration: spriteScaleDuration,
+          curve: Curves.easeOutCubic,
+          scale: spriteScale,
+          child: Image.asset(
+            spriteAssetPath!,
+            height: 180,
+            fit: BoxFit.contain,
           ),
         ),
       ),

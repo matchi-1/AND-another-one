@@ -117,6 +117,30 @@ void _confirmExitGame() {
     }
   }
 
+  String get _guideOverlayAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyGuideGameBasic;
+      case Difficulty.logic:
+        return AppAssets.andyGuideGameLogic;
+      case Difficulty.manic:
+        return AppAssets.andyGuideGameManic;
+    }
+  }
+
+  String get _difficultyDescription {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 'Expressions are as shown. This level focuses on the basic gates: NOT, AND, and OR.';
+
+      case Difficulty.logic:
+        return 'Expression are as shown but uses other logic gates like NAND, NOR, XNOR, XAND, and XOR symbols.';
+
+      case Difficulty.manic:
+        return 'Uses all logic gates, but expressions may be simplified using Boolean laws like double negation, absorption, and distributive laws.';
+    }
+  }
+
   String get _difficultyAndyAsset {
     switch (widget.difficulty) {
       case Difficulty.basic:
@@ -141,9 +165,6 @@ void _confirmExitGame() {
 
   int get passesUsed => startingPasses - passesLeft;
 
-
-String get _pregameReminderText =>
-    '<placeholder reminder for $_modeLabel on $_difficultyLabel>';
 
 void _preparePreGameIntro({bool notify = true}) {
   roundLocked = true;
@@ -1454,7 +1475,8 @@ Future<void> _runPreGameCountdown() async {
                   PreGameOverlay(
                     modeLabel: _modeLabel,
                     difficultyLabel: _difficultyLabel,
-                    reminderText: _pregameReminderText,
+                    difficultyDescription: _difficultyDescription,
+                    guideOverlayAssetPath: _guideOverlayAsset,
                     waitingForTap: waitingForStartTap,
                     spriteAssetPath: preGameSpriteAsset,
                     onTap: _handlePreGameTap,
