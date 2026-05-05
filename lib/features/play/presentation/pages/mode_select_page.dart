@@ -12,11 +12,67 @@ import '../../../tutorial/tutorial_targets.dart';
 
 class ModeSelectPage extends StatefulWidget {
   const ModeSelectPage({super.key});
+
   @override
   State<ModeSelectPage> createState() => _ModeSelectPageState();
 }
+
 class _ModeSelectPageState extends State<ModeSelectPage>
     with RouteAware, HomeBgmRouteMixin {
+
+  Widget _buildMenuButtonWithAndy({
+    required Key? buttonKey,
+    required String label,
+    required Color color,
+    required double width,
+    required double height,
+    required double fontSize,
+    required Color textColor,
+    required VoidCallback onTap,
+    required String andyAsset,
+    required bool andyOnLeft,
+    double andySize = 58,
+    double andyAngle = 0.0,
+    double andyBottom = 6,
+    double andySideOffset = -6,
+  }) {
+    return SizedBox(
+      width: width + 24,
+      height: height + 20,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: BeveledMenuButton(
+              key: buttonKey,
+              label: label,
+              color: color,
+              width: width,
+              height: height,
+              textColor: textColor,
+              fontSize: fontSize,
+              onTap: onTap,
+            ),
+          ),
+          Positioned(
+            left: andyOnLeft ? andySideOffset : null,
+            right: andyOnLeft ? null : andySideOffset,
+            bottom: andyBottom,
+            child: Transform.rotate(
+              angle: andyAngle,
+              child: Image.asset(
+                andyAsset,
+                width: andySize,
+                height: andySize,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,80 +90,93 @@ class _ModeSelectPageState extends State<ModeSelectPage>
         child: TutorialPageReady(
           routeName: AppRoutes.selectMode,
           child: SingleChildScrollView(
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                children: [
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 100),
 
-                  const SizedBox(height: 100),
+                    Image.asset(
+                      AppAssets.homeLogo,
+                      width: size.width * 0.35,
+                    ),
 
-                  Image.asset(
-                    AppAssets.homeLogo,
-                    width: size.width * 0.35,
-                  ),
+                    const SizedBox(height: 60),
 
-                  const SizedBox(height: 60),
+                    Image.asset(
+                      AppAssets.selectModeText,
+                      width: size.width * 0.7,
+                    ),
 
-                  Image.asset(
-                    AppAssets.selectModeText,
-                    width: size.width * 0.7,
-                  ),
+                    const SizedBox(height: 30),
 
-                  const SizedBox(height: 30),
+                    _buildMenuButtonWithAndy(
+                      buttonKey: TutorialTargets.modeGatekeeping,
+                      label: 'GATEKEEPING',
+                      color: AppColors.orangeButton,
+                      width: btnWidth,
+                      height: btnHeight,
+                      fontSize: btnFontSize,
+                      textColor: btnTextColor,
+                      andyAsset: AppAssets.andyGatekeeping,
+                      andyOnLeft: true,
+                      andySize: 100,
+                      andyAngle: -0.16,
+                      andyBottom: -5,
+                      andySideOffset: -30,
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.gatekeepingSelect);
+                      },
+                    ),
 
-                  BeveledMenuButton(
-                    key: TutorialTargets.modeGatekeeping,
-                    label: 'GATEKEEPING',
-                    color: AppColors.orangeButton,
-                    width: btnWidth,
-                    height: btnHeight,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize,
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.gatekeepingSelect);
-                    },
-                  ),
-                  const SizedBox(height: btnGap),
+                    const SizedBox(height: btnGap),
 
-                  BeveledMenuButton(
-                    key: TutorialTargets.modeOneOrNone,
-                    label: 'ONE OR NONE',
-                    color: AppColors.purpleButton,
-                    width: btnWidth,
-                    height: btnHeight,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize,
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.oneOrNoneSelect);
-                    },
-                  ),
-                  const SizedBox(height: btnGap + 30),
+                    _buildMenuButtonWithAndy(
+                      buttonKey: TutorialTargets.modeOneOrNone,
+                      label: 'ONE OR NONE',
+                      color: AppColors.purpleButton,
+                      width: btnWidth,
+                      height: btnHeight,
+                      fontSize: btnFontSize,
+                      textColor: btnTextColor,
+                      andyAsset: AppAssets.andyOneOrNone,
+                      andyOnLeft: false,
+                      andySize: 105,
+                      andyAngle: 0.16,
+                      andyBottom: -15,
+                      andySideOffset: -30,
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.oneOrNoneSelect);
+                      },
+                    ),
 
-                  BeveledMenuButton(
-                    key: TutorialTargets.modeBack,
-                    label: 'BACK',
-                    color: AppColors.greyButton,
-                    width: btnWidth - 150,
-                    height: btnHeight - 20,
-                    textColor: btnTextColor,
-                    fontSize: btnFontSize - 6,
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
+                    const SizedBox(height: btnGap + 30),
 
-                  const SizedBox(height: btnGap + 20),
+                    BeveledMenuButton(
+                      key: TutorialTargets.modeBack,
+                      label: 'BACK',
+                      color: AppColors.greyButton,
+                      width: btnWidth - 150,
+                      height: btnHeight - 20,
+                      textColor: btnTextColor,
+                      fontSize: btnFontSize - 6,
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                    ),
 
-                  MusicButton(
-                    size: size.width * 0.12,
-                  ),
-                ],
+                    const SizedBox(height: btnGap + 20),
+
+                    MusicButton(
+                      size: size.width * 0.12,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-        )
       ),
     );
   }

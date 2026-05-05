@@ -46,6 +46,9 @@ class AppAssets {
   static const andyPlay = 'assets/images/sprites/andy-play.png';
   static const andyLogicGuide = 'assets/images/sprites/andy-logic-guide.png';
   static const andyLeaderboards = 'assets/images/sprites/andy-settings.png';
+
+  static const andyGatekeeping = 'assets/images/sprites/andy-gatekeeping.png';
+  static const andyOneOrNone = 'assets/images/sprites/andy-one-or-none.png';
   
 
 }
