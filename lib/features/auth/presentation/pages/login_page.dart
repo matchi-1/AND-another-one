@@ -1,3 +1,4 @@
+import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -20,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
+  
 
   @override
   void dispose() {
@@ -54,6 +56,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   Future<void> _login() async {
+    
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -107,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    const double btnGap = 8;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -196,9 +200,15 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: btnGap + 20),
+
+                  MusicButton(size: size.width * 0.12),
+                  
                 ],
               ),
             ),

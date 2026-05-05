@@ -1,3 +1,4 @@
+import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
@@ -49,10 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.register(
-        username: username,
-        password: password,
-      );
+      await _authService.register(username: username, password: password);
 
       if (!mounted) return;
       Navigator.pushReplacementNamed(
@@ -70,14 +68,14 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Something went wrong.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Something went wrong.')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -86,6 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    const double btnGap = 8;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -97,10 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
               constraints: const BoxConstraints(maxWidth: 380),
               child: Column(
                 children: [
-                  Image.asset(
-                    AppAssets.homeLogo,
-                    width: size.width * 0.65,
-                  ),
+                  Image.asset(AppAssets.homeLogo, width: size.width * 0.65),
                   const SizedBox(height: 28),
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -178,6 +174,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       ],
                     ),
                   ),
+                  
+                  const SizedBox(height: btnGap + 20),
+
+                  MusicButton(size: size.width * 0.12),
+
                 ],
               ),
             ),
