@@ -24,6 +24,7 @@ class AppAssets {
   static const bgmLogic2 = 'assets/audio/bgm_logic_2.mp3';
   static const bgmBasic2 = 'assets/audio/bgm_basic_2.mp3';
 
+  static const sfxCountdown = 'assets/audio/sfx-countdown.mp3';
   static const sfxCorrect = 'assets/audio/sfx-correct.mp3';
   static const sfxWrong = 'assets/audio/sfx-wrong.mp3';
   static const sfxGameOver = 'assets/audio/sfx-gameOver.mp3';

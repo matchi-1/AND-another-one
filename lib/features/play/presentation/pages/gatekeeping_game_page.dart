@@ -190,6 +190,8 @@ Future<void> _handlePreGameTap() async {
     countdownRunning = true;
   });
 
+  unawaited(SfxController.instance.playCountdown());
+
   await _runPreGameCountdown();
 }
 

@@ -15,6 +15,7 @@ class SfxController {
   final AudioPlayer _correctPlayer = AudioPlayer();
   final AudioPlayer _wrongPlayer = AudioPlayer();
   final AudioPlayer _gameOverPlayer = AudioPlayer();
+  final AudioPlayer _countdownPlayer = AudioPlayer();
 
   bool _initialized = false;
   bool _useOperatorA = true;
@@ -22,6 +23,10 @@ class SfxController {
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
+
+    await _countdownPlayer.setAsset(AppAssets.sfxCountdown);
+    await _countdownPlayer.setVolume(1.0);
+    await _countdownPlayer.setLoopMode(LoopMode.off);
 
     await Future.wait([
       _passPlayer.setAsset(AppAssets.sfxPass),
@@ -94,6 +99,10 @@ class SfxController {
 
   Future<void> playGameOver() async {
     await _play(_gameOverPlayer);
+  }
+
+  Future<void> playCountdown() async {
+    await _play(_countdownPlayer);
   }
 
   Future<void> dispose() async {
