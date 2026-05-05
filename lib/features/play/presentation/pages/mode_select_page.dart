@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -147,6 +150,7 @@ class _ModeSelectPageState extends State<ModeSelectPage>
                       andyBottom: -15,
                       andySideOffset: -30,
                       onTap: () {
+                        unawaited(SfxController.instance.playMenuPress());
                         Navigator.pushNamed(context, AppRoutes.oneOrNoneSelect);
                       },
                     ),
@@ -162,6 +166,7 @@ class _ModeSelectPageState extends State<ModeSelectPage>
                       textColor: btnTextColor,
                       fontSize: btnFontSize - 6,
                       onTap: () {
+                        unawaited(SfxController.instance.playMenuBack());
                         Navigator.pop(context);
                       },
                     ),

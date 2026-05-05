@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -170,6 +171,7 @@ class _HomePageState extends State<HomePage>
                     andyBottom: -2,
                     andySideOffset: -20,
                     onTap: () {
+                      unawaited(SfxController.instance.playMenuPress());
                       Navigator.pushNamed(context, AppRoutes.selectMode);
                     },
                   ),
@@ -191,6 +193,7 @@ class _HomePageState extends State<HomePage>
                     andyBottom: -10,
                     andySideOffset: -25,
                     onTap: () {
+                      unawaited(SfxController.instance.playMenuPress());
                       Navigator.pushNamed(context, AppRoutes.logicGuide);
                     },
                   ),
@@ -212,6 +215,7 @@ class _HomePageState extends State<HomePage>
                     andyBottom: -25,
                     andySideOffset: -25,
                     onTap: () {
+                      unawaited(SfxController.instance.playMenuPress());
                       Navigator.pushNamed(context, AppRoutes.leaderboards);
                     },
                   ),

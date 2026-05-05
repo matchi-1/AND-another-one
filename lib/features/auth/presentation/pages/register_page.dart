@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -53,6 +56,9 @@ class _RegisterPageState extends State<RegisterPage> {
       await _authService.register(username: username, password: password);
 
       if (!mounted) return;
+
+      unawaited(SfxController.instance.playPlaySelect());
+      
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.login,
@@ -158,6 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(height: 14),
                         TextButton(
                           onPressed: () {
+                            unawaited(SfxController.instance.playMenuPress());
                             Navigator.pop(context);
                           },
                           child: const Text(

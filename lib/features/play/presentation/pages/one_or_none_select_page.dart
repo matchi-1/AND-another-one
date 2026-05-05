@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:and_another_one/features/play/presentation/pages/one_or_none_game_page.dart';
 import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:flutter/material.dart';
@@ -118,10 +121,8 @@ class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
                     textColor: btnTextColor,
                     fontSize: 18,
                     onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.mechanicsOneOrNone,
-                      );
+                      unawaited(SfxController.instance.playMenuPress());
+                      Navigator.pushNamed(context, AppRoutes.mechanicsOneOrNone);
                     },
                   ),
 
@@ -142,6 +143,7 @@ class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
                     andyBottom: -10,
                     andySideOffset: -10,
                     onTap: () {
+                      unawaited(SfxController.instance.playPlaySelect());
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -170,6 +172,7 @@ class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
                     andyBottom: -15,
                     andySideOffset: -15,
                     onTap: () {
+                      unawaited(SfxController.instance.playPlaySelect());
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -198,6 +201,7 @@ class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
                     andyBottom: -10,
                     andySideOffset: -10,
                     onTap: () {
+                      unawaited(SfxController.instance.playPlaySelect());
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -219,6 +223,7 @@ class _OneOrNoneSelectPageState extends State<OneOrNoneSelectPage>
                     textColor: btnTextColor,
                     fontSize: btnFontSize - 6,
                     onTap: () {
+                      unawaited(SfxController.instance.playMenuBack());
                       Navigator.pop(context);
                     },
                   ),

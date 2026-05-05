@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +86,8 @@ class _LoginPageState extends State<LoginPage>  with RouteAware, HomeBgmRouteMix
       );
 
       if (!mounted) return;
-
+      
+      unawaited(SfxController.instance.playPlaySelect());
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.home,
@@ -194,6 +198,7 @@ class _LoginPageState extends State<LoginPage>  with RouteAware, HomeBgmRouteMix
                         const SizedBox(height: 14),
                         TextButton(
                           onPressed: () {
+                            unawaited(SfxController.instance.playMenuPress());
                             Navigator.pushNamed(context, AppRoutes.register);
                           },
                           child: const Text(

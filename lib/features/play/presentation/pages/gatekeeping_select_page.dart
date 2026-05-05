@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -123,10 +126,8 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       textColor: btnTextColor,
                       fontSize: 18,
                       onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.mechanicsGatekeeping,
-                        );
+                        unawaited(SfxController.instance.playMenuPress());
+                        Navigator.pushNamed(context, AppRoutes.mechanicsGatekeeping);
                       },
                     ),
 
@@ -147,6 +148,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       andyBottom: -10,
                       andySideOffset: -10,
                       onTap: () {
+                        unawaited(SfxController.instance.playPlaySelect());
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -175,6 +177,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       andyBottom: -15,
                       andySideOffset: -15,
                       onTap: () {
+                        unawaited(SfxController.instance.playPlaySelect());
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -203,6 +206,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       andyBottom: -10,
                       andySideOffset: -10,
                       onTap: () {
+                        unawaited(SfxController.instance.playPlaySelect());
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -225,6 +229,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       textColor: btnTextColor,
                       fontSize: btnFontSize - 6,
                       onTap: () {
+                        unawaited(SfxController.instance.playMenuBack());
                         Navigator.pop(context);
                       },
                     ),

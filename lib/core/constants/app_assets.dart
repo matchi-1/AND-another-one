@@ -30,6 +30,9 @@ class AppAssets {
   static const sfxOperatorTap2 = 'assets/audio/sfx-beep2.mp3';
   static const sfxBackspace = 'assets/audio/sfx-backspace.mp3';
   static const sfxPass = 'assets/audio/sfx-pass.mp3';
+  static const sfxMenuPress = 'assets/audio/sfx-menu-press.mp3';
+  static const sfxMenuBack = 'assets/audio/sfx-menu-back.mp3';
+  static const sfxPlaySelect = 'assets/audio/sfx-difficulty-select.mp3';
 
   static const thumbsUp = 'assets/images/sprites/whitehand-thumbsUp.png';
   static const thumbsDown = 'assets/images/sprites/whitehand-redThumbsDown.png';
@@ -37,7 +40,7 @@ class AppAssets {
 
   static const handOne = 'assets/images/sprites/whitehand-1.png';
   static const handTwo = 'assets/images/sprites/whitehand-12.png'; 
-  static const handThree = 'assets/images/sprites/whitehand-oks.png';
+  static const handThree = 'assets/images/sprites/whitehand-ok.png';
 
   static const andyBasic = 'assets/images/sprites/andy-basic.png';
   static const andyLogic = 'assets/images/sprites/andy-logic.png';
