@@ -173,92 +173,417 @@ class PreGameOverlay extends StatelessWidget {
 }
 
 
-class PauseOverlay extends StatelessWidget {
+class PauseOverlay extends StatefulWidget {
   const PauseOverlay({
     super.key,
-    required this.title,
-    required this.message,
+    required this.backgroundAssetPath,
     required this.onResume,
-    required this.onExit,
+    required this.onRetry,
+    required this.onExitToMenu,
   });
 
-  final String title;
-  final String message;
+  final String backgroundAssetPath;
   final VoidCallback onResume;
-  final VoidCallback onExit;
+  final VoidCallback onRetry;
+  final VoidCallback onExitToMenu;
+
+  @override
+  State<PauseOverlay> createState() => _PauseOverlayState();
+}
+
+class _PauseOverlayState extends State<PauseOverlay> {
+  _PauseConfirmMode _confirmMode = _PauseConfirmMode.none;
+
+  bool get _isConfirming => _confirmMode != _PauseConfirmMode.none;
+
+  String get _confirmTitle {
+    switch (_confirmMode) {
+      case _PauseConfirmMode.retry:
+        return 'RETRY GAME?';
+      case _PauseConfirmMode.exit:
+        return 'EXIT TO MENU?';
+      case _PauseConfirmMode.none:
+        return '';
+    }
+  }
+
+  String get _confirmMessage {
+    switch (_confirmMode) {
+      case _PauseConfirmMode.retry:
+        return 'Your current progress will be lost.';
+      case _PauseConfirmMode.exit:
+        return 'Your current game will end.';
+      case _PauseConfirmMode.none:
+        return '';
+    }
+  }
+
+  VoidCallback get _confirmAction {
+    switch (_confirmMode) {
+      case _PauseConfirmMode.retry:
+        return widget.onRetry;
+      case _PauseConfirmMode.exit:
+        return widget.onExitToMenu;
+      case _PauseConfirmMode.none:
+        return () {};
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    final double cardWidth = (size.width * 0.9).clamp(390.0, 450.0);
+    final double cardHeight = cardWidth * 1.60;
+
     return Positioned.fill(
       child: Material(
         color: Colors.black.withOpacity(0.72),
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 28),
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2B1B10),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.16),
-                width: 2,
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black45,
-                  blurRadius: 10,
-                  offset: Offset(0, 6),
+          child: SizedBox(
+            width: cardWidth,
+            height: cardHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    widget.backgroundAssetPath,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+
+                Positioned(
+                  top: cardHeight * 0.50,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: _isConfirming
+                        ? _buildConfirmContent(cardWidth)
+                        : _buildPauseButtons(cardWidth),
+                  ),
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPauseButtons(double cardWidth) {
+    return Column(
+      key: const ValueKey('pause-buttons'),
+
+      children: [
+        const SizedBox(height: 40),
+
+        BeveledMenuButton(
+          label: 'RESUME',
+          color: AppColors.greenButton,
+          width: cardWidth * 0.65,
+          height: 48,
+          textColor: Colors.white,
+          fontSize: 17,
+          onTap: widget.onResume,
+        ),
+
+        const SizedBox(height: 5),
+
+        BeveledMenuButton(
+          label: 'RETRY',
+          color: AppColors.orangeButton,
+          width: cardWidth * 0.65,
+          height: 48,
+          textColor: Colors.white,
+          fontSize: 17,
+          onTap: () {
+            setState(() {
+              _confirmMode = _PauseConfirmMode.retry;
+            });
+          },
+        ),
+
+        const SizedBox(height: 5),
+
+        BeveledMenuButton(
+          label: 'EXIT TO MENU',
+          color: AppColors.greyButton,
+          width: cardWidth * 0.65,
+          height: 48,
+          textColor: Colors.white,
+          fontSize: 17,
+          onTap: () {
+            setState(() {
+              _confirmMode = _PauseConfirmMode.exit;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfirmContent(double cardWidth) {
+    return Column(
+      key: const ValueKey('confirm-content'),
+      children: [
+        const SizedBox(height: 50),
+        Text(
+          _confirmTitle,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.8,
+            shadows: [
+              Shadow(
+                color: Colors.black26,
+                blurRadius: 2,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        Text(
+          _confirmMessage,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            height: 1.2,
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            BeveledMenuButton(
+              label: 'NO',
+              color: AppColors.greyButton,
+              width: cardWidth * 0.30,
+              height: 44,
+              textColor: Colors.white,
+              fontSize: 18,
+              onTap: () {
+                setState(() {
+                  _confirmMode = _PauseConfirmMode.none;
+                });
+              },
+            ),
+
+            const SizedBox(width: 12),
+
+            BeveledMenuButton(
+              label: 'YES',
+              color: AppColors.redButton,
+              width: cardWidth * 0.30,
+              height: 44,
+              textColor: Colors.white,
+              fontSize: 18,
+              onTap: _confirmAction,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+enum _PauseConfirmMode {
+  none,
+  retry,
+  exit,
+}
+
+
+class GameResultOverlay extends StatelessWidget {
+  const GameResultOverlay({
+    super.key,
+    required this.backgroundAssetPath,
+    required this.modeLabel,
+    required this.difficultyLabel,
+    required this.score,
+    required this.correctCount,
+    required this.wrongAttempts,
+    required this.passesUsed,
+    required this.onRetry,
+    required this.onLeaderboards,
+    required this.onBackToMenu,
+  });
+
+  final String backgroundAssetPath;
+
+  final String modeLabel;
+  final String difficultyLabel;
+  final int score;
+  final int correctCount;
+  final int wrongAttempts;
+  final int passesUsed;
+
+  final VoidCallback onRetry;
+  final VoidCallback onLeaderboards;
+  final VoidCallback onBackToMenu;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    final double cardWidth = (size.width * 1.5).clamp(360.0, 410.0);
+    final double cardHeight = cardWidth * 1.85;
+
+    return Positioned.fill(
+      child: Material(
+        color: Colors.black.withOpacity(0.72),
+        child: Center(
+          child: SizedBox(
+            width: cardWidth,
+            height: cardHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
               children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.0,
+                Positioned.fill(
+                  child: Image.asset(
+                    backgroundAssetPath,
+                    fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    height: 1.35,
+
+                Positioned(
+                  top: cardHeight * 0.409,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1.3,
+                        ),
+                      ),
+                      child: Text(
+                        '${modeLabel.toUpperCase()}: ${difficultyLabel.toUpperCase()}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: 0.4,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    BeveledMenuButton(
-                      label: 'RESUME',
-                      color: AppColors.greenButton,
-                      width: 130,
-                      height: 48,
-                      textColor: Colors.white,
-                      fontSize: 18,
-                      onTap: onResume,
-                    ),
-                    const SizedBox(width: 12),
-                    BeveledMenuButton(
-                      label: 'EXIT',
-                      color: AppColors.redButton,
-                      width: 130,
-                      height: 48,
-                      textColor: Colors.white,
-                      fontSize: 18,
-                      onTap: onExit,
-                    ),
-                  ],
+
+                Positioned(
+                  top: cardHeight * 0.475,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    children: [
+                      Text(
+                        score.toString(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 54,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.0,
+                          height: 0.95,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black26,
+                              blurRadius: 2,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'SCORE',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Positioned(
+                  top: cardHeight * 0.610,
+                  left: cardWidth * 0.24,
+                  right: cardWidth * 0.16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _GameOverStatText('Correct: $correctCount'),
+                      _GameOverStatText('Wrong Attempts: $wrongAttempts'),
+                      _GameOverStatText('Passes Used: $passesUsed'),
+                    ],
+                  ),
+                ),
+
+                Positioned(
+                  top: cardHeight * 0.730,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    children: [
+                      BeveledMenuButton(
+                        label: 'RETRY',
+                        color: AppColors.orangeButton,
+                        width: cardWidth * 0.5,
+                        height: 40,
+                        textColor: Colors.white,
+                        fontSize: 17,
+                        onTap: onRetry,
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      BeveledMenuButton(
+                        label: 'LEADERBOARDS',
+                        color: AppColors.greenButton,
+                        width: cardWidth * 0.5,
+                        height: 40,
+                        textColor: Colors.white,
+                        fontSize: 17,
+                        onTap: onLeaderboards,
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      BeveledMenuButton(
+                        label: 'BACK TO MENU',
+                        color: AppColors.greyButton,
+                        width: cardWidth * 0.4,
+                        height: 40,
+                        textColor: Colors.white,
+                        fontSize: 15,
+                        onTap: onBackToMenu,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -269,97 +594,22 @@ class PauseOverlay extends StatelessWidget {
   }
 }
 
-class GameResultOverlay extends StatelessWidget {
-  const GameResultOverlay({
-    super.key,
-    required this.title,
-    required this.scoreText,
-    required this.onPlayAgain,
-    required this.onExit,
-  });
+class _GameOverStatText extends StatelessWidget {
+  const _GameOverStatText(this.text);
 
-  final String title;
-  final String scoreText;
-  final VoidCallback onPlayAgain;
-  final VoidCallback onExit;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Material(
-        color: Colors.black.withOpacity(0.72),
-        child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 28),
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2B1B10),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.16),
-                width: 2,
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black45,
-                  blurRadius: 10,
-                  offset: Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  scoreText,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    BeveledMenuButton(
-                      label: 'PLAY AGAIN',
-                      color: AppColors.greenButton,
-                      width: 130,
-                      height: 48,
-                      textColor: Colors.white,
-                      fontSize: 16,
-                      onTap: onPlayAgain,
-                    ),
-                    const SizedBox(width: 12),
-                    BeveledMenuButton(
-                      label: 'EXIT',
-                      color: AppColors.redButton,
-                      width: 130,
-                      height: 48,
-                      textColor: Colors.white,
-                      fontSize: 18,
-                      onTap: onExit,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+    return Text(
+      text,
+      textAlign: TextAlign.left,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        height: 1.35,
+        letterSpacing: 0.1,
       ),
     );
   }
