@@ -4,9 +4,9 @@ class PauseIconButton extends StatelessWidget {
   const PauseIconButton({
     super.key,
     required this.onTap,
-    this.size = 28,
+    this.size = 26,
     this.backgroundColor = const Color(0xFF0E6BFD),
-    this.borderColor = Colors.white,
+    this.borderColor = const Color(0xFF85A7D9),
     this.iconColor = Colors.white,
   });
 

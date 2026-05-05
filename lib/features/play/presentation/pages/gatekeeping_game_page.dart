@@ -58,7 +58,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
 
   bool showBackConfirmOverlay = false;
 
-  void _onBackPressed() {
+  void _onPausePressed() {
   if (gameFinished) {
     Navigator.pop(context);
     return;
@@ -1168,7 +1168,7 @@ Future<void> _runPreGameCountdown() async {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             PauseIconButton(
-                              onTap: _onBackPressed,
+                              onTap: _onPausePressed,
                             ),
 
                             /*
