@@ -46,7 +46,7 @@ class LogicLessonData {
     ),
     LogicLesson(
       id: 'symbol_names',
-      title: 'SYMBOL NAMES',
+      title: 'Symbol Names',
       formulas: '',
       explanation: '',
     ),

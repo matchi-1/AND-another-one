@@ -598,7 +598,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     }
 
     if (lessonId == 'symbol_names') {
-      return 0.83;
+      return 0.84;
     }
 
     if (lessonId == 'double_negation' ||
