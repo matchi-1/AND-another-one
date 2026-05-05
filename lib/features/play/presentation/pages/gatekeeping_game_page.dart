@@ -346,22 +346,24 @@ Future<void> _runPreGameCountdown() async {
     if (roundLocked || gameFinished) return;
     if (passesLeft <= 0) return;
 
-    await SfxController.instance.playPass();
-
-    HapticFeedback.mediumImpact();
-
     setState(() {
+      roundLocked = true;
       passesLeft--;
     });
 
-    //showCenterPopup('PASS', const Color(0xFFFFB347));
+    unawaited(SfxController.instance.playPass());
+    HapticFeedback.mediumImpact();
 
     await showActionFeedback(
       flash: const Color(0xFFFFB347),
       asset: AppAssets.handPass,
     );
 
-    await finishRound(scoreDelta: -10, timeDelta: 0, advanceQuestion: true);
+    await finishRound(
+      scoreDelta: -10,
+      timeDelta: 0,
+      advanceQuestion: true,
+    );
   }
 
   Future<void> handleTimeout() async {

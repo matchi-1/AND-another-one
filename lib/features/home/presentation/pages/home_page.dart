@@ -29,7 +29,8 @@ class _HomePageState extends State<HomePage> with RouteAware, HomeBgmRouteMixin 
 @override
 void initState() {
   super.initState();
-  unawaited(BgmController.instance.playScene(BgmScene.home));
+  debugPrint('HOME initState fired');
+  //unawaited(BgmController.instance.playScene(BgmScene.home));
   WidgetsBinding.instance.addPostFrameCallback((_) async {
 
     if (!mounted) return;
@@ -194,6 +195,7 @@ void initState() {
                         textColor: btnTextColor,
                         fontSize: 18,
                         onTap: () async {
+                          
                           await _authService.logout();
                           if (!mounted) return;
 

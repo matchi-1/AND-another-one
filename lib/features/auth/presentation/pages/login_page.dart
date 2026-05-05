@@ -1,3 +1,4 @@
+import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
 import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage>  with RouteAware, HomeBgmRouteMixin {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -28,6 +29,12 @@ class _LoginPageState extends State<LoginPage> {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('LOGIN initState fired');
   }
 
   bool _hasShownRouteMessage = false;

@@ -50,6 +50,7 @@ class BgmController {
   }
 
   Future<void> playScene(BgmScene scene) async {
+    debugPrint('playScene called: $scene');
     await init();
 
     _requestedScene = scene;
