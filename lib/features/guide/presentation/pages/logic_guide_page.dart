@@ -152,12 +152,18 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
             height: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: lesson.id == 'symbol_names' ? 4 : 8,
+            ),
             decoration: BoxDecoration(
               color: AppColors.beigeBg,
               borderRadius: BorderRadius.circular(8),
             ),
             child: SingleChildScrollView(
+              physics: lesson.id == 'symbol_names'
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
               child: _buildBottomSectionContent(lesson),
             ),
           ),
@@ -420,12 +426,12 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       child: Transform.translate(
         offset: const Offset(0, -30),
         child: Transform.scale(
-          scale: 0.70,
+          scale: 0.67,
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             border: TableBorder.all(
               color: const Color(0xFFD66AA9),
-              width: 2,
+              width: 1.7,
             ),
             columnWidths: const {
               0: FlexColumnWidth(1.2),
@@ -441,7 +447,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                           child: Text(
                             row.$1,
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFFCF6AA5),
                               fontFamily: 'Nunito',
@@ -473,7 +479,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     if (label == 'AND' || label == 'NOT') {
       return 10;
     }
-    return 20;
+    return 19;
   }
 
   Widget _buildGateLegendItem(
