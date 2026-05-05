@@ -108,7 +108,7 @@ void initState() {
                   const SizedBox(height: 30),
 
                   BeveledMenuButton(
-                    key: TutorialTargets.homePlay,
+                    // key: TutorialTargets.homePlay,
                     label: 'PLAY',
                     color: AppColors.yellowButton,
                     width: btnWidth,
@@ -122,7 +122,7 @@ void initState() {
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
-                    key: TutorialTargets.homeLogicGuide,
+                    // key: TutorialTargets.homeLogicGuide,
                     label: 'LOGIC GUIDE',
                     color: AppColors.pinkButton,
                     width: btnWidth,
@@ -136,7 +136,7 @@ void initState() {
                   const SizedBox(height: btnGap),
 
                   BeveledMenuButton(
-                    key: TutorialTargets.homeLeaderboards,
+                    // key: TutorialTargets.homeLeaderboards,
                     label: 'LEADERBOARDS',
                     color: AppColors.greenButton,
                     width: btnWidth,
@@ -151,7 +151,7 @@ void initState() {
                   const SizedBox(height: 8),
 
                   TextButton(
-                    key: TutorialTargets.homeRestart,
+                    // key: TutorialTargets.homeRestart,
                     onPressed: () async {
                       await AppTutorialController.instance.start(context);
                     },
@@ -173,7 +173,7 @@ void initState() {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       BeveledMenuButton(
-                        key: TutorialTargets.homeExit,
+                        // key: TutorialTargets.homeExit,
                         label: 'EXIT',
                         color: AppColors.greyButton,
                         width: 132,
@@ -186,7 +186,7 @@ void initState() {
                       ),
                       const SizedBox(width: 12),
                       BeveledMenuButton(
-                        key: TutorialTargets.homeLogout,
+                        // key: TutorialTargets.homeLogout,
                         label: 'LOGOUT',
                         color: AppColors.redButton,
                         width: 132,
