@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/beveled_menu_button.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class ReactionSpriteLayer extends StatelessWidget {
   const ReactionSpriteLayer({
@@ -162,6 +164,199 @@ class PreGameOverlay extends StatelessWidget {
                 ),
               ),
       ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class PauseOverlay extends StatelessWidget {
+  const PauseOverlay({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.onResume,
+    required this.onExit,
+  });
+
+  final String title;
+  final String message;
+  final VoidCallback onResume;
+  final VoidCallback onExit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Material(
+        color: Colors.black.withOpacity(0.72),
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2B1B10),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.16),
+                width: 2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black45,
+                  blurRadius: 10,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    BeveledMenuButton(
+                      label: 'RESUME',
+                      color: AppColors.greenButton,
+                      width: 130,
+                      height: 48,
+                      textColor: Colors.white,
+                      fontSize: 18,
+                      onTap: onResume,
+                    ),
+                    const SizedBox(width: 12),
+                    BeveledMenuButton(
+                      label: 'EXIT',
+                      color: AppColors.redButton,
+                      width: 130,
+                      height: 48,
+                      textColor: Colors.white,
+                      fontSize: 18,
+                      onTap: onExit,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GameResultOverlay extends StatelessWidget {
+  const GameResultOverlay({
+    super.key,
+    required this.title,
+    required this.scoreText,
+    required this.onPlayAgain,
+    required this.onExit,
+  });
+
+  final String title;
+  final String scoreText;
+  final VoidCallback onPlayAgain;
+  final VoidCallback onExit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Material(
+        color: Colors.black.withOpacity(0.72),
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2B1B10),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.16),
+                width: 2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black45,
+                  blurRadius: 10,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  scoreText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    BeveledMenuButton(
+                      label: 'PLAY AGAIN',
+                      color: AppColors.greenButton,
+                      width: 130,
+                      height: 48,
+                      textColor: Colors.white,
+                      fontSize: 16,
+                      onTap: onPlayAgain,
+                    ),
+                    const SizedBox(width: 12),
+                    BeveledMenuButton(
+                      label: 'EXIT',
+                      color: AppColors.redButton,
+                      width: 130,
+                      height: 48,
+                      textColor: Colors.white,
+                      fontSize: 18,
+                      onTap: onExit,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),

@@ -82,7 +82,9 @@ void _confirmExitGame() {
   Navigator.pop(context);
 }
 
-  
+  bool showGameResultOverlay = false;
+  String gameResultTitle = 'ROUND COMPLETE';
+
   final LeaderboardService leaderboardService = LeaderboardService();
 
   double preGameSpriteOpacity = 0.0;
@@ -389,7 +391,11 @@ Future<void> _runPreGameCountdown() async {
 
     await SfxController.instance.playGameOver();
     
-    showEndDialog();
+    setState(() {
+      gameResultTitle = 'ROUND COMPLETE';
+      showGameResultOverlay = true;
+    });
+    
   }
 
   Future<void> finishRound({
@@ -1376,83 +1382,30 @@ Future<void> _runPreGameCountdown() async {
                 ),
 
                 if (showBackConfirmOverlay)
-                  Positioned.fill(
-                    child: Material(
-                      color: Colors.black.withOpacity(0.72),
-                      child: Center(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 28),
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2B1B10),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.16),
-                              width: 2,
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black45,
-                                blurRadius: 10,
-                                offset: Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'PAUSED',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              const Text(
-                                '<placeholder textbox overlay>',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.35,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  BeveledMenuButton(
-                                    label: 'RESUME',
-                                    color: AppColors.greenButton,
-                                    width: 130,
-                                    height: 48,
-                                    textColor: Colors.white,
-                                    fontSize: 18,
-                                    onTap: _closeBackOverlay,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  BeveledMenuButton(
-                                    label: 'EXIT',
-                                    color: AppColors.redButton,
-                                    width: 130,
-                                    height: 48,
-                                    textColor: Colors.white,
-                                    fontSize: 18,
-                                    onTap: _confirmExitGame,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                  PauseOverlay(
+                    title: 'PAUSED',
+                    message: '<placeholder textbox overlay>',
+                    onResume: _closeBackOverlay,
+                    onExit: _confirmExitGame,
                   ),
+
+                  if (showGameResultOverlay)
+                    GameResultOverlay(
+                      title: gameResultTitle,
+                      scoreText: 'Final Score: $score',
+                      onPlayAgain: () {
+                        setState(() {
+                          showGameResultOverlay = false;
+                        });
+                        resetWholeGame();
+                      },
+                      onExit: () {
+                        setState(() {
+                          showGameResultOverlay = false;
+                        });
+                        Navigator.pop(context);
+                      },
+                    ),
 
                 if (showPreGameOverlay)
                   PreGameOverlay(
