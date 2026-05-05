@@ -115,14 +115,14 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               ],
             ),
 
-            const SizedBox(height: 4),
+            const SizedBox(height: 7),
 
             // beige rectangle container for explanation content
             Expanded(
               child: _buildBottomSectionWithNav(currentLesson, size),
             ),
 
-            const SizedBox(height: 4),
+            const SizedBox(height: 7),
           ],
         ),
       ),
@@ -152,7 +152,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
             height: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.beigeBg,
               borderRadius: BorderRadius.circular(8),
