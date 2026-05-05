@@ -134,8 +134,9 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                         items: [
                           'A timer increases urgency and quick reasoning.',
                           'You can use Pass if you want to skip a difficult question.',
-                          'A correction or backspace button lets you revise your answer before submitting.',
-                          'Each mode and difficulty has its own leaderboard because score multipliers differ.',
+                          'A correction or backspace button lets you revise your answer.',
+                          'Multiplier increases as correct streak increases, up to a 10-answer streak with 3.0x multiplier.',
+                          'Each mode and difficulty has its own leaderboard.',
                         ],
                       ),
                       const SizedBox(height: 22),
@@ -402,18 +403,18 @@ class _GatekeepingMockScreen extends StatefulWidget {
 
 class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
   int _timeLeft = 60;
-  int _scoreMultiplier = 1;
+  final double  _scoreMultiplier = 3.0;
   String _difficultyLevel = 'BASIC';
 
   void _handleCorrectAnswer() {
     setState(() {
-      _timeLeft += 1;
+      _timeLeft += 2;
     });
   }
 
   void _handleIncorrectAnswer() {
     setState(() {
-      _timeLeft -= 2;
+      _timeLeft -= 1;
     });
   }
 
@@ -440,7 +441,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(
-                'assets/images/how_to_play/how_to_play_gatekeeping_screen_guide.png',
+                'assets/images/how_to_play/how_to_play_gatekeeping_screen_guide_2.png',
                 fit: BoxFit.contain,
                 width: double.infinity,
               ),
@@ -456,17 +457,17 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
                       // A: Timer
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.05, top: 0.02, width: 0.22, height: 0.085,
+                        left: 0.027, top: 0.01, width: 0.24, height: 0.108,
                         label: 'A',
-                        badgeAlign: Alignment.topRight,
+                        badgeAlign: Alignment.topLeft,
                         badgeOffset: const Offset(16, -16),
                       ),
                       // B: Score
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.58, top: 0.02, width: 0.37, height: 0.085,
+                        left: 0.28, top: 0.01, width: 0.715, height: 0.108,
                         label: 'B',
-                        badgeAlign: Alignment.topLeft,
+                        badgeAlign: Alignment.topRight,
                         badgeOffset: const Offset(-16, -16),
                       ),
                       // C: Diagram
@@ -480,7 +481,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
                       // D: Equation Display
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.12, top: 0.52, width: 0.76, height: 0.065,
+                        left: 0.12, top: 0.555, width: 0.76, height: 0.06 ,
                         label: 'D',
                         badgeAlign: Alignment.topLeft,
                         badgeOffset: const Offset(-16, -16),
@@ -488,7 +489,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
                       // E: Action Buttons
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.035, top: 0.61, width: 0.93, height: 0.09,
+                        left: 0.035, top: 0.665, width: 0.93, height: 0.076 ,
                         label: 'E',
                         badgeAlign: Alignment.topLeft,
                         badgeOffset: const Offset(-16, -16),
@@ -496,7 +497,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
                       // F: Choice Buttons
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.035, top: 0.71, width: 0.93, height: 0.27,
+                        left: 0.035, top: 0.742, width: 0.93, height: 0.23,
                         label: 'F',
                         badgeAlign: Alignment.bottomRight,
                         badgeOffset: const Offset(16, 16),
@@ -593,7 +594,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
                             ],
                           ),
                           child: const Text(
-                            '+1s',
+                            '+2s',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -620,7 +621,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
                             ],
                           ),
                           child: const Text(
-                            '-2s',
+                            '-1s',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -642,7 +643,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
               Row(
                 children: [
                   const Text(
-                    'Score Multiplier:',
+                    'Maximum Score Multiplier:',
                     style: TextStyle(
                       fontSize: 16,
                       fontFamily: 'Nunito',
@@ -658,7 +659,7 @@ class _GatekeepingMockScreenState extends State<_GatekeepingMockScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'x$_scoreMultiplier',
+                      'x3.0',
                       style: const TextStyle(
                         fontSize: 16,
                         fontFamily: 'Nunito',
