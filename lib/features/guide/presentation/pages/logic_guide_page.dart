@@ -47,17 +47,29 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         useGrid: false,
         child: Column(
           children: [
-            // row with Back and Sound buttons
+            // row with Back, pagination, and Sound buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: Image.asset(AppAssets.backBtn, width: 30),
-                    onPressed: () => Navigator.pop(context),
+                  SizedBox(
+                    width: 48,
+                    child: IconButton(
+                      icon: Image.asset(AppAssets.backBtn, width: 30),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ),
-                  const MusicButton(size: 32),
+                  Expanded(
+                    child: Center(
+                      child: _buildPaginationBar(),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 48,
+                    child: Center(
+                      child: MusicButton(size: 32),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -99,14 +111,14 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 6),
 
             // beige rectangle container for explanation content
             Expanded(
               child: _buildBottomSectionWithNav(currentLesson, size),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -136,7 +148,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
             height: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.beigeBg,
               borderRadius: BorderRadius.circular(8),
@@ -171,8 +183,33 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         angle: isNext ? 3.14159 : 0,
         child: Image.asset(
           AppAssets.backBtn,
-          width: 36,
+          width: 30,
           opacity: const AlwaysStoppedAnimation(1.0),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaginationBar() {
+    final current = _currentLessonIndex + 1;
+    final total = LogicLessonData.lessons.length;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFF196EEA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFFF9F00),
+          width: 1.4,
+        ),
+      ),
+      child: Text(
+        '$current / $total',
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Nunito',
+          color: Colors.white,
         ),
       ),
     );
