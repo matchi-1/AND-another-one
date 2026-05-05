@@ -87,22 +87,26 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     child: _buildTopDiagram(currentLesson),
                   ),
                 ),
-                Positioned(
-                  bottom: _getTitleBottomOffset(size.width, currentLesson.id),
-                  left: 20,
-                  right: 20,
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        _getDisplayTitle(currentLesson.id, currentLesson.title),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: _getTitleFontSize(currentLesson.id),
-                          height: 1.05,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontFamily: 'Nunito',
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment(
+                      0,
+                      _getTitleAlignmentY(currentLesson.id),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _getDisplayTitle(currentLesson.id, currentLesson.title),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: _getTitleFontSize(currentLesson.id),
+                            height: 1.05,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: 'Nunito',
+                          ),
                         ),
                       ),
                     ),
@@ -588,22 +592,22 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     return 28;
   }
 
-  double _getTitleBottomOffset(double width, String lessonId) {
+  double _getTitleAlignmentY(String lessonId) {
     if (lessonId == 'distributive_associative') {
-      return width * 0.07;
+      return 0.86;
     }
 
     if (lessonId == 'symbol_names') {
-      return width * 0.11;
+      return 0.83;
     }
 
     if (lessonId == 'double_negation' ||
         lessonId == 'idempotent_law' ||
         lessonId == 'absorption_law' ||
         lessonId == 'demorgans_law') {
-      return width * 0.11;
+      return 0.84;
     }
-    return width * 0.08;
+    return 0.84;
   }
 
   double _getFormulaBoxWidthFactor(String lessonId) {
