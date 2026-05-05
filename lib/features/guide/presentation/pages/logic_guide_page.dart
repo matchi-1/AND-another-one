@@ -594,7 +594,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
   double _getTitleAlignmentY(String lessonId) {
     if (lessonId == 'distributive_associative') {
-      return 0.86;
+      return 0.88;
     }
 
     if (lessonId == 'symbol_names') {
