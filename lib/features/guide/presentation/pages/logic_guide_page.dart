@@ -129,7 +129,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     final navYOffset = lesson.id == 'demorgans_law'
       ? -24.0
       : lesson.id == 'symbol_names'
-        ? 4.0
+        ? -4.0
         : 0.0;
     return Stack(
       alignment: Alignment.center,
@@ -181,25 +181,8 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: SizedBox(
-          height: 220,
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildSymbolNamesImage(
-                  'assets/images/logic_guide/symbol_names_table.png',
-                  Alignment.centerRight,
-                  36,
-                ),
-              ),
-              Expanded(
-                child: _buildSymbolNamesImage(
-                  'assets/images/logic_guide/symbol_names_diagram.png',
-                  Alignment.centerLeft,
-                  -36,
-                ),
-              ),
-            ],
-          ),
+          height: 240,
+          child: _buildSymbolNamesTable(),
         ),
       );
     }
@@ -386,6 +369,79 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSymbolNamesTable() {
+    final rows = [
+      ('AND', 'assets/images/logic_guide/symbol_dot.png'),
+      ('OR', 'assets/images/logic_guide/symbol_plus.png'),
+      ('NOT', 'assets/images/logic_guide/symbol_tilde.png'),
+      ('NOR', 'assets/images/logic_guide/symbol_down.png'),
+      ('NAND', 'assets/images/logic_guide/symbol_up.png'),
+      ('XOR', 'assets/images/logic_guide/symbol_xor.png'),
+      ('XAND', 'assets/images/logic_guide/symbol_xand.png'),
+      ('XNOR', 'assets/images/logic_guide/symbol_xnor.png'),
+    ];
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Transform.translate(
+        offset: const Offset(0, -30),
+        child: Transform.scale(
+          scale: 0.70,
+          child: Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            border: TableBorder.all(
+              color: const Color(0xFFD66AA9),
+              width: 2,
+            ),
+            columnWidths: const {
+              0: FlexColumnWidth(1.2),
+              1: FlexColumnWidth(1),
+            },
+            children: rows
+                .map(
+                  (row) => TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Center(
+                          child: Text(
+                            row.$1,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFCF6AA5),
+                              fontFamily: 'Nunito',
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Center(
+                          child: Image.asset(
+                            row.$2,
+                            height: _getSymbolRowHeight(row.$1),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  double _getSymbolRowHeight(String label) {
+    if (label == 'AND' || label == 'NOT') {
+      return 10;
+    }
+    return 20;
   }
 
   Widget _buildGateLegendItem(
