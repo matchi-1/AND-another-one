@@ -14,6 +14,8 @@ class BgmController {
   BgmController._();
   static final BgmController instance = BgmController._();
 
+  
+
   final AudioPlayer _player = AudioPlayer();
   final ValueNotifier<bool> isOn = ValueNotifier<bool>(true);
   final ValueNotifier<bool> isBusy = ValueNotifier<bool>(false);
@@ -25,7 +27,9 @@ class BgmController {
   Future<void>? _transitionFuture;
 
   double _currentVolume = 0.0;
-  final double _targetVolume = 0.80;
+  final double _targetVolume = 1.0;
+  final double _duckVolume = 0.5;
+  bool _isDucked = false;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -50,6 +54,7 @@ class BgmController {
   }
 
   Future<void> playScene(BgmScene scene) async {
+    debugPrint('playScene called: $scene');
     await init();
 
     _requestedScene = scene;
@@ -168,6 +173,34 @@ class BgmController {
       isBusy.value = false;
     }
   }
+
+  Future<void> duckBgm({double? volume}) async {
+  await init();
+
+  if (!isOn.value) return;
+  if (_currentScene == null) return;
+  if (_isDucked) return;
+
+  _isDucked = true;
+  await _fadeTo(volume ?? _duckVolume, const Duration(milliseconds: 120));
+}
+
+Future<void> restoreBgm() async {
+  await init();
+
+  if (!isOn.value) {
+    _isDucked = false;
+    return;
+  }
+  if (_currentScene == null) {
+    _isDucked = false;
+    return;
+  }
+  if (!_isDucked) return;
+
+  _isDucked = false;
+  await _fadeTo(_targetVolume, const Duration(milliseconds: 180));
+}
 
   Future<void> dispose() async {
     await _player.dispose();

@@ -1,5 +1,6 @@
 class AppRoutes {
-  static const home = '/';
+  static const authGate = '/';
+  static const home = '/home';
   static const selectMode = '/select-mode';
   static const logicGuide = '/logic-guide';
   static const leaderboards = '/leaderboards';

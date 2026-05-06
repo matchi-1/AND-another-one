@@ -67,7 +67,9 @@ flutter:
     - assets/images/diagrams/manic/
     - assets/images/logic_guide/
     - assets/audio/
+    - assets/images/sprites/
     - assets/images/how_to_play/
+    - assets/images/game_overlay/
 
 
 

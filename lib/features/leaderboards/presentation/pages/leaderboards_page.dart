@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -19,6 +22,126 @@ enum LeaderboardDifficulty {
 
 final LeaderboardService _leaderboardService = LeaderboardService();
 
+class _PaginationControls extends StatelessWidget {
+  const _PaginationControls({
+    required this.currentPage,
+    required this.totalPages,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  final int currentPage;
+  final int totalPages;
+  final VoidCallback? onPrevious;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _PageButton(
+          label: '‹',
+          enabled: onPrevious != null,
+          onTap: onPrevious,
+        ),
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.18),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.24),
+              width: 1.5,
+            ),
+          ),
+          child: Text(
+            'PAGE ${currentPage + 1} / $totalPages',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.7,
+              shadows: [
+                Shadow(
+                  color: Colors.black38,
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        _PageButton(
+          label: '›',
+          enabled: onNext != null,
+          onTap: onNext,
+        ),
+      ],
+    );
+  }
+}
+
+class _PageButton extends StatelessWidget {
+  const _PageButton({
+    required this.label,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.42,
+        child: Container(
+          width: 36,
+          height: 30,
+          decoration: BoxDecoration(
+            color: const Color(0xFF00AEEF),
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(
+              color: Colors.white,
+              width: 1.8,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 3,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                height: 0.9,
+                shadows: [
+                  Shadow(
+                    color: Colors.black38,
+                    blurRadius: 2,
+                    offset: Offset(0, 1.2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class LeaderboardsPage extends StatefulWidget {
   const LeaderboardsPage({super.key});
@@ -28,7 +151,6 @@ class LeaderboardsPage extends StatefulWidget {
 }
 
 class _LeaderboardsPageState extends State<LeaderboardsPage> {
-
   LeaderboardMode selectedMode = LeaderboardMode.gatekeeping;
   LeaderboardDifficulty selectedDifficulty = LeaderboardDifficulty.basic;
 
@@ -52,63 +174,44 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
     }
   }
 
+  String get _modeTitle {
+    switch (selectedMode) {
+      case LeaderboardMode.gatekeeping:
+        return 'GATEKEEPING';
+      case LeaderboardMode.oneOrNone:
+        return 'ONE OR NONE';
+    }
+  }
 
-  final Map<LeaderboardMode,
-      Map<LeaderboardDifficulty, List<LeaderboardEntry>>> leaderboardData = {
-    LeaderboardMode.gatekeeping: {
-      LeaderboardDifficulty.basic: const [
-        LeaderboardEntry(username: 'AlphaWolf', score: 12850),
-        LeaderboardEntry(username: 'PixelMint', score: 12140),
-        LeaderboardEntry(username: 'NekoByte', score: 11760),
-        LeaderboardEntry(username: 'LogicLad', score: 10950),
-        LeaderboardEntry(username: 'GigaGate', score: 10110),
-        LeaderboardEntry(username: 'CodaPop', score: 9840),
-        LeaderboardEntry(username: 'ZenBug', score: 9560),
-        LeaderboardEntry(username: 'ArcNova', score: 9150),
-      ],
-      LeaderboardDifficulty.logic: const [
-        LeaderboardEntry(username: 'PixelMint', score: 22400),
-        LeaderboardEntry(username: 'AlphaWolf', score: 21920),
-        LeaderboardEntry(username: 'GigaGate', score: 21480),
-        LeaderboardEntry(username: 'ZenBug', score: 20320),
-        LeaderboardEntry(username: 'NekoByte', score: 19800),
-        LeaderboardEntry(username: 'ArcNova', score: 19450),
-      ],
-      LeaderboardDifficulty.manic: const [
-        LeaderboardEntry(username: 'AlphaWolf', score: 38990),
-        LeaderboardEntry(username: 'CodaPop', score: 37720),
-        LeaderboardEntry(username: 'GigaGate', score: 36540),
-        LeaderboardEntry(username: 'ZenBug', score: 34980),
-        LeaderboardEntry(username: 'ArcNova', score: 34020),
-      ],
-    },
-    LeaderboardMode.oneOrNone: {
-      LeaderboardDifficulty.basic: const [
-        LeaderboardEntry(username: 'NullByte', score: 13100),
-        LeaderboardEntry(username: 'PinkTaco', score: 12420),
-        LeaderboardEntry(username: 'Kiro', score: 11990),
-        LeaderboardEntry(username: 'MintRush', score: 11310),
-        LeaderboardEntry(username: 'GateJr', score: 10840),
-        LeaderboardEntry(username: 'DartFury', score: 10010),
-      ],
-      LeaderboardDifficulty.logic: const [
-        LeaderboardEntry(username: 'PinkTaco', score: 23100),
-        LeaderboardEntry(username: 'NullByte', score: 22780),
-        LeaderboardEntry(username: 'DartFury', score: 22090),
-        LeaderboardEntry(username: 'Kiro', score: 21440),
-        LeaderboardEntry(username: 'MintRush', score: 20850),
-      ],
-      LeaderboardDifficulty.manic: const [
-        LeaderboardEntry(username: 'NullByte', score: 40120),
-        LeaderboardEntry(username: 'Kiro', score: 39580),
-        LeaderboardEntry(username: 'PinkTaco', score: 38210),
-        LeaderboardEntry(username: 'DartFury', score: 37050),
-      ],
-    },
-  };
+  String get _difficultyTitle {
+    switch (selectedDifficulty) {
+      case LeaderboardDifficulty.basic:
+        return 'BASIC';
+      case LeaderboardDifficulty.logic:
+        return 'LOGIC';
+      case LeaderboardDifficulty.manic:
+        return 'MANIC';
+    }
+  }
 
-  List<LeaderboardEntry> get currentEntries {
-    return leaderboardData[selectedMode]?[selectedDifficulty] ?? [];
+  Color get _modeAccentColor {
+    switch (selectedMode) {
+      case LeaderboardMode.gatekeeping:
+        return AppColors.orangeButton;
+      case LeaderboardMode.oneOrNone:
+        return AppColors.purpleButton;
+    }
+  }
+
+  Color get _difficultyAccentColor {
+    switch (selectedDifficulty) {
+      case LeaderboardDifficulty.basic:
+        return AppColors.yellowButton;
+      case LeaderboardDifficulty.logic:
+        return AppColors.pinkButton;
+      case LeaderboardDifficulty.manic:
+        return AppColors.redButton;
+    }
   }
 
   @override
@@ -119,273 +222,80 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Row with Back and Sound buttons (Consistent with Logic Guide)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.fromLTRB(10, 2, 10, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      icon: Image.asset(AppAssets.backBtn, width: 30),
-                      onPressed: () => Navigator.pop(context),
+                    _SmallSquareIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      onTap: () {
+                        unawaited(SfxController.instance.playMenuBack());
+                        Navigator.pop(context);
+                      },
                     ),
-                    const MusicButton(size: 32),
+                    const MusicButton(size: 28),
                   ],
                 ),
               ),
 
+              const SizedBox(height: 4),
+
               const Text(
                 'LEADERBOARDS',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 30,
+                  fontSize: 31,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.4,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black38,
+                      offset: Offset(0, 3),
+                      blurRadius: 3,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 18),
+
+              const SizedBox(height: 6),
+
+              _BoardStatusChip(
+                modeTitle: _modeTitle,
+                difficultyTitle: _difficultyTitle,
+                accentColor: _difficultyAccentColor,
+              ),
+
+              const SizedBox(height: 12),
 
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
                   child: Column(
                     children: [
-                      _buildSectionLabel('MODE'),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: BeveledMenuButton(
-                              label: 'GATEKEEPING',
-                              color: selectedMode == LeaderboardMode.gatekeeping
-                                  ? AppColors.orangeButton
-                                  : AppColors.greyButton,
-                              width: double.infinity,
-                              height: 58,
-                              textColor: Colors.white,
-                              fontSize: 14,
-                              onTap: () {
-                                setState(() {
-                                  selectedMode = LeaderboardMode.gatekeeping;
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: BeveledMenuButton(
-                              label: 'ONE OR NONE',
-                              color: selectedMode == LeaderboardMode.oneOrNone
-                                  ? AppColors.purpleButton
-                                  : AppColors.greyButton,
-                              width: double.infinity,
-                              height: 58,
-                              textColor: Colors.white,
-                              fontSize: 14,
-                              onTap: () {
-                                setState(() {
-                                  selectedMode = LeaderboardMode.oneOrNone;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildModeSelector(),
 
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 8),
 
-                      _buildSectionLabel('DIFFICULTY'),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: BeveledMenuButton(
-                              label: 'BASIC',
-                              color: selectedDifficulty == LeaderboardDifficulty.basic
-                                  ? AppColors.yellowButton
-                                  : AppColors.greyButton,
-                              width: double.infinity,
-                              height: 54,
-                              textColor: Colors.white,
-                              fontSize: 14,
-                              onTap: () {
-                                setState(() {
-                                  selectedDifficulty = LeaderboardDifficulty.basic;
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: BeveledMenuButton(
-                              label: 'LOGIC',
-                              color: selectedDifficulty == LeaderboardDifficulty.logic
-                                  ? AppColors.pinkButton
-                                  : AppColors.greyButton,
-                              width: double.infinity,
-                              height: 54,
-                              textColor: Colors.white,
-                              fontSize: 14,
-                              onTap: () {
-                                setState(() {
-                                  selectedDifficulty = LeaderboardDifficulty.logic;
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: BeveledMenuButton(
-                              label: 'MANIC',
-                              color: selectedDifficulty == LeaderboardDifficulty.manic
-                                  ? AppColors.redButton
-                                  : AppColors.greyButton,
-                              width: double.infinity,
-                              height: 54,
-                              textColor: Colors.white,
-                              fontSize: 14,
-                              onTap: () {
-                                setState(() {
-                                  selectedDifficulty = LeaderboardDifficulty.manic;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildDifficultySelector(),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 8),
 
                       Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.28),
-                              width: 2,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.pinkBg.withOpacity(0.5),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.28),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 50,
-                                      child: Text(
-                                        'RANK',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'USERNAME',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 90,
-                                      child: Text(
-                                        'SCORE',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-
-                              Expanded(
-                                child: StreamBuilder<List<LeaderboardEntryModel>>(
-                                  stream: _leaderboardService.streamLeaderboard(
-                                    modeId: _modeId,
-                                    difficultyId: _difficultyId,
-                                    limit: 50,
-                                  ),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(color: Colors.white),
-                                      );
-                                    }
-
-                                    if (snapshot.hasError) {
-                                      return const Center(
-                                        child: Text(
-                                          'Failed to load leaderboard.',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      );
-                                    }
-
-                                    final entries = snapshot.data ?? [];
-
-                                    if (entries.isEmpty) {
-                                      return const Center(
-                                        child: Text(
-                                          'No leaderboard entries yet.',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      );
-                                    }
-
-                                    return ListView.separated(
-                                      itemCount: entries.length,
-                                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                                      itemBuilder: (context, index) {
-                                        final entry = entries[index];
-                                        return _LeaderboardRow(
-                                          rank: index + 1,
-                                          entry: LeaderboardEntry(
-                                            username: entry.username,
-                                            score: entry.bestScore,
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              )
-                            ],
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 220),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          child: _LeaderboardBoard(
+                            key: ValueKey('$_modeId-$_difficultyId'),
+                            modeId: _modeId,
+                            difficultyId: _difficultyId,
+                            modeAccentColor: _modeAccentColor,
+                            difficultyAccentColor: _difficultyAccentColor,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
                     ],
                   ),
                 ),
@@ -397,124 +307,995 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
     );
   }
 
-  Widget _buildSectionLabel(String label) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.8,
+  Widget _buildModeSelector() {
+    return Column(
+      children: [
+        const _MiniSectionTitle(label: 'MODE'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: BeveledMenuButton(
+                label: 'GATEKEEPING',
+                color: selectedMode == LeaderboardMode.gatekeeping
+                    ? AppColors.orangeButton
+                    : AppColors.greyButton,
+                width: double.infinity,
+                height: 50,
+                textColor: Colors.white,
+                fontSize: 13,
+                onTap: () {
+                  setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
+                    selectedMode = LeaderboardMode.gatekeeping;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: BeveledMenuButton(
+                label: 'ONE OR NONE',
+                color: selectedMode == LeaderboardMode.oneOrNone
+                    ? AppColors.purpleButton
+                    : AppColors.greyButton,
+                width: double.infinity,
+                height: 50,
+                textColor: Colors.white,
+                fontSize: 13,
+                onTap: () {
+                  setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
+                    selectedMode = LeaderboardMode.oneOrNone;
+                  });
+                },
+              ),
+            ),
+          ],
         ),
+      ],
+    );
+  }
+
+  Widget _buildDifficultySelector() {
+    return Column(
+      children: [
+        const _MiniSectionTitle(label: 'DIFFICULTY'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: BeveledMenuButton(
+                label: 'BASIC',
+                color: selectedDifficulty == LeaderboardDifficulty.basic
+                    ? AppColors.yellowButton
+                    : AppColors.greyButton,
+                width: double.infinity,
+                height: 48,
+                textColor: Colors.white,
+                fontSize: 13,
+                onTap: () {
+                  setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
+                    selectedDifficulty = LeaderboardDifficulty.basic;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: BeveledMenuButton(
+                label: 'LOGIC',
+                color: selectedDifficulty == LeaderboardDifficulty.logic
+                    ? AppColors.pinkButton
+                    : AppColors.greyButton,
+                width: double.infinity,
+                height: 48,
+                textColor: Colors.white,
+                fontSize: 13,
+                onTap: () {
+                  setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
+                    selectedDifficulty = LeaderboardDifficulty.logic;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: BeveledMenuButton(
+                label: 'MANIC',
+                color: selectedDifficulty == LeaderboardDifficulty.manic
+                    ? AppColors.redButton
+                    : AppColors.greyButton,
+                width: double.infinity,
+                height: 48,
+                textColor: Colors.white,
+                fontSize: 13,
+                onTap: () {
+                  setState(() {
+                    unawaited(SfxController.instance.playMenuPress());
+                    selectedDifficulty = LeaderboardDifficulty.manic;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _LeaderboardBoard extends StatefulWidget {
+  const _LeaderboardBoard({
+    super.key,
+    required this.modeId,
+    required this.difficultyId,
+    required this.modeAccentColor,
+    required this.difficultyAccentColor,
+  });
+
+  final String modeId;
+  final String difficultyId;
+  final Color modeAccentColor;
+  final Color difficultyAccentColor;
+
+  @override
+  State<_LeaderboardBoard> createState() => _LeaderboardBoardState();
+}
+
+class _LeaderboardBoardState extends State<_LeaderboardBoard> {
+  static const int _firstPageRows = 2; // ranks 4 and 5 only
+  static const int _otherPageRows = 6; // page 2 onward
+
+  int _currentPage = 0;
+
+  bool get _showPinnedTopThree => _currentPage == 0;
+
+  int _totalPagesForRemaining(int remainingCount) {
+    if (remainingCount <= _firstPageRows) return 1;
+
+    final afterFirstPage = remainingCount - _firstPageRows;
+    return 1 + (afterFirstPage / _otherPageRows).ceil();
+  }
+
+  int _startIndexForPage(int page) {
+    if (page == 0) return 0;
+
+    return _firstPageRows + ((page - 1) * _otherPageRows);
+  }
+
+  int _rowCountForPage(int page) {
+    return page == 0 ? _firstPageRows : _otherPageRows;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.30),
+          width: 2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: StreamBuilder<List<LeaderboardEntryModel>>(
+        stream: _leaderboardService.streamLeaderboard(
+          modeId: widget.modeId,
+          difficultyId: widget.difficultyId,
+          limit: 50,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const _LeaderboardLoadingState();
+          }
+
+          if (snapshot.hasError) {
+            return const _LeaderboardMessageState(
+              icon: Icons.error_outline_rounded,
+              title: 'LOAD FAILED',
+              message: 'Could not load the leaderboard.',
+            );
+          }
+
+          final entries = snapshot.data ?? [];
+
+          if (entries.isEmpty) {
+            return const _LeaderboardMessageState(
+              icon: Icons.emoji_events_outlined,
+              title: 'NO SCORES YET',
+              message: 'Be the first player on this board!',
+            );
+          }
+
+          final mappedEntries = entries
+              .map(
+                (entry) => LeaderboardEntry(
+              username: entry.username,
+              score: entry.bestScore,
+            ),
+          )
+              .toList();
+
+          final topThree = mappedEntries.take(3).toList();
+          final remaining = mappedEntries.skip(3).toList();
+
+          final totalPages = _totalPagesForRemaining(remaining.length);
+
+          if (_currentPage >= totalPages) {
+            _currentPage = totalPages - 1;
+          }
+
+          final startIndex = _startIndexForPage(_currentPage);
+          final rowCount = _rowCountForPage(_currentPage);
+
+          final pagedEntries = remaining
+              .skip(startIndex)
+              .take(rowCount)
+              .toList();
+
+          return Column(
+            children: [
+              if (_showPinnedTopThree) ...[
+                _TopPodiumPanel(
+                  entries: topThree,
+                  accentColor: widget.difficultyAccentColor,
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              _LeaderboardHeader(
+                accentColor: widget.modeAccentColor,
+              ),
+
+              const SizedBox(height: 8),
+
+              Expanded(
+                child: remaining.isEmpty
+                    ? const _LeaderboardMessageState(
+                  icon: Icons.format_list_numbered_rounded,
+                  title: 'ONLY TOP PLAYERS SO FAR',
+                  message: 'More ranks will appear after more scores.',
+                  compact: true,
+                )
+                    : Column(
+                  children: List.generate(pagedEntries.length, (index) {
+                    final rank = startIndex + index + 4;
+
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index == pagedEntries.length - 1 ? 0 : 8,
+                      ),
+                      child: _LeaderboardRow(
+                        rank: rank,
+                        entry: pagedEntries[index],
+                      ),
+                    );
+                  }),
+                ),
+              ),
+
+              if (remaining.isNotEmpty && totalPages > 1) ...[
+                const SizedBox(height: 8),
+                _PaginationControls(
+                  currentPage: _currentPage,
+                  totalPages: totalPages,
+                  onPrevious: _currentPage <= 0
+                      ? null
+                      : () {
+                    setState(() {
+                      unawaited(SfxController.instance.playMenuPress());
+                      _currentPage--;
+                    });
+                  },
+                  onNext: _currentPage >= totalPages - 1
+                      ? null
+                      : () {
+                    setState(() {
+                      unawaited(SfxController.instance.playMenuPress());
+                      _currentPage++;
+                    });
+                  },
+                ),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _TopPodiumPanel extends StatelessWidget {
+  const _TopPodiumPanel({
+    required this.entries,
+    required this.accentColor,
+  });
+
+  final List<LeaderboardEntry> entries;
+  final Color accentColor;
+
+  LeaderboardEntry? _entryAtRank(int rank) {
+    final index = rank - 1;
+    if (index < 0 || index >= entries.length) return null;
+    return entries[index];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final first = _entryAtRank(1);
+    final second = _entryAtRank(2);
+    final third = _entryAtRank(3);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 25),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.22),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 14,
+                height: 14,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFC107),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black38,
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Expanded(
+                child: Text(
+                  'TOP CIRCUIT MASTERS',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.7,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black38,
+                        offset: Offset(0, 1.4),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          SizedBox(
+            height: 166,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: _PodiumTile(
+                    rank: 2,
+                    entry: second,
+                    height: 126,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _PodiumTile(
+                    rank: 1,
+                    entry: first,
+                    height: 154,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _PodiumTile(
+                    rank: 3,
+                    entry: third,
+                    height: 122,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PodiumTile extends StatelessWidget {
+  const _PodiumTile({
+    required this.rank,
+    required this.entry,
+    required this.height,
+  });
+
+  final int rank;
+  final LeaderboardEntry? entry;
+  final double height;
+
+  bool get hasEntry => entry != null;
+
+  @override
+  Widget build(BuildContext context) {
+    final badgeColor = switch (rank) {
+      1 => const Color(0xFFFFC107),
+      2 => const Color(0xFFCFD8DC),
+      3 => const Color(0xFFFF8A65),
+      _ => Colors.white,
+    };
+
+    final darkText = switch (rank) {
+      1 => const Color(0xFF5B3A00),
+      2 => const Color(0xFF263238),
+      3 => const Color(0xFF5B2A12),
+      _ => Colors.white,
+    };
+
+    final icon = rank == 1
+        ? Icons.emoji_events_rounded
+        : Icons.military_tech_rounded;
+
+    return Container(
+      height: height,
+      padding: const EdgeInsets.fromLTRB(7, 7, 7, 8),
+      decoration: BoxDecoration(
+        color: badgeColor.withOpacity(rank == 1 ? 0.78 : 0.58),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withOpacity(rank == 1 ? 0.72 : 0.46),
+          width: rank == 1 ? 2.4 : 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: badgeColor.withOpacity(0.26),
+            blurRadius: rank == 1 ? 12 : 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: darkText,
+            size: rank == 1 ? 38 : 32,
+            shadows: const [
+              Shadow(
+                color: Colors.black26,
+                blurRadius: 2,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 2),
+
+          Text(
+            '#$rank',
+            style: TextStyle(
+              color: darkText,
+              fontSize: rank == 1 ? 16 : 14,
+              fontWeight: FontWeight.w900,
+              height: 1.0,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Expanded(
+            child: Center(
+              child: Text(
+                hasEntry ? entry!.username : '---',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: rank == 1 ? const Color(0xFF4A2F00) : Colors.white,
+                  fontSize: rank == 1 ? 13 : 11.5,
+                  fontWeight: FontWeight.w900,
+                  shadows: [
+                    if (rank != 1)
+                      const Shadow(
+                        color: Colors.black38,
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          _TinyScorePill(
+            score: hasEntry ? entry!.score : null,
+            darkText: rank == 1,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LeaderboardHeader extends StatelessWidget {
+  const _LeaderboardHeader({
+    required this.accentColor,
+  });
+
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 9,
+      ),
+      decoration: BoxDecoration(
+        color: accentColor.withOpacity(0.52),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+          width: 2,
+        ),
+      ),
+      child: const Row(
+        children: [
+          SizedBox(
+            width: 52,
+            child: Text(
+              'RANK',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              'PLAYER',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 82,
+            child: Text(
+              'SCORE',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _LeaderboardRow extends StatelessWidget {
-  final int rank;
-  final LeaderboardEntry entry;
-
   const _LeaderboardRow({
     required this.rank,
     required this.entry,
   });
 
+  final int rank;
+  final LeaderboardEntry entry;
+
   @override
   Widget build(BuildContext context) {
-    Color rowColor;
-    switch (rank) {
-      case 1:
-        rowColor = AppColors.yellowButton.withOpacity(0.5);
-        break;
-      case 2:
-        rowColor = AppColors.greyButton.withOpacity(0.4);
-        break;
-      case 3:
-        rowColor = AppColors.darkOrangeButton.withOpacity(0.35);
-        break;
-      default:
-        rowColor = AppColors.blueBg.withOpacity(0.5);
-    }
-
-    Color medalColor;
-    switch (rank) {
-      case 1:
-        medalColor = const Color(0xFFFFC107);
-        break;
-      case 2:
-        medalColor = const Color(0xFFB0BEC5);
-        break;
-      case 3:
-        medalColor = const Color(0xFFFF8A65);
-        break;
-      default:
-        medalColor = Colors.white.withOpacity(0.20);
-    }
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
       decoration: BoxDecoration(
-        color: rowColor,
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: Colors.white.withOpacity(0.28),
-          width: 2,
+          color: Colors.white.withOpacity(0.22),
+          width: 1.6,
         ),
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 50,
-            child: Row(
-              children: [
-                if (rank <= 3)
-                  Container(
-                    width: 10,
-                    height: 10,
-                    margin: const EdgeInsets.only(right: 6),
-                    decoration: BoxDecoration(
-                      color: medalColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                Text(
-                  '$rank',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
+            width: 52,
+            child: _RankBadge(rank: rank),
           ),
+
+          const SizedBox(width: 6),
+
           Expanded(
             child: Text(
               entry.username,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 90,
-            child: Text(
-              entry.score.toString(),
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
                 fontWeight: FontWeight.w800,
+                shadows: [
+                  Shadow(
+                    color: Colors.black26,
+                    blurRadius: 2,
+                    offset: Offset(0, 1.5),
+                  ),
+                ],
               ),
             ),
           ),
+
+          const SizedBox(width: 8),
+
+          _ScorePill(score: entry.score),
         ],
+      ),
+    );
+  }
+}
+
+class _RankBadge extends StatelessWidget {
+  const _RankBadge({
+    required this.rank,
+  });
+
+  final int rank;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 30,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.28),
+          width: 1.6,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          '$rank',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(
+                color: Colors.black38,
+                blurRadius: 2,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScorePill extends StatelessWidget {
+  const _ScorePill({
+    required this.score,
+  });
+
+  final int score;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 76),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.20),
+          width: 1.4,
+        ),
+      ),
+      child: Text(
+        score.toString(),
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+}
+
+class _TinyScorePill extends StatelessWidget {
+  const _TinyScorePill({
+    required this.score,
+    required this.darkText,
+  });
+
+  final int? score;
+  final bool darkText;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 58),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 7,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: darkText
+            ? Colors.white.withOpacity(0.42)
+            : Colors.black.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.24),
+          width: 1.2,
+        ),
+      ),
+      child: Text(
+        score == null ? '---' : score.toString(),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: darkText ? const Color(0xFF4A2F00) : Colors.white,
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _BoardStatusChip extends StatelessWidget {
+  const _BoardStatusChip({
+    required this.modeTitle,
+    required this.difficultyTitle,
+    required this.accentColor,
+  });
+
+  final String modeTitle;
+  final String difficultyTitle;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: accentColor.withOpacity(0.46),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.36),
+          width: 1.6,
+        ),
+      ),
+      child: Text(
+        '$modeTitle  •  $difficultyTitle',
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
+          shadows: [
+            Shadow(
+              color: Colors.black38,
+              offset: Offset(0, 1),
+              blurRadius: 2,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniSectionTitle extends StatelessWidget {
+  const _MiniSectionTitle({
+    required this.label,
+  });
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 18,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.75),
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+        const SizedBox(width: 7),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.9,
+            shadows: [
+              Shadow(
+                color: Colors.black38,
+                offset: Offset(0, 1.5),
+                blurRadius: 2,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SmallSquareIconButton extends StatelessWidget {
+  const _SmallSquareIconButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const double size = 28;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: const Color(0xFF00AEEF),
+          borderRadius: BorderRadius.circular(7),
+          border: Border.all(
+            color: Colors.white,
+            width: 1.8,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 3,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.arrow_back_rounded,
+            color: Colors.white,
+            size: 19,
+            shadows: [
+              Shadow(
+                color: Colors.black38,
+                blurRadius: 2,
+                offset: Offset(0, 1.2),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LeaderboardLoadingState extends StatelessWidget {
+  const _LeaderboardLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: Colors.white,
+      ),
+    );
+  }
+}
+
+class _LeaderboardMessageState extends StatelessWidget {
+  const _LeaderboardMessageState({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.compact = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 18),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: Colors.white.withOpacity(0.86),
+              size: compact ? 28 : 40,
+              shadows: const [
+                Shadow(
+                  color: Colors.black38,
+                  blurRadius: 2,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: compact ? 14 : 17,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.78),
+                fontSize: compact ? 12 : 14,
+                fontWeight: FontWeight.w700,
+                height: 1.25,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

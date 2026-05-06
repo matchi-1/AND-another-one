@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
+import 'package:and_another_one/core/audio/sfx_controller.dart';
+import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -15,17 +20,24 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage>  with RouteAware, HomeBgmRouteMixin {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
+  
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('LOGIN initState fired');
   }
 
   bool _hasShownRouteMessage = false;
@@ -54,6 +66,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   Future<void> _login() async {
+    
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -73,7 +86,8 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (!mounted) return;
-
+      
+      unawaited(SfxController.instance.playPlaySelect());
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.home,
@@ -107,6 +121,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    const double btnGap = 8;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -120,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Image.asset(
                     AppAssets.homeLogo,
-                    width: size.width * 0.65,
+                    width: size.width * 0.55,
                   ),
                   const SizedBox(height: 28),
                   Container(
@@ -183,6 +198,7 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 14),
                         TextButton(
                           onPressed: () {
+                            unawaited(SfxController.instance.playMenuPress());
                             Navigator.pushNamed(context, AppRoutes.register);
                           },
                           child: const Text(
@@ -196,9 +212,15 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: btnGap + 20),
+
+                  MusicButton(size: size.width * 0.10),
+                  
                 ],
               ),
             ),

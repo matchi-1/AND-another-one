@@ -16,8 +16,52 @@ class AppAssets {
   static const star2 = 'assets/images/shared/star2.png';
   static const star3 = 'assets/images/shared/star3.png';
   static const star4 = 'assets/images/shared/star4.png';
+
   static const bgmHome = 'assets/audio/bgm_home.mp3';
   static const bgmBasic = 'assets/audio/bgm_basic.mp3';
   static const bgmLogic = 'assets/audio/bgm_logic.mp3';
   static const bgmManic = 'assets/audio/bgm_manic.mp3';
+
+  static const sfxCountdown = 'assets/audio/sfx-countdown.mp3';
+  static const sfxCorrect = 'assets/audio/sfx-correct.mp3';
+  static const sfxWrong = 'assets/audio/sfx-wrong.mp3';
+  static const sfxGameOver = 'assets/audio/sfx-gameOver.mp3';
+  static const sfxOperatorTap = 'assets/audio/sfx-beep1.mp3';
+  static const sfxOperatorTap2 = 'assets/audio/sfx-beep2.mp3';
+  static const sfxBackspace = 'assets/audio/sfx-backspace.mp3';
+  static const sfxPass = 'assets/audio/sfx-pass.mp3';
+  static const sfxMenuPress = 'assets/audio/sfx-menu-press.mp3';
+  static const sfxMenuBack = 'assets/audio/sfx-menu-back.mp3';
+  static const sfxPlaySelect = 'assets/audio/sfx-difficulty-select.mp3';
+
+  static const thumbsUp = 'assets/images/sprites/whitehand-thumbsUp.png';
+  static const thumbsDown = 'assets/images/sprites/whitehand-redThumbsDown.png';
+  static const handPass = 'assets/images/sprites/hand-pass.png';
+
+  static const handOne = 'assets/images/sprites/whitehand-1.png';
+  static const handTwo = 'assets/images/sprites/whitehand-12.png'; 
+  static const handThree = 'assets/images/sprites/whitehand-ok.png';
+
+  static const andyBasic = 'assets/images/sprites/andy-basic.png';
+  static const andyLogic = 'assets/images/sprites/andy-logic.png';
+  static const andyManic = 'assets/images/sprites/andy-manic.png';
+
+  static const andyPlay = 'assets/images/sprites/andy-play.png';
+  static const andyLogicGuide = 'assets/images/sprites/andy-logic-guide.png';
+  static const andyLeaderboards = 'assets/images/sprites/andy-settings.png';
+
+  static const andyGatekeeping = 'assets/images/sprites/andy-gatekeeping.png';
+  static const andyOneOrNone = 'assets/images/sprites/andy-one-or-none.png';
+
+  // game overlays
+  static const andyGameOverBasic = 'assets/images/game_overlay/game-over-overlay-basic.png';
+  static const andyGameOverLogic = 'assets/images/game_overlay/game-over-overlay-logic.png';
+  static const andyGameOverManic = 'assets/images/game_overlay/game-over-overlay-manic.png';
+  
+  // difficulty notice - in game
+  static const andyGuideGameBasic = 'assets/images/game_overlay/guide-game-overlay-basic.png';
+  static const andyGuideGameLogic = 'assets/images/game_overlay/guide-game-overlay-logic.png';
+  static const andyGuideGameManic= 'assets/images/game_overlay/guide-game-overlay-manic.png';
+
+  static const andyPauseGame= 'assets/images/game_overlay/pause-game-overlay.png';
 }

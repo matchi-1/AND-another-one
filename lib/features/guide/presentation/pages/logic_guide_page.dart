@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,6 +25,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   void _nextLesson() {
+    unawaited(SfxController.instance.playMenuPress());
     setState(() {
       _currentLessonIndex =
           (_currentLessonIndex + 1) % LogicLessonData.lessons.length;
@@ -29,6 +33,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   void _previousLesson() {
+    unawaited(SfxController.instance.playMenuPress());
     setState(() {
       _currentLessonIndex =
           (_currentLessonIndex - 1 + LogicLessonData.lessons.length) %
@@ -45,42 +50,59 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       body: GameMenuBackground(
         backgroundColor: AppColors.pinkBg,
         useGrid: false,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // row with Back and Sound buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: Image.asset(AppAssets.backBtn, width: 30),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const MusicButton(size: 32),
-                  ],
-                ),
-              ),
-
-              // diagram container for logic guide
-              Stack(
+        child: Column(
+          children: [
+            // row with Back, pagination, and Sound buttons
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
                 children: [
-                  Image.asset(
-                    AppAssets.diagramContainerPink,
-                    width: size.width,
-                  ),
-                  Positioned.fill(
-                    child: Padding(
-                      padding: _getDiagramPadding(size.width, currentLesson.id),
-                      child: _buildTopDiagram(currentLesson),
+                  SizedBox(
+                    width: 48,
+                    child: IconButton(
+                      icon: Image.asset(AppAssets.backBtn, width: 30),
+                      onPressed: () {
+                        unawaited(SfxController.instance.playMenuBack());
+                        Navigator.pop(context);
+                      },
                     ),
                   ),
-                  Positioned(
-                    bottom: _getTitleBottomOffset(size.width, currentLesson.id),
-                    left: 20,
-                    right: 20,
+                  Expanded(
                     child: Center(
+                      child: _buildPaginationBar(),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 48,
+                    child: Center(
+                      child: MusicButton(size: 32),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // diagram container for logic guide
+            Stack(
+              children: [
+                Image.asset(
+                  AppAssets.diagramContainerPink,
+                  width: size.width,
+                ),
+                Positioned.fill(
+                  child: Padding(
+                    padding: _getDiagramPadding(size.width, currentLesson.id),
+                    child: _buildTopDiagram(currentLesson),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment(
+                      0,
+                      _getTitleAlignmentY(currentLesson.id),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
@@ -97,72 +119,19 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                       ),
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              // beige rectangle container for explanation content
-              _buildBottomSection(currentLesson),
-
-              const SizedBox(height: 20),
-
-              // Navigation buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Previous button
-                    GestureDetector(
-                      onTap: _previousLesson,
-                      child: Image.asset(
-                        AppAssets.backBtn,
-                        width: 40,
-                        opacity: const AlwaysStoppedAnimation(1.0),
-                      ),
-                    ),
-
-                    // Lesson counter
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.pinkButton,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${_currentLessonIndex + 1} / ${LogicLessonData.lessons.length}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Nunito',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-
-                    // Next button
-                    GestureDetector(
-                      onTap: _nextLesson,
-                      child: Transform.rotate(
-                        angle: 3.14159, // 180 degrees in radians
-                        child: Image.asset(
-                          AppAssets.backBtn,
-                          width: 40,
-                          opacity: const AlwaysStoppedAnimation(1.0),
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
-              ),
+              ],
+            ),
 
-              const SizedBox(height: 40),
-            ],
-          ),
+            const SizedBox(height: 7),
+
+            // beige rectangle container for explanation content
+            Expanded(
+              child: _buildBottomSectionWithNav(currentLesson, size),
+            ),
+
+            const SizedBox(height: 7),
+          ],
         ),
       ),
     );
@@ -178,149 +147,192 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     return lines[lineIndex];
   }
 
-  Widget _buildBottomSection(LogicLesson lesson) {
-    if (lesson.id == 'symbol_names') {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.beigeBg,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: SizedBox(
-            height: 220,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Image.asset(
-                    'assets/images/logic_guide/symbol_names_table.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Image.asset(
-                    'assets/images/logic_guide/symbol_names_diagram.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ],
+  Widget _buildBottomSectionWithNav(LogicLesson lesson, Size size) {
+    final navYOffset = lesson.id == 'demorgans_law'
+      ? 0.0
+      : lesson.id == 'symbol_names'
+        ? 0.0
+        : 0.0;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            height: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: lesson.id == 'symbol_names' ? 4 : 8,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.beigeBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: SingleChildScrollView(
+              physics: lesson.id == 'symbol_names'
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
+              child: _buildBottomSectionContent(lesson),
             ),
           ),
         ),
+        Positioned(
+          left: 4,
+          child: Transform.translate(
+            offset: Offset(0, navYOffset),
+            child: _buildNavButton(isNext: false),
+          ),
+        ),
+        Positioned(
+          right: 4,
+          child: Transform.translate(
+            offset: Offset(0, navYOffset),
+            child: _buildNavButton(isNext: true),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNavButton({required bool isNext}) {
+    return GestureDetector(
+      onTap: isNext ? _nextLesson : _previousLesson,
+      child: Transform.rotate(
+        angle: isNext ? 3.14159 : 0,
+        child: Image.asset(
+          AppAssets.backBtn,
+          width: 30,
+          opacity: const AlwaysStoppedAnimation(1.0),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaginationBar() {
+    final current = _currentLessonIndex + 1;
+    final total = LogicLessonData.lessons.length;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFF196EEA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFFF9F00),
+          width: 1.4,
+        ),
+      ),
+      child: Text(
+        '$current / $total',
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Nunito',
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomSectionContent(LogicLesson lesson) {
+    if (lesson.id == 'symbol_names') {
+      return SizedBox(
+        height: 240,
+        child: _buildSymbolNamesTable(),
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.beigeBg,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Formula box 1
-            Align(
-              child: FractionallySizedBox(
-                widthFactor: _getFormulaBoxWidthFactor(lesson.id),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.pinkButton,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFFFF9F00),
-                      width: 3,
-                    ),
-                  ),
-                  child: Text(
-                    _getFormulaLine(lesson.formulas, 0),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Nunito',
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Formula box 2 (if exists)
-            if (_getFormulaLine(lesson.formulas, 1).isNotEmpty)
-              Align(
-                child: FractionallySizedBox(
-                  widthFactor: _getFormulaBoxWidthFactor(lesson.id),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.pinkButton,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: const Color(0xFFFF9F00),
-                        width: 3,
-                      ),
-                    ),
-                    child: Text(
-                      _getFormulaLine(lesson.formulas, 1),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Nunito',
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 12),
-
-            // Explanation box
-            Container(
-              width: double.infinity,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        // Formula box 1
+        Align(
+          child: FractionallySizedBox(
+            widthFactor: _getFormulaBoxWidthFactor(lesson.id),
+            child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 12,
+                vertical: 3,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1B6B3D),
+                color: AppColors.pinkButton,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: const Color(0xFFFF9F00),
                   width: 3,
                 ),
               ),
-              child: Text(
-                lesson.explanation,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Nunito',
-                  color: Colors.white,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _getFormulaLine(lesson.formulas, 0),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Nunito',
+                    ),
+                  ),
+                  if (_getFormulaLine(lesson.formulas, 1).isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    const Text(
+                      'will be equivalent to',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Nunito',
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _getFormulaLine(lesson.formulas, 1),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Nunito',
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          ],
+          ),
         ),
-      ),
+
+        const SizedBox(height: 12),
+
+        // Explanation box
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 3,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1B6B3D),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: const Color(0xFFFF9F00),
+              width: 3,
+            ),
+          ),
+          child: Text(
+            lesson.explanation,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Nunito',
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -385,6 +397,97 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         ),
       ],
     );
+  }
+
+  Widget _buildSymbolNamesImage(
+    String assetPath,
+    Alignment alignment,
+    double xOffset,
+  ) {
+    return OverflowBox(
+      alignment: alignment,
+      maxWidth: double.infinity,
+      child: Transform.translate(
+        offset: Offset(xOffset, 0),
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSymbolNamesTable() {
+    final rows = [
+      ('AND', 'assets/images/logic_guide/symbol_dot.png'),
+      ('OR', 'assets/images/logic_guide/symbol_plus.png'),
+      ('NOT', 'assets/images/logic_guide/symbol_tilde.png'),
+      ('NOR', 'assets/images/logic_guide/symbol_down.png'),
+      ('NAND', 'assets/images/logic_guide/symbol_up.png'),
+      ('XOR', 'assets/images/logic_guide/symbol_xor.png'),
+      ('XAND', 'assets/images/logic_guide/symbol_xand.png'),
+      ('XNOR', 'assets/images/logic_guide/symbol_xnor.png'),
+    ];
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Transform.translate(
+        offset: const Offset(0, -30),
+        child: Transform.scale(
+          scale: 0.67,
+          child: Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            border: TableBorder.all(
+              color: const Color(0xFFD66AA9),
+              width: 1.7,
+            ),
+            columnWidths: const {
+              0: FlexColumnWidth(1.2),
+              1: FlexColumnWidth(1),
+            },
+            children: rows
+                .map(
+                  (row) => TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 1),
+                        child: Center(
+                          child: Text(
+                            row.$1,
+                            style: const TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFCF6AA5),
+                              fontFamily: 'Nunito',
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 1),
+                        child: Center(
+                          child: Image.asset(
+                            row.$2,
+                            height: _getSymbolRowHeight(row.$1),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  double _getSymbolRowHeight(String label) {
+    if (label == 'AND' || label == 'NOT') {
+      return 10;
+    }
+    return 19;
   }
 
   Widget _buildGateLegendItem(
@@ -495,30 +598,30 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
   double _getTitleFontSize(String lessonId) {
     if (lessonId == 'distributive_associative') {
-      return 22;
+      return 16;
     }
     if (lessonId == 'symbol_names') {
-      return 28;
+      return 18;
     }
-    return 28;
+    return 18;
   }
 
-  double _getTitleBottomOffset(double width, String lessonId) {
+  double _getTitleAlignmentY(String lessonId) {
     if (lessonId == 'distributive_associative') {
-      return width * 0.07;
+      return 0.88;
     }
 
     if (lessonId == 'symbol_names') {
-      return width * 0.11;
+      return 0.84;
     }
 
     if (lessonId == 'double_negation' ||
         lessonId == 'idempotent_law' ||
         lessonId == 'absorption_law' ||
         lessonId == 'demorgans_law') {
-      return width * 0.11;
+      return 0.84;
     }
-    return width * 0.08;
+    return 0.84;
   }
 
   double _getFormulaBoxWidthFactor(String lessonId) {

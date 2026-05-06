@@ -8,117 +8,593 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
 import '../../../../shared/widgets/music_button.dart';
+import '../../../../shared/widgets/pause_icon_button.dart';
 import '../../data/models/gatekeeping_question.dart';
 import '../../data/repositories/gatekeeping_question_repository.dart';
-import '../../util/gameplay_helpers.dart';
+import '../../../leaderboards/util/leaderboard_service.dart';
 //import '../../../tutorial/gameplay_tutorial_overlay.dart';
 //import '../../../tutorial/gameplay_tutorial_service.dart';
 import 'dart:async';
 import '../../../../core/audio/bgm_controller.dart';
+import '../../../../core/audio/sfx_controller.dart';
+import '../widgets/gameplay_overlays.dart';
+import '../../../../core/navigation/app_routes.dart';
+
 
 class GatekeepingGamePage extends StatefulWidget {
-  const GatekeepingGamePage({
-    super.key,
-    this.difficulty = Difficulty.basic,
-  });
+  const GatekeepingGamePage({super.key, this.difficulty = Difficulty.basic});
 
   final Difficulty difficulty;
-
-  
 
   @override
   State<GatekeepingGamePage> createState() => _GatekeepingGamePageState();
 }
 
-class _GatekeepingGamePageState extends State<GatekeepingGamePage>
-    with GameplayHelpers {
-      @override
-      void initState() {
-        super.initState();
-        resetWholeGame();
+class _GatekeepingGamePageState extends State<GatekeepingGamePage> {
+  @override
+  void initState() {
+    super.initState();
+    resetWholeGame();
 
-        final scene = switch (widget.difficulty) {
-          Difficulty.basic => BgmScene.basic,
-          Difficulty.logic => BgmScene.logic,
-          Difficulty.manic => BgmScene.manic,
-        };
+    final scene = switch (widget.difficulty) {
+      Difficulty.basic => BgmScene.basic,
+      Difficulty.logic => BgmScene.logic,
+      Difficulty.manic => BgmScene.manic,
+    };
 
-        unawaited(BgmController.instance.playScene(scene));
+    unawaited(BgmController.instance.playScene(scene));
 
-  //WidgetsBinding.instance.addPostFrameCallback((_) {
-   // _maybeShowTutorial();
-  //});
-}
-@override
-void dispose() {
-  //_tutorialEntry?.remove();
-  super.dispose();
-}
-/*
-  final GameplayTutorialService _tutorialService = GameplayTutorialService();
+    //WidgetsBinding.instance.addPostFrameCallback((_) {
+    // _maybeShowTutorial();
+    //});
+  }
 
-  final GlobalKey _diagramKey = GlobalKey();
-  final GlobalKey _expressionKey = GlobalKey();
-  final GlobalKey _buttonsKey = GlobalKey();
-  final GlobalKey _timerKey = GlobalKey();
+  @override
+  void dispose() {
+    //_tutorialEntry?.remove();
+    gameplayTimer?.cancel();
+    super.dispose();
+  }
 
-  OverlayEntry? _tutorialEntry;
-  bool _checkedTutorial = false;
-  Future<void> _maybeShowTutorial({bool force = false}) async {
-  if (!mounted) return;
+  bool showBackConfirmOverlay = false;
 
-  if (!force && _checkedTutorial) return;
-  _checkedTutorial = true;
+  void _onPausePressed() {
+    unawaited(SfxController.instance.playMenuPress());
+  if (gameFinished) {
+    Navigator.pop(context);
+    return;
+  }
 
-  final alreadySeen = force
-      ? false
-      : await _tutorialService.hasSeen('hasSeenGatekeepingTutorial');
-
-  if (alreadySeen && !force) return;
-  if (!mounted) return;
-
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted) return;
-    _showGatekeepingTutorial();
+  setState(() {
+    roundLocked = true;
+    showBackConfirmOverlay = true;
   });
 }
 
-void _showGatekeepingTutorial() {
-  _tutorialEntry?.remove();
+void _closeBackOverlay() {
+  unawaited(SfxController.instance.playMenuBack());
+  if (!mounted) return;
 
-  final steps = [
-    GameplayTutorialStep(
-      targetKey: _diagramKey,
-      text: '<diagram highlight>',
-    ),
-    GameplayTutorialStep(
-      targetKey: _expressionKey,
-      text: '<expression highlight>',
-    ),
-    GameplayTutorialStep(
-      targetKey: _buttonsKey,
-      text: '<button highlight>',
-    ),
-    GameplayTutorialStep(
-      targetKey: _timerKey,
-      text: '<timer highlight>',
-    ),
+  setState(() {
+    showBackConfirmOverlay = false;
+    roundLocked = false;
+  });
+}
+
+
+
+  bool showGameResultOverlay = false;
+  String gameResultTitle = 'ROUND COMPLETE';
+
+  int hotstreakCount = 0;
+  int multiplierTierIndex = 0;
+  int multiplierStepProgress = 0; // 0 or 1; 2 correct answers = tier up
+
+  static const List<double> _multiplierTiers = [
+    1.0,
+    1.25,
+    1.5,
+    1.75,
+    2.0,
+    3.0,
   ];
 
-  _tutorialEntry = OverlayEntry(
-    builder: (_) => GameplayTutorialOverlay(
-      steps: steps,
-      onFinish: () async {
-        _tutorialEntry?.remove();
-        _tutorialEntry = null;
-        await _tutorialService.markSeen('hasSeenGatekeepingTutorial');
-      },
-    ),
-  );
+  double get currentMultiplier => _multiplierTiers[multiplierTierIndex];
 
-  Overlay.of(context, rootOverlay: true).insert(_tutorialEntry!);
+  String get multiplierLabel {
+    final value = currentMultiplier;
+    return 'x${value.toStringAsFixed(value % 1 == 0 ? 1 : 2)}';
+  }
+
+  int get baseScore {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 100;
+      case Difficulty.logic:
+        return 200;
+      case Difficulty.manic:
+        return 300;
+    }
+  }
+
+  final LeaderboardService leaderboardService = LeaderboardService();
+
+  double preGameSpriteOpacity = 0.0;
+  double preGameSpriteScale = 0.005;
+  Duration preGameSpriteScaleDuration = Duration.zero;
+  Duration preGameSpriteFadeDuration = Duration.zero;
+
+  bool showPreGameOverlay = false;
+  bool waitingForStartTap = false;
+  bool countdownRunning = false;
+  String? preGameSpriteAsset;
+
+  String? reactionAssetPath;
+  double reactionOpacity = 0.0;
+  double reactionScale = 0.005;
+  Duration reactionScaleDuration = Duration.zero;
+  Curve reactionScaleCurve = Curves.easeInOutCubic;
+
+  String get _modeLabel => 'GATEKEEPING';
+
+  String get _difficultyLabel {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 'BASIC';
+      case Difficulty.logic:
+        return 'LOGIC';
+      case Difficulty.manic:
+        return 'MANIC';
+    }
+  }
+
+  String get _guideOverlayAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyGuideGameBasic;
+      case Difficulty.logic:
+        return AppAssets.andyGuideGameLogic;
+      case Difficulty.manic:
+        return AppAssets.andyGuideGameManic;
+    }
+  }
+
+  String get _difficultyDescription {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return 'Expressions are as shown. This level focuses on the basic gates: NOT, AND, and OR.';
+
+      case Difficulty.logic:
+        return 'Expression are as shown but uses other logic gates like NAND, NOR, XNOR, XAND, and XOR symbols.';
+
+      case Difficulty.manic:
+        return 'Uses all logic gates, but expressions may be simplified using Boolean laws like double negation, absorption, and distributive laws.';
+    }
+  }
+
+  String get _difficultyAndyAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyBasic;
+      case Difficulty.logic:
+        return AppAssets.andyLogic;
+      case Difficulty.manic:
+        return AppAssets.andyManic;
+    }
+  }
+
+  String get _gameOverOverlayAsset {
+    switch (widget.difficulty) {
+      case Difficulty.basic:
+        return AppAssets.andyGameOverBasic;
+      case Difficulty.logic:
+        return AppAssets.andyGameOverLogic;
+      case Difficulty.manic:
+        return AppAssets.andyGameOverManic;
+    }
+  }
+
+  int get passesUsed => startingPasses - passesLeft;
+
+
+void _preparePreGameIntro({bool notify = true}) {
+  roundLocked = true;
+  showPreGameOverlay = true;
+  waitingForStartTap = true;
+  countdownRunning = false;
+  preGameSpriteAsset = null;
+  preGameSpriteOpacity = 0.0;
+  preGameSpriteScale = 0.005;
+  preGameSpriteScaleDuration = Duration.zero;
+  preGameSpriteFadeDuration = Duration.zero;
+
+  if (notify && mounted) {
+    setState(() {});
+  }
 }
-*/
+Future<void> _playCountdownSprite(String assetPath) async {
+  if (!mounted) return;
+
+  // Start tiny and visible
+  setState(() {
+    preGameSpriteAsset = assetPath;
+    preGameSpriteOpacity = 1.0;
+    preGameSpriteScale = 0.005;
+    preGameSpriteScaleDuration = Duration.zero;
+    preGameSpriteFadeDuration = Duration.zero;
+  });
+
+  // Let Flutter paint the tiny starting state first
+  await Future<void>.delayed(const Duration(milliseconds: 16));
+  if (!mounted) return;
+
+  // Zoom in: 100 ms
+  setState(() {
+    preGameSpriteScale = 1.0;
+    preGameSpriteScaleDuration = const Duration(milliseconds: 100);
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
+
+  // Stay visible at normal size: 700 ms
+  await Future<void>.delayed(const Duration(milliseconds: 700));
+  if (!mounted) return;
+
+  // Fade out only: 200 ms
+  setState(() {
+    preGameSpriteOpacity = 0.0;
+    preGameSpriteFadeDuration = const Duration(milliseconds: 200);
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 200));
+  if (!mounted) return;
+}
+
+Future<void> _handlePreGameTap() async {
+  if (!showPreGameOverlay || !waitingForStartTap || countdownRunning) return;
+
+  setState(() {
+    waitingForStartTap = false;
+    countdownRunning = true;
+  });
+
+  unawaited(SfxController.instance.playCountdown());
+
+  await _runPreGameCountdown();
+}
+
+Future<void> _runPreGameCountdown() async {
+  final sequence = <String>[
+    AppAssets.handThree,
+    AppAssets.handTwo,
+    AppAssets.handOne,
+    _difficultyAndyAsset,
+  ];
+
+  for (final asset in sequence) {
+    await _playCountdownSprite(asset);
+    if (!mounted) return;
+  }
+
+  if (!mounted) return;
+
+  setState(() {
+    showPreGameOverlay = false;
+    waitingForStartTap = false;
+    countdownRunning = false;
+    preGameSpriteAsset = null;
+    preGameSpriteOpacity = 0.0;
+    preGameSpriteScale = 0.005;
+    preGameSpriteScaleDuration = Duration.zero;
+    preGameSpriteFadeDuration = Duration.zero;
+    roundLocked = false;
+  });
+}
+
+  Future<void> showActionFeedback({
+    required Color flash,
+    required String asset,
+  }) async {
+    if (!mounted) return;
+
+  setState(() {
+    flashColor = flash;
+    flashOpacity = 0.0;
+
+    reactionAssetPath = asset;
+    reactionOpacity = 1.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = Duration.zero;
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 16));
+  if (!mounted) return;
+
+  setState(() {
+    flashOpacity = 0.55;
+    reactionScale = 1.0;
+    reactionScaleDuration = const Duration(milliseconds: 100);
+    reactionScaleCurve = Curves.easeOutCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
+
+  setState(() {
+    reactionScale = 1.04;
+    reactionScaleDuration = const Duration(milliseconds: 600);
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 450));
+  if (!mounted) return;
+
+  setState(() {
+    flashOpacity = 0.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = const Duration(milliseconds: 100);
+    reactionScaleCurve = Curves.easeInCubic;
+  });
+
+  await Future<void>.delayed(const Duration(milliseconds: 100));
+  if (!mounted) return;
+
+  setState(() {
+    reactionAssetPath = null;
+    reactionOpacity = 0.0;
+    reactionScale = 0.005;
+    reactionScaleDuration = Duration.zero;
+    reactionScaleCurve = Curves.easeInOutCubic;
+  });
+}
+
+  Timer? gameplayTimer;
+
+  bool scoreSubmitted = false;
+
+  int currentQuestionIndex = 0;
+  int timeLeft = 0;
+  int score = 0;
+  int passesLeft = 0;
+  int correctCount = 0;
+  int wrongAttempts = 0;
+
+  bool roundLocked = false;
+  bool gameFinished = false;
+
+  Color flashColor = Colors.transparent;
+  double flashOpacity = 0.0;
+
+  String? scoreDeltaText;
+  Color scoreDeltaColor = Colors.white;
+  double scoreDeltaOpacity = 0.0;
+  double scoreDeltaYOffset = 0.0;
+  double scoreDeltaXOffset = 0.0;
+
+  String? timeDeltaText;
+  Color timeDeltaColor = Colors.white;
+  double timeDeltaOpacity = 0.0;
+  double timeDeltaYOffset = 0.0;
+
+  String? centerPopupText;
+  Color centerPopupColor = Colors.white;
+  double centerPopupOpacity = 0.0;
+  double centerPopupScale = 0.9;
+
+  void initializeSharedRun() {
+    hotstreakCount = 0;
+    multiplierTierIndex = 0;
+    multiplierStepProgress = 0;
+    scoreSubmitted = false;
+    gameplayTimer?.cancel();
+
+    currentQuestionIndex = 0;
+    score = 0;
+    passesLeft = startingPasses;
+    correctCount = 0;
+    wrongAttempts = 0;
+
+    showGameResultOverlay = false;
+    gameFinished = false;
+    roundLocked = false;
+    timeLeft = startingRoundTime;
+
+    loadCurrentQuestion();
+    startGameplayTimer();
+    setState(() {});
+  }
+
+  void startGameplayTimer() {
+    gameplayTimer?.cancel();
+
+    gameplayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || roundLocked || gameFinished) return;
+
+      if (timeLeft <= 1) {
+        setState(() {
+          timeLeft = 0;
+        });
+        handleTimeout();
+      } else {
+        setState(() {
+          timeLeft--;
+        });
+      }
+    });
+  }
+
+  Future<void> handlePass() async {
+    if (roundLocked || gameFinished) return;
+    if (passesLeft <= 0) return;
+
+    setState(() {
+      roundLocked = true;
+      passesLeft--;
+    });
+
+    unawaited(SfxController.instance.playPass());
+    HapticFeedback.mediumImpact();
+
+    await showActionFeedback(
+      flash: const Color(0xFFFFB347),
+      asset: AppAssets.handPass,
+    );
+
+    await finishRound(
+      scoreDelta: -10,
+      timeDelta: 0,
+      advanceQuestion: true,
+    );
+  }
+
+  Future<void> handleTimeout() async {
+    if (gameFinished) return;
+    await _performTimeout();
+  }
+
+  Future<void> _performTimeout() async {
+    if (gameFinished) return;
+
+    HapticFeedback.heavyImpact();
+
+    setState(() {
+      gameFinished = true;
+      roundLocked = true;
+      timeLeft = 0;
+    });
+
+    gameplayTimer?.cancel();
+    await submitFinalScoreOnce();
+
+    if (!mounted) return;
+
+    await SfxController.instance.playGameOver();
+
+    setState(() {
+      gameResultTitle = 'ROUND COMPLETE';
+      showGameResultOverlay = true;
+    });
+
+  }
+
+  Future<void> finishRound({
+    required int scoreDelta,
+    required int timeDelta,
+    required bool advanceQuestion,
+  }) async {
+    setState(() {
+      roundLocked = true;
+      score = (score + scoreDelta).clamp(0, 999999);
+      timeLeft = (timeLeft + timeDelta).clamp(0, 999999);
+    });
+
+    await Future.delayed(const Duration(milliseconds: 850));
+
+    if (!mounted || gameFinished) return;
+
+    if (timeLeft <= 0) {
+      await _performTimeout();
+      return;
+    }
+
+    if (advanceQuestion) {
+      setState(() {
+        roundLocked = false;
+        goToNextQuestion();
+      });
+    } else {
+      setState(() {
+        onRetryCurrentQuestion();
+        roundLocked = false;
+      });
+    }
+  }
+
+
+
+  Future<void> showScoreDelta(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaText = text;
+      scoreDeltaColor = color;
+      scoreDeltaOpacity = 1.0;
+      scoreDeltaYOffset = 0.0;
+      scoreDeltaXOffset = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 60));
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaYOffset = -15.0;
+      scoreDeltaXOffset = -10.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    setState(() {
+      scoreDeltaText = null;
+      scoreDeltaYOffset = 0.0;
+      scoreDeltaXOffset = 0.0;
+    });
+  }
+
+  Future<void> showTimeDelta(String text, Color color) async {
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaText = text;
+      timeDeltaColor = color;
+      timeDeltaOpacity = 1.0;
+      timeDeltaYOffset = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 60));
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaYOffset = -15.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaOpacity = 0.0;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    setState(() {
+      timeDeltaText = null;
+      timeDeltaYOffset = 0.0;
+    });
+  }
+
+
+  Future<void> submitFinalScoreOnce() async {
+    if (scoreSubmitted) return;
+    scoreSubmitted = true;
+
+    await leaderboardService.submitScore(
+      modeId: modeId,
+      difficultyId: difficultyId,
+      score: score,
+    );
+  }
+
 
   static const int _startingRoundTimeValue = 60;
   static const int _startingPassesValue = 5;
@@ -178,10 +654,9 @@ void _showGatekeepingTutorial() {
   @override
   int get questionCount => _questions.length;
 
-
-
   @override
   void resetWholeGame() {
+    unawaited(SfxController.instance.playPlaySelect());
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
       widget.difficulty,
     );
@@ -193,6 +668,7 @@ void _showGatekeepingTutorial() {
     }
 
     initializeSharedRun();
+    _preparePreGameIntro();
   }
 
   @override
@@ -293,7 +769,9 @@ void _showGatekeepingTutorial() {
     if (roundLocked || gameFinished) return;
     if (_activeSlotIndex >= _playerAnswers.length) return;
 
+
     HapticFeedback.selectionClick();
+    unawaited(SfxController.instance.playOperatorTap());
 
     setState(() {
       _playerAnswers[_activeSlotIndex] = operator;
@@ -333,6 +811,7 @@ void _showGatekeepingTutorial() {
     if (lastFilled == null) return;
 
     HapticFeedback.selectionClick();
+    unawaited(SfxController.instance.playBackspace());
 
     setState(() {
       _playerAnswers[lastFilled] = null;
@@ -343,6 +822,10 @@ void _showGatekeepingTutorial() {
   Future<void> _checkCurrentAnswer() async {
     if (roundLocked || gameFinished) return;
 
+      setState(() {
+        roundLocked = true;
+      });
+
     final correctAnswers = _correctAnswersForCurrentQuestion();
     final isCorrect = _listEquals(
       _playerAnswers.map((e) => e ?? '').toList(),
@@ -350,11 +833,28 @@ void _showGatekeepingTutorial() {
     );
 
     if (isCorrect) {
-      const gainedScore = 20;
       const gainedTime = 2;
 
-      playFlash(isCorrect: true);
+      correctCount++;
+      hotstreakCount++;
+      multiplierStepProgress++;
+
+      if (multiplierStepProgress >= 2 &&
+          multiplierTierIndex < _multiplierTiers.length - 1) {
+        multiplierTierIndex++;
+        multiplierStepProgress = 0;
+      }
+
+      final gainedScore = (baseScore * currentMultiplier).round();
+
+      //playFlash(isCorrect: true);
+      unawaited(SfxController.instance.playCorrect());
+      await showActionFeedback(
+        flash: Colors.green,
+        asset: AppAssets.thumbsUp,
+      );
       showScoreDelta('+$gainedScore', Colors.greenAccent);
+      showTimeDelta('+$gainedTime s', Colors.greenAccent);
 
       await finishRound(
         scoreDelta: gainedScore,
@@ -362,11 +862,26 @@ void _showGatekeepingTutorial() {
         advanceQuestion: true,
       );
     } else {
-      const lostScore = 20;
       const lostTime = -1;
 
-      playWrongDamageFlash();
+      wrongAttempts++;
+      hotstreakCount = 0;
+      multiplierStepProgress = 0;
+
+      if (multiplierTierIndex > 0) {
+        multiplierTierIndex--;
+      }
+
+      final lostScore = baseScore;
+
+      //playWrongDamageFlash();
+      unawaited(SfxController.instance.playWrong());
+      await showActionFeedback(
+        flash: Colors.red,
+        asset: AppAssets.thumbsDown,
+      );
       showScoreDelta('-$lostScore', Colors.redAccent);
+      showTimeDelta('${lostTime}s', Colors.redAccent);
 
       await finishRound(
         scoreDelta: -lostScore,
@@ -397,11 +912,7 @@ void _showGatekeepingTutorial() {
           fontWeight: FontWeight.w900,
           color: _brownText,
           shadows: const [
-            Shadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 2,
-            ),
+            Shadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
           ],
         ),
       ),
@@ -417,16 +928,69 @@ void _showGatekeepingTutorial() {
           fontWeight: FontWeight.w900,
           color: const Color(0xFFE6F7D9),
           shadows: const [
-            Shadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 2,
-            ),
+            Shadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
           ],
         ),
       ),
     );
   }
+  
+  Widget _buildMultiplierText(double width) {
+  return Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFFE28A).withOpacity(0.7),
+          width: 1.4,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            'Mult: $multiplierLabel',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: width * 0.040,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFFFFE28A),
+              height: 1.0,
+              shadows: const [
+                Shadow(
+                  color: Colors.black38,
+                  offset: Offset(0, 1.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Streak: $hotstreakCount',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: width * 0.040,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              height: 1.0,
+              shadows: const [
+                Shadow(
+                  color: Colors.black38,
+                  offset: Offset(0, 1.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildDiagramPlaceholder() {
     return Container(
@@ -526,10 +1090,7 @@ void _showGatekeepingTutorial() {
     return Center(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: children,
-        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: children),
       ),
     );
   }
@@ -627,7 +1188,7 @@ void _showGatekeepingTutorial() {
     final double gap = 8;
     final double operatorButtonWidth =
         (size.width - (sidePadding * 2) - gap) / 2;
-    final double operatorButtonHeight = 100;
+    final double operatorButtonHeight = 85;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -649,26 +1210,25 @@ void _showGatekeepingTutorial() {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            PauseIconButton(
+                              onTap: _onPausePressed,
+                            ),
+
+                            /*
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                               visualDensity: VisualDensity.compact,
                               iconSize: 24,
-                              icon: Image.asset(
-                                AppAssets.backBtn,
-                                width: 24,
-                                height: 24,
+                              icon: const Icon(
+                                Icons.help_outline,
+                                color: Colors.white,
                               ),
-                              onPressed: () => Navigator.pop(context),
+                              onPressed: () => (), //_showGatekeepingTutorial(),
                             ),
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              visualDensity: VisualDensity.compact,
-                              iconSize: 24,
-                              icon: const Icon(Icons.help_outline, color: Colors.white),
-                              onPressed: () => ()//_showGatekeepingTutorial(),
-                            ),
+
+                            */
+
                             const MusicButton(size: 26),
                           ],
                         ),
@@ -698,6 +1258,59 @@ void _showGatekeepingTutorial() {
                                     child: _buildTimerText(w),
                                   ),
                                 ),
+                                if (timeDeltaText != null)
+                                  Positioned(
+                                    left: w * 0.15,
+                                    top: h * 0.15 + timeDeltaYOffset,
+                                    child: AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 250),
+                                      opacity: timeDeltaOpacity,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Text(
+                                            timeDeltaText!,
+                                            style: TextStyle(
+                                              fontSize: w * 0.06,
+                                              fontWeight: FontWeight.w900,
+                                              foreground: Paint()
+                                                ..style = PaintingStyle.stroke
+                                                ..strokeWidth = 3
+                                                ..color = timeDeltaText!.startsWith('-')
+                                                    ? const Color(0xFFD50000)
+                                                    : const Color(0xFF0FAF2A),
+                                            ),
+                                          ),
+                                          Text(
+                                            timeDeltaText!,
+                                            style: TextStyle(
+                                              fontSize: w * 0.06,
+                                              fontWeight: FontWeight.w900,
+                                              color: timeDeltaText!.startsWith('-')
+                                                  ? const Color(0xFFFFD0D0)
+                                                  : const Color(0xFFBEFFC9),
+                                              shadows: const [
+                                                Shadow(
+                                                  color: Colors.black38,
+                                                  offset: Offset(0, 2),
+                                                  blurRadius: 3,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  Positioned(
+                                    left: w * 0.24,
+                                    right: w * 0.4,
+                                    top: h * 0.02,
+                                    height: h * 0.11,
+                                    child: _buildMultiplierText(w),
+                                  ),
+
                                 Positioned(
                                   right: w * 0.07,
                                   top: h * 0.055,
@@ -710,7 +1323,9 @@ void _showGatekeepingTutorial() {
                                     right: w * 0.11,
                                     top: h * 0.13 + scoreDeltaYOffset,
                                     child: AnimatedOpacity(
-                                      duration: const Duration(milliseconds: 250),
+                                      duration: const Duration(
+                                        milliseconds: 250,
+                                      ),
                                       opacity: scoreDeltaOpacity,
                                       child: Stack(
                                         alignment: Alignment.center,
@@ -723,7 +1338,10 @@ void _showGatekeepingTutorial() {
                                               foreground: Paint()
                                                 ..style = PaintingStyle.stroke
                                                 ..strokeWidth = 4
-                                                ..color = scoreDeltaText!.startsWith('-')
+                                                ..color =
+                                                    scoreDeltaText!.startsWith(
+                                                      '-',
+                                                    )
                                                     ? const Color(0xFFD50000)
                                                     : const Color(0xFF0FAF2A),
                                             ),
@@ -733,7 +1351,10 @@ void _showGatekeepingTutorial() {
                                             style: TextStyle(
                                               fontSize: w * 0.09,
                                               fontWeight: FontWeight.w900,
-                                              color: scoreDeltaText!.startsWith('-')
+                                              color:
+                                                  scoreDeltaText!.startsWith(
+                                                    '-',
+                                                  )
                                                   ? const Color(0xFFFFD0D0)
                                                   : const Color(0xFFBEFFC9),
                                               shadows: const [
@@ -804,13 +1425,12 @@ void _showGatekeepingTutorial() {
                                   Expanded(child: _buildPassStrip()),
                                   const SizedBox(width: 8),
                                   BeveledMenuButton(
-
-                                    label: '←',
+                                    label: '⌫',
                                     color: _backspaceGrey,
                                     width: 80,
                                     height: 50,
                                     textColor: Colors.white,
-                                    fontSize: 30,
+                                    fontSize: 26,
                                     onTap: _handleBackspace,
                                   ),
                                 ],
@@ -832,15 +1452,39 @@ void _showGatekeepingTutorial() {
                   ),
                 ),
               ),
+
               Positioned.fill(
                 child: IgnorePointer(
                   child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 320),
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeInOut,
                     opacity: flashOpacity,
                     child: ColoredBox(color: flashColor),
                   ),
                 ),
               ),
+
+              if (reactionAssetPath != null)
+                IgnorePointer(
+                  child: Center(
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 100),
+                      curve: Curves.easeInOutCubic,
+                      opacity: reactionOpacity,
+                      child: AnimatedScale(
+                        duration: reactionScaleDuration,
+                        curve: reactionScaleCurve,
+                        scale: reactionScale,
+                        child: Image.asset(
+                          reactionAssetPath!,
+                          width: 190,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
               if (centerPopupText != null)
                 IgnorePointer(
                   child: Center(
@@ -873,6 +1517,68 @@ void _showGatekeepingTutorial() {
                     ),
                   ),
                 ),
+
+              if (showBackConfirmOverlay)
+                PauseOverlay(
+                  backgroundAssetPath: AppAssets.andyPauseGame,
+                  onResume: _closeBackOverlay,
+                  onRetry: () {
+                    setState(() {
+                      showBackConfirmOverlay = false;
+                    });
+
+                    resetWholeGame();
+                  },
+                  onExitToMenu: () {
+                    unawaited(SfxController.instance.playGameOver());
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.home,
+                          (route) => false,
+                    );
+                  },
+                ),
+
+                if (showGameResultOverlay)
+                  GameResultOverlay(
+                    backgroundAssetPath: _gameOverOverlayAsset,
+                    modeLabel: 'Gatekeeping',
+                    difficultyLabel: _difficultyLabel,
+                    score: score,
+                    correctCount: correctCount,
+                    wrongAttempts: wrongAttempts,
+                    passesUsed: passesUsed,
+                    onRetry: () {
+                      resetWholeGame();
+                    },
+                    onLeaderboards: () {
+                      unawaited(SfxController.instance.playMenuPress());
+                      Navigator.pushNamed(context, AppRoutes.leaderboards);
+                    },
+                    onBackToMenu: () {
+                      unawaited(SfxController.instance.playMenuBack());
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.home,
+                            (route) => false,
+                      );
+                    },
+                  ),
+
+                if (showPreGameOverlay)
+                  PreGameOverlay(
+                    modeLabel: _modeLabel,
+                    difficultyLabel: _difficultyLabel,
+                    difficultyDescription: _difficultyDescription,
+                    guideOverlayAssetPath: _guideOverlayAsset,
+                    waitingForTap: waitingForStartTap,
+                    spriteAssetPath: preGameSpriteAsset,
+                    onTap: _handlePreGameTap,
+                    spriteOpacity: preGameSpriteOpacity,
+                    spriteScale: preGameSpriteScale,
+                    spriteScaleDuration: preGameSpriteScaleDuration,
+                    spriteFadeDuration: preGameSpriteFadeDuration,
+                  ),
             ],
           ),
         ),
@@ -882,13 +1588,9 @@ void _showGatekeepingTutorial() {
 }
 
 class _ExpressionPart {
-  const _ExpressionPart.text(this.text)
-      : answer = null,
-        isSlot = false;
+  const _ExpressionPart.text(this.text) : answer = null, isSlot = false;
 
-  const _ExpressionPart.slot(this.answer)
-      : text = null,
-        isSlot = true;
+  const _ExpressionPart.slot(this.answer) : text = null, isSlot = true;
 
   final String? text;
   final String? answer;
@@ -899,18 +1601,36 @@ class _OperatorConfig {
   final String symbol;
   final Color color;
 
-  const _OperatorConfig({
-    required this.symbol,
-    required this.color,
-  });
+  const _OperatorConfig({required this.symbol, required this.color});
 }
 
 const Map<String, _OperatorConfig> _operatorConfigs = {
-  'OR': _OperatorConfig(symbol: '+', color: _GatekeepingGamePageState._operatorOr),
-  'AND': _OperatorConfig(symbol: '•', color: _GatekeepingGamePageState._operatorAnd),
-  'NOT': _OperatorConfig(symbol: '¬', color: _GatekeepingGamePageState._operatorNot),
-  'NOR': _OperatorConfig(symbol: '↓', color: _GatekeepingGamePageState._operatorNor),
-  'NAND': _OperatorConfig(symbol: '↑', color: _GatekeepingGamePageState._operatorNand),
-  'XOR': _OperatorConfig(symbol: '⊕', color: _GatekeepingGamePageState._operatorXor),
-  'XNOR': _OperatorConfig(symbol: '⊙', color: _GatekeepingGamePageState._operatorXnor),
+  'OR': _OperatorConfig(
+    symbol: '+',
+    color: _GatekeepingGamePageState._operatorOr,
+  ),
+  'AND': _OperatorConfig(
+    symbol: '•',
+    color: _GatekeepingGamePageState._operatorAnd,
+  ),
+  'NOT': _OperatorConfig(
+    symbol: '¬',
+    color: _GatekeepingGamePageState._operatorNot,
+  ),
+  'NOR': _OperatorConfig(
+    symbol: '↓',
+    color: _GatekeepingGamePageState._operatorNor,
+  ),
+  'NAND': _OperatorConfig(
+    symbol: '↑',
+    color: _GatekeepingGamePageState._operatorNand,
+  ),
+  'XOR': _OperatorConfig(
+    symbol: '⊕',
+    color: _GatekeepingGamePageState._operatorXor,
+  ),
+  'XNOR': _OperatorConfig(
+    symbol: '⊙',
+    color: _GatekeepingGamePageState._operatorXnor,
+  ),
 };
