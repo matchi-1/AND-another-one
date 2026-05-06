@@ -66,47 +66,35 @@ class MechanicsGatekeepingPage extends StatelessWidget {
 
                       const _SectionTitle('DIFFICULTIES'),
                       const SizedBox(height: 10),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isNarrow = constraints.maxWidth < 600;
-                          final double itemWidth = isNarrow
-                              ? constraints.maxWidth
-                              : (constraints.maxWidth - 20) / 3;
-
-                          return Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: [
-                              SizedBox(
-                                width: itemWidth,
-                                child: _DifficultyCard(
-                                  title: 'BASIC',
-                                  color: AppColors.yellowButton,
-                                  body:
-                                      'Simpler circuits and beginner-friendly recognition tasks.',
-                                ),
-                              ),
-                              SizedBox(
-                                width: itemWidth,
-                                child: _DifficultyCard(
-                                  title: 'LOGIC',
-                                  color: AppColors.pinkButton,
-                                  body:
-                                      'Moderately complex circuits and equivalence recognition.',
-                                ),
-                              ),
-                              SizedBox(
-                                width: itemWidth,
-                                child: _DifficultyCard(
-                                  title: 'MANIC',
-                                  color: AppColors.redButton,
-                                  body:
-                                      'Faster timing and more demanding logical structure.',
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                      Row(
+                        children: const [
+                          Expanded(
+                            child: _DifficultyCard(
+                              title: 'BASIC',
+                              color: AppColors.yellowButton,
+                              body:
+                              'Simpler circuits and beginner-friendly recognition tasks.',
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: _DifficultyCard(
+                              title: 'LOGIC',
+                              color: AppColors.pinkButton,
+                              body:
+                              'Moderately complex circuits and equivalence recognition.',
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: _DifficultyCard(
+                              title: 'MANIC',
+                              color: AppColors.redButton,
+                              body:
+                              'Faster timing and more demanding logical structure.',
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 18),
 

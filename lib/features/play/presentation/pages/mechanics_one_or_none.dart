@@ -66,35 +66,45 @@ class MechanicsOneOrNonePage extends StatelessWidget {
 
                       const _SectionBanner('DIFFICULTIES'),
                       const SizedBox(height: 10),
-                      Row(
-                        children: const [
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'BASIC',
-                              color: AppColors.yellowButton,
-                              body:
-                                  'Introductory recognition tasks with simpler circuits.',
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'LOGIC',
-                              color: AppColors.pinkButton,
-                              body:
-                                  'Moderate circuit analysis with more reasoning required.',
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'MANIC',
-                              color: AppColors.redButton,
-                              body:
-                                  'Harder circuit structures with faster pressure.',
-                            ),
-                          ),
-                        ],
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final bool stackCards = constraints.maxWidth < 560;
+                          final double cardWidth = stackCards
+                              ? constraints.maxWidth
+                              : (constraints.maxWidth - 20) / 3;
+
+                          return Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: const [
+                              _DifficultyCard(
+                                title: 'BASIC',
+                                color: AppColors.yellowButton,
+                                body:
+                                    'Introductory recognition tasks with simpler circuits.',
+                              ),
+                              _DifficultyCard(
+                                title: 'LOGIC',
+                                color: AppColors.pinkButton,
+                                body:
+                                    'Moderate circuit analysis with more reasoning required.',
+                              ),
+                              _DifficultyCard(
+                                title: 'MANIC',
+                                color: AppColors.redButton,
+                                body:
+                                    'Harder circuit structures with faster pressure.',
+                              ),
+                            ]
+                                .map(
+                                  (card) => SizedBox(
+                                    width: cardWidth,
+                                    child: card,
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        },
                       ),
                       const SizedBox(height: 18),
 
