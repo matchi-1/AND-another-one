@@ -14,14 +14,14 @@ class MechanicsOneOrNonePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GameMenuBackground(
-        backgroundColor: AppColors.purpleButton,
+        backgroundColor: AppColors.blueBg,
         child: SafeArea(
           child: Column(
             children: [
-              _TopBar(
+              const _TopBar(
                 title: 'HOW TO PLAY',
                 subtitle: 'One or None Mode',
-                accentColor: AppColors.yellowButton,
+                accentColor: AppColors.orangeButton,
               ),
               Expanded(
                 child: SingleChildScrollView(
@@ -32,76 +32,86 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       _ModeIntroCard(
                         title: 'WHAT IS ONE OR NONE?',
                         body:
-                        'One or None is the mode where you analyze the shown logic circuit and decide whether the final output is 1 or 0.',
-                        color: AppColors.yellowButton,
+                            'One or None is the mode where you analyze the shown logic circuit and decide whether the final output is 1 or 0.',
+                        color: AppColors.orangeButton,
                         icon: Icons.toggle_on_rounded,
                       ),
                       const SizedBox(height: 16),
 
-                      const _SectionTitle('HOW IT WORKS'),
+                      const _SectionBanner('HOW IT WORKS'),
                       const SizedBox(height: 10),
                       const _StepCard(
                         number: '1',
                         title: 'Read the circuit',
                         body:
-                        'Observe the gates, inputs, and flow of logic from left to right.',
+                            'Observe the gates, inputs, and flow of logic from left to right.',
                       ),
                       const SizedBox(height: 10),
                       const _StepCard(
                         number: '2',
                         title: 'Evaluate the final output',
                         body:
-                        'Determine whether the overall result of the circuit becomes 1 or 0.',
+                            'Determine whether the overall result of the circuit becomes 1 or 0.',
                       ),
                       const SizedBox(height: 10),
                       const _StepCard(
                         number: '3',
                         title: 'Choose fast and accurately',
                         body:
-                        'Tap the correct answer before the timer runs out to score more points.',
+                            'Tap the correct answer before the timer runs out to score more points.',
                       ),
                       const SizedBox(height: 18),
 
-                      const _SectionTitle('SCREEN GUIDE'),
+                      const _SectionBanner('SCREEN GUIDE'),
                       const SizedBox(height: 10),
                       const _OneOrNoneMockScreen(),
                       const SizedBox(height: 18),
 
-                      const _SectionTitle('DIFFICULTIES'),
+                      const _SectionBanner('DIFFICULTIES'),
                       const SizedBox(height: 10),
-                      Row(
-                        children: const [
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'BASIC',
-                              color: AppColors.yellowButton,
-                              body:
-                              'Introductory recognition tasks with simpler circuits.',
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'LOGIC',
-                              color: AppColors.pinkButton,
-                              body:
-                              'Moderate circuit analysis with more reasoning required.',
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'MANIC',
-                              color: AppColors.redButton,
-                              body:
-                              'Harder circuit structures with faster pressure.',
-                            ),
-                          ),
-                        ],
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final bool stackCards = constraints.maxWidth < 560;
+                          final double cardWidth = stackCards
+                              ? constraints.maxWidth
+                              : (constraints.maxWidth - 20) / 3;
+
+                          return Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: const [
+                              _DifficultyCard(
+                                title: 'BASIC',
+                                color: AppColors.yellowButton,
+                                body:
+                                    'Introductory recognition tasks with simpler circuits.',
+                              ),
+                              _DifficultyCard(
+                                title: 'LOGIC',
+                                color: AppColors.pinkButton,
+                                body:
+                                    'Moderate circuit analysis with more reasoning required.',
+                              ),
+                              _DifficultyCard(
+                                title: 'MANIC',
+                                color: AppColors.redButton,
+                                body:
+                                    'Harder circuit structures with faster pressure.',
+                              ),
+                            ]
+                                .map(
+                                  (card) => SizedBox(
+                                    width: cardWidth,
+                                    child: card,
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        },
                       ),
                       const SizedBox(height: 18),
 
-                      const _SectionTitle('SCORING AND FEEDBACK'),
+                      const _SectionBanner('SCORING AND FEEDBACK'),
                       const SizedBox(height: 10),
                       Row(
                         children: const [
@@ -111,7 +121,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                               scoreText: '+POINTS',
                               color: AppColors.greenButton,
                               body:
-                              'A green feedback screen confirms the right answer instantly.',
+                                  'A green feedback screen confirms the right answer instantly.',
                             ),
                           ),
                           SizedBox(width: 10),
@@ -121,14 +131,14 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                               scoreText: '-POINTS',
                               color: AppColors.redButton,
                               body:
-                              'A red feedback screen clearly shows that the answer was wrong.',
+                                  'A red feedback screen clearly shows that the answer was wrong.',
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 18),
 
-                      const _SectionTitle('OTHER FEATURES'),
+                      const _SectionBanner('OTHER FEATURES'),
                       const SizedBox(height: 10),
                       const _InfoBulletCard(
                         items: [
@@ -172,7 +182,11 @@ class _TopBar extends StatelessWidget {
               unawaited(SfxController.instance.playMenuBack());
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
           ),
           Expanded(
             child: Column(
@@ -181,25 +195,30 @@ class _TopBar extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.w900,
+                    fontFamily: 'Nunito',
                     letterSpacing: 1,
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.only(top: 6),
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: accentColor,
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: Text(
                     subtitle,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      fontFamily: 'Nunito',
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),
@@ -221,11 +240,44 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
+      textAlign: TextAlign.center,
       style: const TextStyle(
         color: Colors.white,
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: FontWeight.w900,
-        letterSpacing: 0.8,
+        fontFamily: 'Nunito',
+        letterSpacing: 1,
+      ),
+    );
+  }
+}
+
+class _SectionBanner extends StatelessWidget {
+  final String text;
+
+  const _SectionBanner(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.pinkButton,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
+      ),
+      child: Center(
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'Nunito',
+            letterSpacing: 1,
+          ),
+        ),
       ),
     );
   }
@@ -249,9 +301,9 @@ class _ModeIntroCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.22), width: 2),
+        color: AppColors.beigeBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +311,11 @@ class _ModeIntroCard extends StatelessWidget {
           Container(
             width: 54,
             height: 54,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFF9F00), width: 2),
+            ),
             child: Icon(icon, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 14),
@@ -270,19 +326,21 @@ class _ModeIntroCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
+                    color: AppColors.orangeButton,
+                    fontSize: 18,
                     fontWeight: FontWeight.w900,
+                    fontFamily: 'Nunito',
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   body,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.92),
-                    fontSize: 14,
+                  style: const TextStyle(
+                    color: Color(0xFF333333),
+                    fontSize: 15,
                     height: 1.35,
-                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
@@ -310,17 +368,19 @@ class _StepCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.09),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.beigeBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
       ),
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
-            decoration: const BoxDecoration(
-              color: AppColors.yellowButton,
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.orangeButton,
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
             ),
             child: Center(
               child: Text(
@@ -328,7 +388,8 @@ class _StepCard extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
-                  fontSize: 18,
+                  fontFamily: 'Nunito',
+                  fontSize: 20,
                 ),
               ),
             ),
@@ -341,19 +402,21 @@ class _StepCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
+                    color: AppColors.orangeButton,
+                    fontSize: 17,
                     fontWeight: FontWeight.w900,
+                    fontFamily: 'Nunito',
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   body,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.88),
-                    fontSize: 13.5,
+                  style: const TextStyle(
+                    color: Color(0xFF333333),
+                    fontSize: 14.5,
                     height: 1.35,
-                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
@@ -363,137 +426,6 @@ class _StepCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _OneOrNoneMockScreen extends StatelessWidget {
-  const _OneOrNoneMockScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.20), width: 2),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: const [
-              Expanded(
-                child: _HudPill(
-                  label: 'TIMER',
-                  value: '07',
-                  color: AppColors.orangeButton,
-                ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: _HudPill(
-                  label: 'SCORE',
-                  value: '920',
-                  color: AppColors.pinkButton,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            height: 185,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 18,
-                  top: 55,
-                  child: Text(
-                    'A',
-                    style: _inputStyle,
-                  ),
-                ),
-                Positioned(
-                  left: 18,
-                  top: 115,
-                  child: Text(
-                    'B',
-                    style: _inputStyle,
-                  ),
-                ),
-                const Positioned(
-                  left: 88,
-                  top: 78,
-                  child: _MiniGate(label: 'XOR'),
-                ),
-                const Positioned(
-                  left: 188,
-                  top: 78,
-                  child: _MiniGate(label: 'NOT'),
-                ),
-                Positioned(
-                  right: 22,
-                  top: 88,
-                  child: Text(
-                    'FINAL',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.95),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-                const Positioned.fill(child: _CircuitLines()),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.greenButton,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Text(
-              'Final Output = ?',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: const [
-              Expanded(
-                child: _ControlChip(label: '0', color: AppColors.redButton),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: _ControlChip(label: '1', color: AppColors.greenButton),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: _ControlChip(label: 'PASS', color: AppColors.greyButton),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  static const TextStyle _inputStyle = TextStyle(
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: FontWeight.w900,
-  );
 }
 
 class _DifficultyCard extends StatelessWidget {
@@ -512,22 +444,25 @@ class _DifficultyCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.beigeBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: Colors.white, width: 2),
             ),
             child: Text(
               title,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 13,
+                fontSize: 14,
+                fontFamily: 'Nunito',
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -536,11 +471,12 @@ class _DifficultyCard extends StatelessWidget {
           Text(
             body,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.90),
-              fontSize: 12.5,
+            style: const TextStyle(
+              color: Color(0xFF333333),
+              fontSize: 13,
               height: 1.35,
-              fontWeight: FontWeight.w600,
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -567,8 +503,9 @@ class _FeedbackCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(18),
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
       ),
       child: Column(
         children: [
@@ -576,16 +513,18 @@ class _FeedbackCard extends StatelessWidget {
             title,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: 16,
+              fontFamily: 'Nunito',
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             scoreText,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 22,
+              fontSize: 24,
+              fontFamily: 'Nunito',
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -595,8 +534,9 @@ class _FeedbackCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 12.5,
+              fontSize: 13.5,
               height: 1.35,
+              fontFamily: 'Nunito',
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -613,43 +553,45 @@ class _InfoBulletCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.beigeBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
       ),
       child: Column(
         children: items
             .map(
               (item) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 5),
-                  child: Icon(
-                    Icons.circle,
-                    size: 8,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    item,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.92),
-                      fontSize: 13.5,
-                      height: 1.35,
-                      fontWeight: FontWeight.w600,
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Icon(
+                        Icons.circle,
+                        size: 10,
+                        color: AppColors.orangeButton,
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: const TextStyle(
+                          color: Color(0xFF333333),
+                          fontSize: 14.5,
+                          height: 1.35,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        )
+              ),
+            )
             .toList(),
       ),
     );
@@ -733,11 +675,7 @@ class _CircuitLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: CustomPaint(
-        painter: _CircuitPainter(),
-      ),
-    );
+    return IgnorePointer(child: CustomPaint(painter: _CircuitPainter()));
   }
 }
 
@@ -759,30 +697,82 @@ class _CircuitPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+class _OneOrNoneMockScreen extends StatelessWidget {
+  const _OneOrNoneMockScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.asset(
+        'assets/images/how_to_play/oneornonemode.png',
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+}
+
 class _ControlChip extends StatelessWidget {
   final String label;
   final Color color;
+  final VoidCallback onTap;
+  final String? resultLabel;
+  final Color? resultColor;
 
   const _ControlChip({
     required this.label,
     required this.color,
+    required this.onTap,
+    this.resultLabel,
+    this.resultColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: color,
+    return Material(
+      color: color,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
         borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 16,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+              if (resultLabel != null && resultColor != null) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: resultColor,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    resultLabel!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
