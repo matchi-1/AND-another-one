@@ -9,6 +9,27 @@ class AuthService {
     return '$usernameLower@andanotherone.game';
   }
 
+  Future<String> currentUsername({String fallback = 'Player'}) async {
+    final user = _auth.currentUser;
+
+    if (user == null) return fallback;
+
+    try {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      final data = doc.data();
+
+      final username = data?['username'] as String?;
+
+      if (username != null && username.trim().isNotEmpty) {
+        return username.trim();
+      }
+    } catch (_) {
+      // Keep fallback.
+    }
+
+    return fallback;
+  }
+
   Future<void> register({
     required String username,
     required String password,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_assets.dart';
 import '../../core/navigation/app_routes.dart';
 import 'gameplay_tutorial_overlay.dart';
 import 'gameplay_tutorial_service.dart';
@@ -8,13 +9,24 @@ import 'tutorial_targets.dart';
 class TutorialStepSpec {
   final String? targetId;
   final String text;
+  final String andyAsset;
+
+  final TutorialOverlayPlacement andyPlacement;
+  final TutorialOverlayPlacement dialoguePlacement;
+
+  final double andyWidthFactor;
+  final double dialogueWidthFactor;
 
   const TutorialStepSpec({
     required this.targetId,
     required this.text,
+    required this.andyAsset,
+    this.andyPlacement = TutorialPositions.bottomLeft,
+    this.dialoguePlacement = TutorialPositions.topCenter,
+    this.andyWidthFactor = 0.60,
+    this.dialogueWidthFactor = 0.90,
   });
 }
-
 class TutorialPageSpec {
   final String routeName;
   final List<TutorialStepSpec> steps;
@@ -27,6 +39,7 @@ class TutorialPageSpec {
 
 class AppTutorialController {
   AppTutorialController._();
+
   static final AppTutorialController instance = AppTutorialController._();
 
   final GameplayTutorialService _service = GameplayTutorialService();
@@ -37,49 +50,209 @@ class AppTutorialController {
   int _pageIndex = 0;
   OverlayEntry? _entry;
 
-  final List<TutorialPageSpec> _flow = const [
-    TutorialPageSpec(
-      routeName: AppRoutes.home,
-      steps: [
-        TutorialStepSpec(targetId: 'homePlay', text: '<home play button>'),
-        TutorialStepSpec(targetId: 'homeLogicGuide', text: '<home logic guide button>'),
-        TutorialStepSpec(targetId: 'homeLeaderboards', text: '<home leaderboards button>'),
-        TutorialStepSpec(targetId: 'homeRestart', text: '<home restart tutorial text link>'),
-        TutorialStepSpec(targetId: 'homeExit', text: '<home exit button>'),
-        TutorialStepSpec(targetId: 'homeLogout', text: '<home logout button>'),
-      ],
-    ),
-    TutorialPageSpec(
-      routeName: AppRoutes.selectMode,
-      steps: [
-        TutorialStepSpec(targetId: 'modeGatekeeping', text: '<mode select gatekeeping>'),
-        TutorialStepSpec(targetId: 'modeOneOrNone', text: '<mode select one or none>'),
-        TutorialStepSpec(targetId: 'modeBack', text: '<mode select back button>'),
-      ],
-    ),
-    TutorialPageSpec(
-      routeName: AppRoutes.gatekeepingSelect,
-      steps: [
-        TutorialStepSpec(targetId: 'gateHowToPlay', text: '<gatekeeping how to play>'),
-        TutorialStepSpec(targetId: 'gateBasic', text: '<gatekeeping basic difficulty>'),
-        TutorialStepSpec(targetId: 'gateLogic', text: '<gatekeeping logic difficulty>'),
-        TutorialStepSpec(targetId: 'gateManic', text: '<gatekeeping manic difficulty>'),
-        TutorialStepSpec(targetId: 'gateBack', text: '<gatekeeping back button>'),
-      ],
-    ),
-    TutorialPageSpec(
-      routeName: AppRoutes.gatekeepingTutorialPreview,
-      steps: [
-        TutorialStepSpec(targetId: 'previewDiagram', text: '<tutorial gameplay diagram>'),
-        TutorialStepSpec(targetId: 'previewExpression', text: '<tutorial gameplay expression>'),
-        TutorialStepSpec(targetId: 'previewButtons', text: '<tutorial gameplay answer buttons>'),
-        TutorialStepSpec(targetId: 'previewTimer', text: '<tutorial gameplay timer and score>'),
-        TutorialStepSpec(targetId: 'previewPass', text: '<tutorial gameplay pass area>'),
-      ],
-    ),
-  ];
+  String _playerName = 'Player';
 
   bool get isActive => _active;
+
+  void setPlayerName(String playerName) {
+    final cleaned = playerName.trim();
+
+    if (cleaned.isEmpty) {
+      _playerName = 'Player';
+      return;
+    }
+
+    _playerName = cleaned;
+  }
+
+  List<TutorialPageSpec> get _flow => [
+        TutorialPageSpec(
+          routeName: AppRoutes.home,
+          steps: [
+            TutorialStepSpec(
+              targetId: null,
+              text:
+                  'Hey, $_playerName! I’m Andy. Welcome to AND Another One, where logic gates become a game!',
+              andyAsset: AppAssets.tutorialAndy1,
+
+                        // Andy appears at bottom-left.
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              // Dialogue appears at top-center.
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                offset: Offset(0, 10),
+              ),
+
+              andyWidthFactor: 0.58,
+              dialogueWidthFactor: 0.90,
+            ),
+
+            const TutorialStepSpec(
+              targetId: null,
+              text:
+                  'This is your home base. From here, you can play, study logic gates, check rankings, or restart this tutorial anytime.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            const TutorialStepSpec(
+              targetId: 'homePlay',
+              text:
+                  'Tap PLAY when you’re ready to jump into the logic challenges.',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+            const TutorialStepSpec(
+              targetId: 'homeLogicGuide',
+              text:
+                  'Need a refresher? The LOGIC GUIDE explains the operators before you start solving.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            const TutorialStepSpec(
+              targetId: 'homeLeaderboards',
+              text:
+                  'The LEADERBOARDS show who’s dominating the circuit board.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            const TutorialStepSpec(
+              targetId: 'homeRestart',
+              text:
+                  'Forgot something? You can replay my tutorial here anytime.',
+              andyAsset: AppAssets.tutorialAndy3,
+              andyPlacement: TutorialOverlayPlacement(
+              anchor: TutorialAnchor.topRight,
+              offset: Offset(12, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(0, -24),
+              ),
+
+              andyWidthFactor: 0.42,
+              dialogueWidthFactor: 0.78,
+            ),
+          ],
+        ),
+        const TutorialPageSpec(
+          routeName: AppRoutes.selectMode,
+          steps: [
+            TutorialStepSpec(
+              targetId: null,
+              text:
+                  'Now choose your game mode. Each mode tests logic in a different way.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            TutorialStepSpec(
+              targetId: 'modeGatekeeping',
+              text:
+                  'In Gatekeeping, you fill in the missing logic operator that completes the expression.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: 'modeOneOrNone',
+              text:
+                  'In One or None, you decide whether the whole circuit outputs a 1 or a 0.',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+            TutorialStepSpec(
+              targetId: 'modeBack',
+              text:
+                  'Use BACK whenever you want to return to the previous screen.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+          ],
+        ),
+        const TutorialPageSpec(
+          routeName: AppRoutes.gatekeepingSelect,
+          steps: [
+            TutorialStepSpec(
+              targetId: null,
+              text:
+                  'This is the Gatekeeping difficulty screen. Pick the level that matches your confidence.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: 'gateHowToPlay',
+              text:
+                  'The HOW TO PLAY button gives a more detailed explanation of this mode.',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+            TutorialStepSpec(
+              targetId: 'gateBasic',
+              text:
+                  'BASIC is the best place to start. It uses simpler gates and friendlier patterns.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            TutorialStepSpec(
+              targetId: 'gateLogic',
+              text:
+                  'LOGIC adds more challenge, so expect trickier operator combinations.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: 'gateManic',
+              text:
+                  'MANIC is fast, chaotic, and definitely not for sleepy brains.',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+            TutorialStepSpec(
+              targetId: 'gateBack',
+              text:
+                  'Not ready yet? This BACK button returns you to mode select.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+          ],
+        ),
+        const TutorialPageSpec(
+          routeName: AppRoutes.gatekeepingTutorialPreview,
+          steps: [
+            TutorialStepSpec(
+              targetId: null,
+              text:
+                  'Before your first real round, let me show you how the game screen works.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: 'previewDiagram',
+              text:
+                  'This area shows the circuit diagram. Read the gates and follow how the signals connect.',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+            TutorialStepSpec(
+              targetId: 'previewExpression',
+              text:
+                  'This expression is your main clue. The blank box is the missing operator you need to fill.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            TutorialStepSpec(
+              targetId: 'previewButtons',
+              text:
+                  'Choose the operator button that correctly completes the expression.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: 'previewTimer',
+              text:
+                  'Here’s your timer and score. Correct answers help you keep momentum.',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+            TutorialStepSpec(
+              targetId: 'previewPass',
+              text:
+                  'Stuck? Use PASS to skip a question, but you only get a limited number of passes.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            TutorialStepSpec(
+              targetId: null,
+              text:
+                  'That’s it! Read the circuit, solve the blank, and keep your streak alive. Let’s play!',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+          ],
+        ),
+      ];
 
   Future<void> maybeStart(BuildContext context) async {
     if (_active) return;
@@ -92,24 +265,25 @@ class AppTutorialController {
   }
 
   Future<void> start(BuildContext context) async {
-  _removeOverlay();
-  _active = true;
-  _pageIndex = 0;
+    _removeOverlay();
+    _active = true;
+    _pageIndex = 0;
 
-  final firstRoute = _flow.first.routeName;
-  final currentRoute = ModalRoute.of(context)?.settings.name;
+    final firstRoute = _flow.first.routeName;
+    final currentRoute = ModalRoute.of(context)?.settings.name;
 
-  if (currentRoute == firstRoute) {
-    onPageReady(context, firstRoute);
-    return;
+    if (currentRoute == firstRoute) {
+      onPageReady(context, firstRoute);
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      firstRoute,
+      (route) => false,
+    );
   }
-
-  if (!context.mounted) return;
-  Navigator.of(context).pushNamedAndRemoveUntil(
-    firstRoute,
-    (route) => false,
-  );
-}
 
   void onPageReady(BuildContext context, String currentRouteName) {
     if (!_active) return;
@@ -127,19 +301,26 @@ class AppTutorialController {
 
   void _showPageOverlay(BuildContext context, TutorialPageSpec spec) {
     final steps = spec.steps
-        .map(
-          (step) => GameplayTutorialStep(
-            targetKey: tutorialTargetById(step.targetId),
-            text: step.text,
-          ),
-        )
-        .toList();
+      .map(
+        (step) => GameplayTutorialStep(
+          targetKey: tutorialTargetById(step.targetId),
+          text: step.text,
+          andyAsset: step.andyAsset,
+          andyPlacement: step.andyPlacement,
+          dialoguePlacement: step.dialoguePlacement,
+          andyWidthFactor: step.andyWidthFactor,
+          dialogueWidthFactor: step.dialogueWidthFactor,
+        ),
+      )
+      .toList();
 
     _removeOverlay();
 
     _entry = OverlayEntry(
       builder: (_) => GameplayTutorialOverlay(
         steps: steps,
+
+        // Normal tutorial progression.
         onFinish: () async {
           _removeOverlay();
 
@@ -152,7 +333,13 @@ class AppTutorialController {
           final nextRoute = _flow[_pageIndex].routeName;
 
           if (!context.mounted) return;
+
           Navigator.of(context).pushReplacementNamed(nextRoute);
+        },
+
+        // X button: skip the whole tutorial immediately.
+        onSkip: () async {
+          await stop(context, markSeen: true);
         },
       ),
     );
@@ -161,19 +348,22 @@ class AppTutorialController {
   }
 
   Future<void> _finishTutorial(BuildContext context) async {
-  _removeOverlay();
-  _active = false;
-  _pageIndex = 0;
+    _removeOverlay();
+    _active = false;
+    _pageIndex = 0;
 
-  final currentRoute = ModalRoute.of(context)?.settings.name;
-  if (currentRoute == AppRoutes.home) return;
+    await _service.markSeen(_flagName);
 
-  if (!context.mounted) return;
-  Navigator.of(context).pushNamedAndRemoveUntil(
-    AppRoutes.home,
-    (route) => false,
-  );
-}
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    if (currentRoute == AppRoutes.home) return;
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.home,
+      (route) => false,
+    );
+  }
 
   Future<void> stop(BuildContext context, {bool markSeen = true}) async {
     _removeOverlay();
@@ -185,6 +375,7 @@ class AppTutorialController {
     }
 
     if (!context.mounted) return;
+
     Navigator.of(context).pushNamedAndRemoveUntil(
       AppRoutes.home,
       (route) => false,

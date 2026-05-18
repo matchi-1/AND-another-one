@@ -53,6 +53,10 @@ class AppAssets {
   static const andyGatekeeping = 'assets/images/sprites/andy-gatekeeping.png';
   static const andyOneOrNone = 'assets/images/sprites/andy-one-or-none.png';
 
+  static const tutorialAndy1 = 'assets/images/tutorial/andy1.png';
+  static const tutorialAndy2 = 'assets/images/tutorial/andy2.png';
+  static const tutorialAndy3 = 'assets/images/tutorial/andy3.png';
+
   // game overlays
   static const andyGameOverBasic = 'assets/images/game_overlay/game-over-overlay-basic.png';
   static const andyGameOverLogic = 'assets/images/game_overlay/game-over-overlay-logic.png';
