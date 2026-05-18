@@ -18,7 +18,7 @@ class LogicLessonData {
       id: 'double_negation',
       title: 'Double Negation',
       formulas: '~(~A) • ~(~B)\n\nA • B',
-      explanation: 'Two NOT gates cancel out each other',
+      explanation: 'Two NOT gates will always cancel each other out',
     ),
     LogicLesson(
       id: 'idempotent_law',
