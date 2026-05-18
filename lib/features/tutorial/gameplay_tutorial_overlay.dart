@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
+import '../../core/audio/sfx_controller.dart';
 
 enum TutorialAnchor {
   topLeft,
@@ -181,6 +184,8 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
   }
 
   void _next() {
+    unawaited(SfxController.instance.playMenuPress());
+
     if (_index >= widget.steps.length - 1) {
       widget.onFinish();
       return;
@@ -309,7 +314,10 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
-                    onTap: widget.onSkip,
+                    onTap: () {
+                      unawaited(SfxController.instance.playMenuBack());
+                      widget.onSkip();
+                    },
                     child: const Padding(
                       padding: EdgeInsets.all(10),
                       child: Icon(

@@ -239,6 +239,7 @@ class _HomePageState extends State<HomePage>
                   TextButton(
                     key: TutorialTargets.homeRestart,
                     onPressed: () async {
+                      SfxController.instance.playMenuPress();
                       final username = await _authService.currentUsername();
 
                       if (!mounted) return;
