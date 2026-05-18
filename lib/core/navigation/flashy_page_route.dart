@@ -44,6 +44,8 @@ class _PixelWaveRevealTransition extends StatelessWidget {
       builder: (context, _) {
         final rawT = animation.value;
         final revealT = Curves.easeInOutCubic.transform(rawT);
+        final isReversing = animation.status == AnimationStatus.reverse;
+        final flashOpacity = isReversing ? 0.0 : _flashOpacity(rawT);
 
         return Stack(
           fit: StackFit.expand,
@@ -70,7 +72,7 @@ class _PixelWaveRevealTransition extends StatelessWidget {
             // Quick initial flash so the transition feels punchier.
             IgnorePointer(
               child: ColoredBox(
-                color: flashColor.withOpacity(_flashOpacity(rawT)),
+                color: flashColor.withOpacity(flashOpacity),
               ),
             ),
           ],
