@@ -21,10 +21,13 @@ class SfxController {
   final AudioPlayer _menuBackPlayer = AudioPlayer();
   final AudioPlayer _playSelectPlayer = AudioPlayer();
 
+  bool _countdownPausedByGamePause = false;
+  Duration _countdownPausePosition = Duration.zero;
+
   bool _initialized = false;
   bool _useOperatorA = true;
 
-List<AudioPlayer> get _allPlayers => [
+List<AudioPlayer> get _oneShotPlayers => [
   _passPlayer,
   _operatorPlayerA,
   _operatorPlayerB,
@@ -32,17 +35,17 @@ List<AudioPlayer> get _allPlayers => [
   _correctPlayer,
   _wrongPlayer,
   _gameOverPlayer,
-  _countdownPlayer,
   _menuPressPlayer,
   _menuBackPlayer,
   _playSelectPlayer,
-  
 ];
+
+
 Future<void> stopAllForLifecycle() async {
   if (!_initialized) return;
 
   await Future.wait(
-    _allPlayers.map((player) async {
+    _oneShotPlayers.map((player) async {
       try {
         await player.pause();
         await player.seek(Duration.zero);
@@ -51,7 +54,18 @@ Future<void> stopAllForLifecycle() async {
       }
     }),
   );
+
+  try {
+    if (_countdownPlayer.playing) {
+      _countdownPausePosition = _countdownPlayer.position;
+      await _countdownPlayer.pause();
+    }
+  } catch (e) {
+    debugPrint('Failed to pause countdown SFX on app background: $e');
+  }
 }
+
+
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
@@ -144,12 +158,15 @@ Future<void> stopAllForLifecycle() async {
     await _play(_gameOverPlayer);
   }
 
-  Future<void> playCountdown() async {
+Future<void> playCountdown() async {
   await init();
 
   if (!BgmController.instance.isOn.value) return;
 
   try {
+    _countdownPausedByGamePause = false;
+    _countdownPausePosition = Duration.zero;
+
     unawaited(BgmController.instance.duckBgm());
 
     await _countdownPlayer.pause();
@@ -178,6 +195,64 @@ Future<void> stopAllForLifecycle() async {
   Future<void> playPlaySelect() async {
     await _play(_playSelectPlayer);
   }
+
+Future<void> pauseCountdownForGamePause({bool force = false}) async {
+  await init();
+
+  if (_countdownPausedByGamePause) return;
+
+  final countdownIsActive =
+      _countdownPlayer.playing ||
+      _countdownPlayer.processingState == ProcessingState.ready ||
+      _countdownPlayer.processingState == ProcessingState.buffering;
+
+  if (!force && !countdownIsActive) return;
+  if (_countdownPlayer.processingState == ProcessingState.completed) return;
+
+  _countdownPausedByGamePause = true;
+  _countdownPausePosition = _countdownPlayer.position;
+
+  try {
+    _countdownPausePosition = _countdownPlayer.position;
+
+    if (_countdownPlayer.playing) {
+      await _countdownPlayer.pause();
+    }
+
+    await BgmController.instance.restoreBgm();
+  } catch (e, st) {
+    debugPrint('Failed to pause countdown for game pause: $e');
+    debugPrintStack(stackTrace: st);
+  }
+}
+
+Future<void> resumeCountdownFromGamePause() async {
+  await init();
+
+  if (!_countdownPausedByGamePause) return;
+
+  _countdownPausedByGamePause = false;
+
+  if (!BgmController.instance.isOn.value) return;
+  if (_countdownPlayer.processingState == ProcessingState.completed) return;
+
+  try {
+    unawaited(BgmController.instance.duckBgm());
+
+    final currentPosition = _countdownPlayer.position;
+
+    // If something rewound the countdown while the app was paused,
+    // restore the saved position before playing.
+    if (currentPosition < _countdownPausePosition) {
+      await _countdownPlayer.seek(_countdownPausePosition);
+    }
+
+    unawaited(_countdownPlayer.play());
+  } catch (e, st) {
+    debugPrint('Failed to resume countdown from game pause: $e');
+    debugPrintStack(stackTrace: st);
+  }
+}
 
   Future<void> dispose() async {
   await Future.wait([

@@ -60,18 +60,34 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
 
   bool showBackConfirmOverlay = false;
 
-  void _onPausePressed() {
-    unawaited(SfxController.instance.playMenuPress());
-    if (gameFinished) {
-      Navigator.pop(context);
-      return;
-    }
+void _onPausePressed() {
+  unawaited(SfxController.instance.playMenuPress());
 
-    setState(() {
-      roundLocked = true;
-      showBackConfirmOverlay = true;
-    });
+  if (gameFinished) {
+    if (!showGameResultOverlay && mounted) {
+      setState(() {
+        showGameResultOverlay = true;
+        showBackConfirmOverlay = false;
+      });
+    }
+    return;
   }
+
+  if (!showBackConfirmOverlay) {
+    _wasRoundLockedBeforePauseOverlay = roundLocked;
+  }
+
+  if (countdownRunning) {
+    unawaited(
+      SfxController.instance.pauseCountdownForGamePause(force: true),
+    );
+  }
+
+  setState(() {
+    roundLocked = true;
+    showBackConfirmOverlay = true;
+  });
+}
   
   @override
 void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -95,12 +111,25 @@ void _pauseGameForLifecycle() {
   _pausedByLifecycle = true;
   _wasRoundLockedBeforeLifecyclePause = roundLocked;
 
+  if (!showBackConfirmOverlay) {
+    _wasRoundLockedBeforePauseOverlay = roundLocked;
+  }
+
+  if (countdownRunning) {
+    unawaited(
+      SfxController.instance.pauseCountdownForGamePause(force: true),
+    );
+  }
+
   if (!mounted) return;
 
   setState(() {
     roundLocked = true;
 
-    // Stop active implicit animation durations while app is hidden.
+    if (!gameFinished && !showGameResultOverlay) {
+      showBackConfirmOverlay = true;
+    }
+
     preGameSpriteScaleDuration = Duration.zero;
     preGameSpriteFadeDuration = Duration.zero;
     reactionScaleDuration = Duration.zero;
@@ -130,7 +159,7 @@ void _resumeGameFromLifecycle() {
 }
 
 Future<void> _waitWhilePausedByLifecycle() async {
-  while (_pausedByLifecycle) {
+  while (_pausedByLifecycle || showBackConfirmOverlay) {
     _lifecycleResumeCompleter ??= Completer<void>();
     await _lifecycleResumeCompleter!.future;
   }
@@ -146,28 +175,48 @@ Future<void> _pauseAwareDelay(Duration duration) async {
     final step = remaining < tick ? remaining : tick;
     await Future<void>.delayed(step);
 
-    if (!_pausedByLifecycle) {
+    if (!_pausedByLifecycle && !showBackConfirmOverlay) {
       remaining -= step;
     }
   }
 }
 
-  void _closeBackOverlay() {
-    unawaited(SfxController.instance.playMenuBack());
-    if (!mounted) return;
+void _closeBackOverlay() {
+  unawaited(SfxController.instance.playMenuBack());
+  if (!mounted) return;
 
-    setState(() {
-      showBackConfirmOverlay = false;
-      roundLocked = false;
-    });
+  final shouldResumeCountdownSfx = countdownRunning;
+
+  setState(() {
+    showBackConfirmOverlay = false;
+
+    if (showGameResultOverlay ||
+        showPreGameOverlay ||
+        countdownRunning ||
+        gameFinished) {
+      roundLocked = true;
+    } else {
+      roundLocked = _wasRoundLockedBeforePauseOverlay;
+    }
+  });
+
+  _lifecycleResumeCompleter?.complete();
+  _lifecycleResumeCompleter = null;
+
+  if (shouldResumeCountdownSfx) {
+    unawaited(SfxController.instance.resumeCountdownFromGamePause());
   }
+}
 
   bool _pausedByLifecycle = false;
   bool _wasRoundLockedBeforeLifecyclePause = false;
   Completer<void>? _lifecycleResumeCompleter;
+  bool _wasRoundLockedBeforePauseOverlay = false;
 
   bool showGameResultOverlay = false;
   String gameResultTitle = 'ROUND COMPLETE';
+
+  
 
   int hotstreakCount = 0;
   int multiplierTierIndex = 0;
@@ -526,29 +575,36 @@ Future<void> _pauseAwareDelay(Duration duration) async {
     await _performTimeout();
   }
 
-  Future<void> _performTimeout() async {
-    if (gameFinished) return;
+Future<void> _performTimeout() async {
+  if (gameFinished && showGameResultOverlay) return;
 
-    HapticFeedback.heavyImpact();
+  gameplayTimer?.cancel();
+  HapticFeedback.heavyImpact();
 
-    setState(() {
-      gameFinished = true;
-      roundLocked = true;
-      timeLeft = 0;
-    });
+  if (!mounted) return;
 
-    gameplayTimer?.cancel();
+  setState(() {
+    gameFinished = true;
+    roundLocked = true;
+    timeLeft = 0;
+
+    showBackConfirmOverlay = false;
+    showPreGameOverlay = false;
+    countdownRunning = false;
+
+    gameResultTitle = 'ROUND COMPLETE';
+    showGameResultOverlay = true;
+  });
+
+  unawaited(SfxController.instance.playGameOver());
+
+  try {
     await submitFinalScoreOnce();
-
-    if (!mounted) return;
-
-    await SfxController.instance.playGameOver();
-
-    setState(() {
-      gameResultTitle = 'ROUND COMPLETE';
-      showGameResultOverlay = true;
-    });
+  } catch (e, st) {
+    debugPrint('Failed to submit final score: $e');
+    debugPrintStack(stackTrace: st);
   }
+}
 
   Future<void> finishRound({
     required int scoreDelta,
@@ -561,7 +617,7 @@ Future<void> _pauseAwareDelay(Duration duration) async {
       timeLeft = (timeLeft + timeDelta).clamp(0, 999999);
     });
 
-    await Future.delayed(const Duration(milliseconds: 850));
+    await _pauseAwareDelay(const Duration(milliseconds: 850));
 
     if (!mounted || gameFinished) return;
 
@@ -594,7 +650,7 @@ Future<void> _pauseAwareDelay(Duration duration) async {
       scoreDeltaXOffset = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 60));
+    await _pauseAwareDelay(const Duration(milliseconds: 60));
     if (!mounted) return;
 
     setState(() {
@@ -602,14 +658,14 @@ Future<void> _pauseAwareDelay(Duration duration) async {
       scoreDeltaXOffset = -10.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 900));
+    await _pauseAwareDelay(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     setState(() {
       scoreDeltaOpacity = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 220));
+    await _pauseAwareDelay(const Duration(milliseconds: 220));
     if (!mounted) return;
 
     setState(() {
@@ -629,21 +685,21 @@ Future<void> _pauseAwareDelay(Duration duration) async {
       timeDeltaYOffset = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 60));
+    await _pauseAwareDelay(const Duration(milliseconds: 60));
     if (!mounted) return;
 
     setState(() {
       timeDeltaYOffset = -15.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 900));
+    await _pauseAwareDelay(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     setState(() {
       timeDeltaOpacity = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 220));
+    await _pauseAwareDelay(const Duration(milliseconds: 220));
     if (!mounted) return;
 
     setState(() {
@@ -1579,27 +1635,7 @@ Future<void> _pauseAwareDelay(Duration duration) async {
                   ),
                 ),
 
-              if (showBackConfirmOverlay)
-                PauseOverlay(
-                  backgroundAssetPath: AppAssets.andyPauseGame,
-                  onResume: _closeBackOverlay,
-                  onRetry: () {
-                    setState(() {
-                      showBackConfirmOverlay = false;
-                    });
-
-                    resetWholeGame();
-                  },
-                  onExitToMenu: () {
-                    unawaited(SfxController.instance.playGameOver());
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
-                  },
-                ),
-
+             
               if (showGameResultOverlay)
                 GameResultOverlay(
                   backgroundAssetPath: _gameOverOverlayAsset,
@@ -1640,6 +1676,29 @@ Future<void> _pauseAwareDelay(Duration duration) async {
                   spriteScaleDuration: preGameSpriteScaleDuration,
                   spriteFadeDuration: preGameSpriteFadeDuration,
                 ),
+              
+               if (showBackConfirmOverlay)
+                PauseOverlay(
+                  backgroundAssetPath: AppAssets.andyPauseGame,
+                  onResume: _closeBackOverlay,
+                  onRetry: () {
+                    setState(() {
+                      showBackConfirmOverlay = false;
+                    });
+
+                    resetWholeGame();
+                  },
+                  onExitToMenu: () {
+                    unawaited(SfxController.instance.playGameOver());
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.home,
+                      (route) => false,
+                    );
+                  },
+                ),
+
+
             ],
           ),
         ),
