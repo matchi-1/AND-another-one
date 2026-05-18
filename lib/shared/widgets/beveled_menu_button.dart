@@ -71,7 +71,7 @@ class _BeveledMenuButtonState extends State<BeveledMenuButton>
 
     _tapController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 550),
     );
   }
 
@@ -116,7 +116,7 @@ class _BeveledMenuButtonState extends State<BeveledMenuButton>
                 final pressAmount = math.sin(tapValue * math.pi);
 
                 // Flashy arcade-style pop.
-                final scale = 1.0 + (pressAmount * 0.085);
+                final scale = 1.0 + (pressAmount * 0.055);
 
                 final burstOrigin = _tapPosition ?? defaultBurstOrigin;
 

@@ -4,8 +4,10 @@ import 'package:and_another_one/core/audio/home_bgm_route_mixin.dart';
 import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:and_another_one/shared/widgets/music_button.dart';
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/navigation/flashy_page_route.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/beveled_menu_button.dart';
 import '../../../../shared/widgets/game_menu_background.dart';
@@ -58,7 +60,6 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
               onTap: onTap,
             ),
           ),
-
           Positioned(
             left: andyOnLeft ? andySideOffset : null,
             right: andyOnLeft ? null : andySideOffset,
@@ -76,6 +77,41 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openGatekeepingGame(Difficulty difficulty) {
+    Color flashColor;
+    String routeName;
+
+    switch (difficulty) {
+      case Difficulty.basic:
+        flashColor = AppColors.yellowButton;
+        routeName = 'gatekeeping-basic-game';
+        break;
+
+      case Difficulty.logic:
+        flashColor = AppColors.pinkButton;
+        routeName = 'gatekeeping-logic-game';
+        break;
+
+      case Difficulty.manic:
+        flashColor = AppColors.redButton;
+        routeName = 'gatekeeping-manic-game';
+        break;
+    }
+
+    unawaited(SfxController.instance.playPlaySelect());
+
+    Navigator.push(
+      context,
+      FlashyPageRoute(
+        settings: RouteSettings(name: routeName),
+        flashColor: flashColor,
+        builder: (_) => GatekeepingGamePage(
+          difficulty: difficulty,
+        ),
       ),
     );
   }
@@ -127,7 +163,10 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       fontSize: 18,
                       onTap: () {
                         unawaited(SfxController.instance.playMenuPress());
-                        Navigator.pushNamed(context, AppRoutes.mechanicsGatekeeping);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.mechanicsGatekeeping,
+                        );
                       },
                     ),
 
@@ -148,15 +187,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       andyBottom: -10,
                       andySideOffset: -10,
                       onTap: () {
-                        unawaited(SfxController.instance.playPlaySelect());
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const GatekeepingGamePage(
-                              difficulty: Difficulty.basic,
-                            ),
-                          ),
-                        );
+                        _openGatekeepingGame(Difficulty.basic);
                       },
                     ),
 
@@ -177,15 +208,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       andyBottom: -15,
                       andySideOffset: -15,
                       onTap: () {
-                        unawaited(SfxController.instance.playPlaySelect());
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const GatekeepingGamePage(
-                              difficulty: Difficulty.logic,
-                            ),
-                          ),
-                        );
+                        _openGatekeepingGame(Difficulty.logic);
                       },
                     ),
 
@@ -206,15 +229,7 @@ class _GatekeepingSelectPageState extends State<GatekeepingSelectPage>
                       andyBottom: -10,
                       andySideOffset: -10,
                       onTap: () {
-                        unawaited(SfxController.instance.playPlaySelect());
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const GatekeepingGamePage(
-                              difficulty: Difficulty.manic,
-                            ),
-                          ),
-                        );
+                        _openGatekeepingGame(Difficulty.manic);
                       },
                     ),
 
