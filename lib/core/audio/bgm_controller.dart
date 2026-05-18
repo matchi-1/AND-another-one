@@ -101,7 +101,7 @@ class BgmController {
           await _player.setVolume(0.0);
           _currentVolume = 0.0;
 
-          if (isOn.value) {
+          if (_canPlayNow) {
             unawaited(_player.play());
             await _fadeTo(_targetVolume, const Duration(milliseconds: 120));
           }
@@ -116,7 +116,7 @@ class BgmController {
         await _player.setVolume(0.0);
         _currentVolume = 0.0;
 
-        if (isOn.value) {
+        if (_canPlayNow) {
           unawaited(_player.play());
           await _fadeTo(_targetVolume, const Duration(milliseconds: 120));
         }
