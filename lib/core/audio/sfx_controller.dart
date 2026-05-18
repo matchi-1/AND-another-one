@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../constants/app_assets.dart';
@@ -23,6 +24,34 @@ class SfxController {
   bool _initialized = false;
   bool _useOperatorA = true;
 
+List<AudioPlayer> get _allPlayers => [
+  _passPlayer,
+  _operatorPlayerA,
+  _operatorPlayerB,
+  _backspacePlayer,
+  _correctPlayer,
+  _wrongPlayer,
+  _gameOverPlayer,
+  _countdownPlayer,
+  _menuPressPlayer,
+  _menuBackPlayer,
+  _playSelectPlayer,
+  
+];
+Future<void> stopAllForLifecycle() async {
+  if (!_initialized) return;
+
+  await Future.wait(
+    _allPlayers.map((player) async {
+      try {
+        await player.pause();
+        await player.seek(Duration.zero);
+      } catch (e) {
+        debugPrint('Failed to stop SFX on app background: $e');
+      }
+    }),
+  );
+}
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
@@ -72,19 +101,21 @@ class SfxController {
   }
 
   Future<void> _play(AudioPlayer player) async {
-    await init();
+  await init();
 
-    // Reuse the same global mute toggle for now.
-    if (!BgmController.instance.isOn.value) return;
+  if (!BgmController.instance.isOn.value) return;
 
-    try {
-      await player.stop();
-      await player.seek(Duration.zero);
-      unawaited(player.play());
-    } catch (_) {
-      // ignore occasional playback hiccups
-    }
+  try {
+    await player.pause();
+    await player.seek(Duration.zero);
+    unawaited(player.play());
+  } catch (e, st) {
+    // Temporarily keep this while debugging release/device playback.
+    // Later you can reduce it if it gets noisy.
+    debugPrint('SFX playback failed: $e');
+    debugPrintStack(stackTrace: st);
   }
+}
 
   Future<void> playPass() async {
     await _play(_passPlayer);
@@ -114,22 +145,27 @@ class SfxController {
   }
 
   Future<void> playCountdown() async {
-    await init();
+  await init();
 
-    if (!BgmController.instance.isOn.value) return;
+  if (!BgmController.instance.isOn.value) return;
 
-    try {
-      unawaited(BgmController.instance.duckBgm());
+  try {
+    unawaited(BgmController.instance.duckBgm());
 
-      await _countdownPlayer.stop();
-      await _countdownPlayer.seek(Duration.zero);
-      unawaited(_countdownPlayer.play());
+    await _countdownPlayer.pause();
+    await _countdownPlayer.seek(Duration.zero);
+    unawaited(_countdownPlayer.play());
 
-      _countdownPlayer.playerStateStream
-          .firstWhere((state) => state.processingState == ProcessingState.completed)
-          .then((_) => BgmController.instance.restoreBgm());
-    } catch (_) {}
+    await _countdownPlayer.playerStateStream.firstWhere(
+      (state) => state.processingState == ProcessingState.completed,
+    );
+
+    await BgmController.instance.restoreBgm();
+  } catch (e, st) {
+    debugPrint('Countdown playback failed: $e');
+    debugPrintStack(stackTrace: st);
   }
+}
 
   Future<void> playMenuPress() async {
     await _play(_menuPressPlayer);
@@ -144,13 +180,18 @@ class SfxController {
   }
 
   Future<void> dispose() async {
-    await Future.wait([
-      _passPlayer.dispose(),
-      _operatorPlayerA.dispose(),
-      _operatorPlayerB.dispose(),
-      _backspacePlayer.dispose(),
-      _correctPlayer.dispose(),
-      _wrongPlayer.dispose(),
-    ]);
-  }
+  await Future.wait([
+    _passPlayer.dispose(),
+    _operatorPlayerA.dispose(),
+    _operatorPlayerB.dispose(),
+    _backspacePlayer.dispose(),
+    _correctPlayer.dispose(),
+    _wrongPlayer.dispose(),
+    _gameOverPlayer.dispose(),
+    _countdownPlayer.dispose(),
+    _menuPressPlayer.dispose(),
+    _menuBackPlayer.dispose(),
+    _playSelectPlayer.dispose(),
+  ]);
+}
 }

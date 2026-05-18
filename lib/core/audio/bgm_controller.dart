@@ -31,6 +31,13 @@ class BgmController {
   final double _duckVolume = 0.5;
   bool _isDucked = false;
 
+  bool _pausedByLifecycle = false;
+  bool _shouldResumeAfterLifecyclePause = false;
+
+  bool get isPausedByLifecycle => _pausedByLifecycle;
+
+  bool get _canPlayNow => isOn.value && !_pausedByLifecycle;
+
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
@@ -133,7 +140,7 @@ class BgmController {
       } else {
         isOn.value = true;
 
-        if (_currentScene != null) {
+        if (_currentScene != null && !_pausedByLifecycle) {
           await _player.setVolume(0.0);
           _currentVolume = 0.0;
 
@@ -207,4 +214,45 @@ Future<void> restoreBgm() async {
     isOn.dispose();
     isBusy.dispose();
   }
+
+Future<void> pauseForAppLifecycle() async {
+  await init();
+  if (_pausedByLifecycle) return;
+  _pausedByLifecycle = true;
+  _shouldResumeAfterLifecyclePause = _player.playing;
+
+  try {
+    await _player.pause();
+  } catch (e) {
+    debugPrint('Failed to pause BGM on app background: $e');
+  }
+}
+
+Future<void> resumeFromAppLifecycle() async {
+  await init();
+
+  if (!_pausedByLifecycle) return;
+
+  final shouldResume = _shouldResumeAfterLifecyclePause;
+
+  _pausedByLifecycle = false;
+  _shouldResumeAfterLifecyclePause = false;
+
+  if (!shouldResume) return;
+  if (!isOn.value) return;
+  if (_currentScene == null) return;
+
+  try {
+    if (_currentVolume <= 0.0) {
+      _currentVolume = _targetVolume;
+      await _player.setVolume(_currentVolume);
+    }
+
+    unawaited(_player.play());
+  } catch (e) {
+    debugPrint('Failed to resume BGM on lifecycle resume: $e');
+  }
+}
+
+
 }
