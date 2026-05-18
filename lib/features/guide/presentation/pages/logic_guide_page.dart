@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:and_another_one/core/audio/sfx_controller.dart';
 import 'package:flutter/material.dart';
@@ -157,12 +156,12 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   double _topPanelHeightFactor(Size size) {
     final aspect = size.width / size.height;
     if (aspect < 0.42) {
-      return 0.58;
+      return 0.73;
     }
     if (aspect < 0.5) {
-      return 0.54;
+      return 0.66;
     }
-    return 0.5;
+    return 0.58;
   }
 
   double _scaled(double value, double scale) => value * scale;
@@ -193,7 +192,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             padding: EdgeInsets.symmetric(
               horizontal: _scaled(16, scale),
               vertical: lesson.id == 'symbol_names'
-                  ? _scaled(4, scale)
+              ? _scaled(2, scale)
                   : _scaled(8, scale),
             ),
             decoration: BoxDecoration(
@@ -282,7 +281,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             child: Container(
               padding: EdgeInsets.symmetric(
                 horizontal: _scaled(16, scale),
-                vertical: _scaled(3, scale),
+                vertical: _scaled(7, scale),
               ),
               decoration: BoxDecoration(
                 color: AppColors.pinkButton,
@@ -342,7 +341,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(
             horizontal: _scaled(16, scale),
-            vertical: _scaled(3, scale),
+            vertical: _scaled(7, scale),
           ),
           decoration: BoxDecoration(
             color: const Color(0xFF1B6B3D),
@@ -480,23 +479,19 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     ];
     final maxHeight = constraints.maxHeight;
     final maxWidth = constraints.maxWidth;
-    final baselineHeight = _scaled(240, scale);
-    final baselineWidth = _scaled(230, scale);
     final aspect = maxWidth / maxHeight;
     final isNarrow = aspect < 0.5;
-    final narrowBoost = isNarrow ? (0.5 - aspect).clamp(0.0, 0.2) + 1.0 : 1.0;
-    final heightScale = (maxHeight / baselineHeight)
-      .clamp(isNarrow ? 1.15 : 0.9, isNarrow ? 2.4 : 1.45);
-    final widthScale = (maxWidth / baselineWidth)
-      .clamp(isNarrow ? 0.9 : 0.95, isNarrow ? 1.7 : 1.25);
-    final density = math.min(heightScale, widthScale)
-      .clamp(isNarrow ? 1.2 : 0.9, isNarrow ? 2.3 : 1.2);
-    final tableScale = (0.72 * scale * density * narrowBoost)
-      .clamp(isNarrow ? 0.8 : 0.6, isNarrow ? 1.6 : 1.0);
+    final tableWidth = maxWidth * (isNarrow ? 0.78 : 0.7);
+    final fillHeight = maxHeight * (isNarrow ? 0.9 : 0.85);
+    final rowHeight = fillHeight / rows.length;
+    final symbolHeight =
+        (rowHeight * 0.55).clamp(_scaled(10, scale), _scaled(24, scale));
+    final labelSize =
+      _scaled(15, scale).clamp(_scaled(12, scale), _scaled(18, scale));
 
     return Center(
-      child: Transform.scale(
-        scale: tableScale,
+      child: SizedBox(
+        width: tableWidth,
         child: Table(
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder.all(
@@ -511,15 +506,13 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               .map(
                 (row) => TableRow(
                   children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: _scaled(1, scale),
-                      ),
+                    SizedBox(
+                      height: rowHeight,
                       child: Center(
                         child: Text(
                           row.$1,
                           style: TextStyle(
-                            fontSize: _scaled(19, scale),
+                            fontSize: labelSize,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFFCF6AA5),
                             fontFamily: 'Nunito',
@@ -527,14 +520,16 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: _scaled(1, scale),
-                      ),
+                    SizedBox(
+                      height: rowHeight,
                       child: Center(
                         child: Image.asset(
                           row.$2,
-                          height: _getSymbolRowHeight(row.$1, scale * density),
+                          height: _symbolHeightForLabel(
+                            row.$1,
+                            symbolHeight,
+                            scale,
+                          ),
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -553,6 +548,13 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       return _scaled(10, scale);
     }
     return _scaled(19, scale);
+  }
+
+  double _symbolHeightForLabel(String label, double baseHeight, double scale) {
+    if (label == 'AND' || label == 'NOT') {
+      return (baseHeight * 0.5).clamp(_scaled(6, scale), baseHeight);
+    }
+    return baseHeight;
   }
 
   Widget _buildGateLegendItem(
