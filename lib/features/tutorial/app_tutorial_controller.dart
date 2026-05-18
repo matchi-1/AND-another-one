@@ -95,19 +95,19 @@ class AppTutorialController {
               targetId: null,
               text:
                   'This is your home base. From here, you can play, study logic gates, check rankings, or restart this tutorial anytime.',
-              andyAsset: AppAssets.tutorialAndy2,
+              andyAsset: AppAssets.tutorialAndy1,
             ),
             const TutorialStepSpec(
               targetId: 'homePlay',
               text:
                   'Tap PLAY when you’re ready to jump into the logic challenges.',
-              andyAsset: AppAssets.tutorialAndy3,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
             const TutorialStepSpec(
               targetId: 'homeLogicGuide',
               text:
                   'Need a refresher? The LOGIC GUIDE explains the operators before you start solving.',
-              andyAsset: AppAssets.tutorialAndy1,
+              andyAsset: AppAssets.tutorialAndy3,
             ),
             const TutorialStepSpec(
               targetId: 'homeLeaderboards',
@@ -154,13 +154,13 @@ class AppTutorialController {
               targetId: 'modeOneOrNone',
               text:
                   'In One or None, you decide whether the whole circuit outputs a 1 or a 0.',
-              andyAsset: AppAssets.tutorialAndy3,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
             TutorialStepSpec(
               targetId: 'modeBack',
               text:
                   'Use BACK whenever you want to return to the previous screen.',
-              andyAsset: AppAssets.tutorialAndy1,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
           ],
         ),
@@ -183,7 +183,7 @@ class AppTutorialController {
               targetId: 'gateBasic',
               text:
                   'BASIC is the best place to start. It uses simpler gates and friendlier patterns.',
-              andyAsset: AppAssets.tutorialAndy1,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
             TutorialStepSpec(
               targetId: 'gateLogic',
@@ -195,13 +195,13 @@ class AppTutorialController {
               targetId: 'gateManic',
               text:
                   'MANIC is fast, chaotic, and definitely not for sleepy brains.',
-              andyAsset: AppAssets.tutorialAndy3,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
             TutorialStepSpec(
               targetId: 'gateBack',
               text:
                   'Not ready yet? This BACK button returns you to mode select.',
-              andyAsset: AppAssets.tutorialAndy1,
+              andyAsset: AppAssets.tutorialAndy3,
             ),
           ],
         ),
@@ -212,19 +212,19 @@ class AppTutorialController {
               targetId: null,
               text:
                   'Before your first real round, let me show you how the game screen works.',
-              andyAsset: AppAssets.tutorialAndy2,
+              andyAsset: AppAssets.tutorialAndy1,
             ),
             TutorialStepSpec(
               targetId: 'previewDiagram',
               text:
                   'This area shows the circuit diagram. Read the gates and follow how the signals connect.',
-              andyAsset: AppAssets.tutorialAndy3,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
             TutorialStepSpec(
               targetId: 'previewExpression',
               text:
                   'This expression is your main clue. The blank box is the missing operator you need to fill.',
-              andyAsset: AppAssets.tutorialAndy1,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
             TutorialStepSpec(
               targetId: 'previewButtons',
@@ -236,19 +236,19 @@ class AppTutorialController {
               targetId: 'previewTimer',
               text:
                   'Here’s your timer and score. Correct answers help you keep momentum.',
-              andyAsset: AppAssets.tutorialAndy3,
+              andyAsset: AppAssets.tutorialAndy2,
             ),
             TutorialStepSpec(
               targetId: 'previewPass',
               text:
                   'Stuck? Use PASS to skip a question, but you only get a limited number of passes.',
-              andyAsset: AppAssets.tutorialAndy1,
+              andyAsset: AppAssets.tutorialAndy3,
             ),
             TutorialStepSpec(
               targetId: null,
               text:
                   'That’s it! Read the circuit, solve the blank, and keep your streak alive. Let’s play!',
-              andyAsset: AppAssets.tutorialAndy2,
+              andyAsset: AppAssets.tutorialAndy1,
             ),
           ],
         ),
@@ -375,6 +375,15 @@ class AppTutorialController {
     }
 
     if (!context.mounted) return;
+
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+
+    // Important:
+    // If we are already on Home, do NOT push another Home page.
+    // Pushing another Home causes duplicated GlobalKeys.
+    if (currentRoute == AppRoutes.home) {
+      return;
+    }
 
     Navigator.of(context).pushNamedAndRemoveUntil(
       AppRoutes.home,
