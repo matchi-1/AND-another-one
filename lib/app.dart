@@ -21,6 +21,7 @@ import 'features/play/presentation/pages/mechanics_gatekeeping.dart';
 import 'features/play/presentation/pages/mechanics_one_or_none.dart';
 import 'features/play/presentation/pages/mode_select_page.dart';
 import 'features/play/presentation/pages/one_or_none_select_page.dart';
+import 'features/splash/presentation/pages/animated_andy_splash_page.dart';
 
 class AndAnotherOneApp extends StatefulWidget {
   const AndAnotherOneApp({super.key});
@@ -66,7 +67,7 @@ class _AndAnotherOneAppState extends State<AndAnotherOneApp>
       debugShowCheckedModeBanner: false,
       title: 'AND Another One',
       theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.authGate,
+      initialRoute: AppRoutes.splash, //AppRoutes.authGate,
       navigatorObservers: [appRouteObserver],
       routes: {
         AppRoutes.authGate: (_) => const AuthGate(),
@@ -82,6 +83,7 @@ class _AndAnotherOneAppState extends State<AndAnotherOneApp>
         AppRoutes.mechanicsGatekeeping: (_) => const MechanicsGatekeepingPage(),
         AppRoutes.mechanicsOneOrNone: (_) => const MechanicsOneOrNonePage(),
         AppRoutes.gatekeepingGame: (_) => const GatekeepingGamePage(),
+        AppRoutes.splash: (_) => const AnimatedAndySplashPage(),
         AppRoutes.gatekeepingTutorialPreview: (_) =>
             const GatekeepingTutorialPreviewPage(),
       },
