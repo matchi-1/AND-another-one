@@ -414,65 +414,215 @@ class _SpeechBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bubble = Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 17,
-          height: 1.35,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF222222),
-        ),
-      ),
-    );
+    const tailSpace = 22.0;
 
-    final tail = Padding(
-      padding: EdgeInsets.only(
-        left: _tailOnRight ? 0 : 46,
-        right: _tailOnRight ? 46 : 0,
+    return CustomPaint(
+      painter: _PixelSpeechBubblePainter(
+        tailOnTop: _tailOnTop,
+        tailOnRight: _tailOnRight,
       ),
-      child: Align(
-        alignment: _tailOnRight ? Alignment.centerRight : Alignment.centerLeft,
-        child: Transform.rotate(
-          angle: 0.78,
-          child: Container(
-            width: 20,
-            height: 20,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          22,
+          _tailOnTop ? 22 + tailSpace : 22,
+          22,
+          _tailOnTop ? 22 : 22 + tailSpace,
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 16,
+            height: 1.35,
+            fontWeight: FontWeight.w900,
             color: Colors.white,
+            letterSpacing: 0.5,
+
+            // Optional:
+            // If you have a pixel font in pubspec.yaml,
+            // uncomment this and replace with your font family.
+            // fontFamily: 'PressStart2P',
           ),
         ),
       ),
-    );
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: _tailOnTop
-          ? [
-              tail,
-              const SizedBox(height: 2),
-              bubble,
-            ]
-          : [
-              bubble,
-              const SizedBox(height: 2),
-              tail,
-            ],
     );
   }
 }
+
+class _PixelSpeechBubblePainter extends CustomPainter {
+  const _PixelSpeechBubblePainter({
+    required this.tailOnTop,
+    required this.tailOnRight,
+  });
+
+  final bool tailOnTop;
+  final bool tailOnRight;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const tailHeight = 18.0;
+    const corner = 12.0;
+
+    final bubbleTop = tailOnTop ? tailHeight : 0.0;
+    final bubbleBottom = tailOnTop ? size.height : size.height - tailHeight;
+
+    final bubbleRect = Rect.fromLTRB(
+      0,
+      bubbleTop,
+      size.width,
+      bubbleBottom,
+    );
+
+    final bubblePath = _pixelRectPath(bubbleRect, corner);
+    final tailPath = _tailPath(bubbleRect, tailHeight);
+
+    final fullPath = Path()
+      ..addPath(bubblePath, Offset.zero)
+      ..addPath(tailPath, Offset.zero);
+
+    final shadowPath = fullPath.shift(const Offset(5, 5));
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.45)
+      ..style = PaintingStyle.fill;
+
+    final fillPaint = Paint()
+      ..color = const Color(0xFF21103A)
+      ..style = PaintingStyle.fill;
+
+    final outerBorderPaint = Paint()
+      ..color = const Color(0xFF05000A)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8
+      ..strokeJoin = StrokeJoin.miter
+      ..strokeCap = StrokeCap.square;
+
+    final neonBorderPaint = Paint()
+      ..color = const Color(0xFFD114F7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeJoin = StrokeJoin.miter
+      ..strokeCap = StrokeCap.square;
+
+    final innerHighlightPaint = Paint()
+      ..color = const Color(0xFFFFD23F)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeJoin = StrokeJoin.miter
+      ..strokeCap = StrokeCap.square;
+
+    canvas.drawPath(shadowPath, shadowPaint);
+    canvas.drawPath(fullPath, fillPaint);
+    canvas.drawPath(fullPath, outerBorderPaint);
+    canvas.drawPath(fullPath, neonBorderPaint);
+
+    final innerRect = bubbleRect.deflate(10);
+    final innerPath = _pixelRectPath(innerRect, 8);
+    canvas.drawPath(innerPath, innerHighlightPaint);
+
+    _drawPixelSparkles(canvas, bubbleRect);
+    _drawScanLines(canvas, bubbleRect);
+  }
+
+  Path _pixelRectPath(Rect rect, double corner) {
+    return Path()
+      ..moveTo(rect.left + corner, rect.top)
+      ..lineTo(rect.right - corner, rect.top)
+      ..lineTo(rect.right - corner, rect.top + corner)
+      ..lineTo(rect.right, rect.top + corner)
+      ..lineTo(rect.right, rect.bottom - corner)
+      ..lineTo(rect.right - corner, rect.bottom - corner)
+      ..lineTo(rect.right - corner, rect.bottom)
+      ..lineTo(rect.left + corner, rect.bottom)
+      ..lineTo(rect.left + corner, rect.bottom - corner)
+      ..lineTo(rect.left, rect.bottom - corner)
+      ..lineTo(rect.left, rect.top + corner)
+      ..lineTo(rect.left + corner, rect.top + corner)
+      ..close();
+  }
+
+  Path _tailPath(Rect bubbleRect, double tailHeight) {
+    final centerX = tailOnRight
+        ? bubbleRect.right - 58
+        : bubbleRect.left + 58;
+
+    const halfWidth = 18.0;
+    const step = 8.0;
+
+    if (tailOnTop) {
+      final y = bubbleRect.top;
+
+      return Path()
+        ..moveTo(centerX - halfWidth, y)
+        ..lineTo(centerX - halfWidth, y - step)
+        ..lineTo(centerX - step, y - step)
+        ..lineTo(centerX - step, y - tailHeight)
+        ..lineTo(centerX + step, y - tailHeight)
+        ..lineTo(centerX + step, y - step)
+        ..lineTo(centerX + halfWidth, y - step)
+        ..lineTo(centerX + halfWidth, y)
+        ..close();
+    } else {
+      final y = bubbleRect.bottom;
+
+      return Path()
+        ..moveTo(centerX - halfWidth, y)
+        ..lineTo(centerX - halfWidth, y + step)
+        ..lineTo(centerX - step, y + step)
+        ..lineTo(centerX - step, y + tailHeight)
+        ..lineTo(centerX + step, y + tailHeight)
+        ..lineTo(centerX + step, y + step)
+        ..lineTo(centerX + halfWidth, y + step)
+        ..lineTo(centerX + halfWidth, y)
+        ..close();
+    }
+  }
+
+  void _drawPixelSparkles(Canvas canvas, Rect rect) {
+    final sparklePaint = Paint()
+      ..color = const Color(0xFF00F5FF)
+      ..style = PaintingStyle.fill;
+
+    final yellowPaint = Paint()
+      ..color = const Color(0xFFFFD23F)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRect(
+      Rect.fromLTWH(rect.right - 36, rect.top + 18, 6, 6),
+      sparklePaint,
+    );
+
+    canvas.drawRect(
+      Rect.fromLTWH(rect.right - 24, rect.top + 30, 4, 4),
+      yellowPaint,
+    );
+
+    canvas.drawRect(
+      Rect.fromLTWH(rect.left + 22, rect.bottom - 30, 5, 5),
+      sparklePaint,
+    );
+  }
+
+  void _drawScanLines(Canvas canvas, Rect rect) {
+    final linePaint = Paint()
+      ..color = Colors.white.withOpacity(0.045)
+      ..strokeWidth = 1;
+
+    for (double y = rect.top + 18; y < rect.bottom - 12; y += 8) {
+      canvas.drawLine(
+        Offset(rect.left + 16, y),
+        Offset(rect.right - 16, y),
+        linePaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PixelSpeechBubblePainter oldDelegate) {
+    return oldDelegate.tailOnTop != tailOnTop ||
+        oldDelegate.tailOnRight != tailOnRight;
+  }
+}
+
 
 class _SpotlightPainter extends CustomPainter {
   final Rect? rect;
