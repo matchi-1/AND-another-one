@@ -12,6 +12,7 @@ import '../../features/leaderboards/presentation/pages/leaderboards_page.dart';
 import '../../features/play/presentation/pages/gatekeeping_game_page.dart';
 import '../../features/play/presentation/pages/gatekeeping_select_page.dart';
 import '../../features/play/presentation/pages/gatekeeping_tutorial_preview_page.dart';
+import '../../features/play/presentation/pages/one_or_none_tutorial_preview_page.dart';
 import '../../features/play/presentation/pages/mechanics_gatekeeping.dart';
 import '../../features/play/presentation/pages/mechanics_one_or_none.dart';
 import '../../features/play/presentation/pages/mode_select_page.dart';
@@ -127,6 +128,13 @@ class AppRouter {
           settings,
               (_) => const GatekeepingTutorialPreviewPage(),
           flashColor: const Color(0xFFFFD84D),
+        );
+
+      case AppRoutes.oneOrNoneTutorialPreview:
+        return _flash(
+          settings,
+              (_) => const OneOrNoneTutorialPreviewPage(),
+          flashColor: const Color(0xFF9C6BFF),
         );
 
       default:

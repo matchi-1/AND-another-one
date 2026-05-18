@@ -15,4 +15,6 @@ class AppRoutes {
   static const splash = '/splash';
 
   static const gatekeepingTutorialPreview = '/gatekeeping-tutorial-preview';
+  static const oneOrNoneTutorialPreview = '/one-or-none-tutorial-preview';
+  
 }

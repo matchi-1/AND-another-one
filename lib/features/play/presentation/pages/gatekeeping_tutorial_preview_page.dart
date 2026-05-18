@@ -81,6 +81,63 @@ class GatekeepingTutorialPreviewPage extends StatelessWidget {
     );
   }
 
+  Widget _buildMultiplierText(double width) {
+  return Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFFE28A).withOpacity(0.7),
+          width: 1.4,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            'Mult: x1.0',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: width * 0.040,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFFFFE28A),
+              height: 1.0,
+              shadows: const [
+                Shadow(
+                  color: Colors.black38,
+                  offset: Offset(0, 1.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Streak: 0',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: width * 0.040,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              height: 1.0,
+              shadows: const [
+                Shadow(
+                  color: Colors.black38,
+                  offset: Offset(0, 1.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,6 +211,18 @@ class GatekeepingTutorialPreviewPage extends StatelessWidget {
                                       ),
                                     ),
                                   ),
+
+                                  Positioned(
+                                    left: w * 0.24,
+                                    right: w * 0.4,
+                                    top: h * 0.02,
+                                    height: h * 0.11,
+                                    child: Container(
+                                      key: TutorialTargets.previewMultiplierStreak,
+                                      child: _buildMultiplierText(w),
+                                    ),
+                                  ),
+
                                   Positioned(
                                     right: w * 0.07,
                                     top: h * 0.055,

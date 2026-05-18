@@ -239,16 +239,109 @@ class AppTutorialController {
               andyAsset: AppAssets.tutorialAndy2,
             ),
             TutorialStepSpec(
+              targetId: 'previewMultiplierStreak',
+              text:
+                  'This part shows you your current streak and multiplier.',
+              andyAsset: AppAssets.tutorialAndy3,
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomRight,
+                offset: Offset(12, 0),
+              ),
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(0, -20),
+              ),
+              andyWidthFactor: 0.42,
+              dialogueWidthFactor: 0.78,
+            ),
+            TutorialStepSpec(
               targetId: 'previewPass',
               text:
                   'Stuck? Use PASS to skip a question, but you only get a limited number of passes.',
               andyAsset: AppAssets.tutorialAndy3,
             ),
             TutorialStepSpec(
+              targetId: 'previewPass',
+              text:
+                  'Passes will not affect your streak or multiplier. Use them wisely!',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+
+            TutorialStepSpec(
               targetId: null,
               text:
-                  'That’s it! Read the circuit, solve the blank, and keep your streak alive. Let’s play!',
+                  'That’s it for Gatekeeping! Read the circuit, solve the blank, and keep your streak alive.',
               andyAsset: AppAssets.tutorialAndy1,
+            ),
+          ],
+        ),
+
+        const TutorialPageSpec(
+          routeName: AppRoutes.oneOrNoneTutorialPreview,
+          steps: [
+            TutorialStepSpec(
+              targetId: null,
+              text:
+                  'Now let’s check the One or None game screen. This mode asks you to decide whether the circuit output is 1 or 0.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            TutorialStepSpec(
+              targetId: 'onePreviewLives',
+              text:
+                  'Instead of a timer, One or None uses lives. Wrong answers cost lives.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: 'onePreviewMultiplierStreak',
+              text:
+                  'Streaks and Multipliers work the same way as in Gatekeeping.',
+              andyAsset: AppAssets.tutorialAndy3,
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomRight,
+                offset: Offset(12, 0),
+              ),
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(0, -20),
+              ),
+              andyWidthFactor: 0.42,
+              dialogueWidthFactor: 0.78,
+            ),
+            TutorialStepSpec(
+              targetId: 'onePreviewScore',
+              text:
+                  'Your score still increases when you answer correctly, and your multiplier can make each correct answer worth more.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            TutorialStepSpec(
+              targetId: 'onePreviewDiagram',
+              text:
+                  'Read the circuit diagram, then follow the logic gates from the inputs to the final output.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: 'onePreviewValues',
+              text:
+                  'These are the current input values. Use them to evaluate the circuit.',
+              andyAsset: AppAssets.tutorialAndy3,
+            ),
+            TutorialStepSpec(
+              targetId: 'onePreviewButtons',
+              text:
+                  'Choose 1 if the circuit output is true, or 0 if the circuit output is false.',
+              andyAsset: AppAssets.tutorialAndy1,
+            ),
+            TutorialStepSpec(
+              targetId: 'onePreviewPass',
+              text:
+                  'You can still pass if you are stuck, but passes are limited.',
+              andyAsset: AppAssets.tutorialAndy2,
+            ),
+            TutorialStepSpec(
+              targetId: null,
+              text:
+                  'That’s the full tour! You’re ready to play both modes.',
+              andyAsset: AppAssets.tutorialAndy3,
             ),
           ],
         ),
