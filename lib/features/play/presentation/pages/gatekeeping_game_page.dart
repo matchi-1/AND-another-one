@@ -31,6 +31,7 @@ class GatekeepingGamePage extends StatefulWidget {
 
 class _GatekeepingGamePageState extends State<GatekeepingGamePage>
     with WidgetsBindingObserver {
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +49,118 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
     //WidgetsBinding.instance.addPostFrameCallback((_) {
     // _maybeShowTutorial();
     //});
+  }
+
+  Color _comboAccentForTier(int tierIndex) {
+    final safeIndex = tierIndex.clamp(0, _comboTierColors.length - 1).toInt();
+    return _comboTierColors[safeIndex];
+  }
+
+  void _resetComboOverlayState() {
+    _comboOverlayRunId++;
+
+    _showComboOverlay = false;
+    _comboOverlayOpacity = 0.0;
+    _comboOverlayScale = 0.55;
+    _comboOverlayRingScale = 0.0;
+    _comboOverlayPixelSpread = 0.0;
+    _comboOverlayTilt = 0.0;
+    _comboOverlaySlideY = 20.0;
+  }
+
+  Future<void> _playComboMultiplierOverlay({
+    required bool multiplierWentUp,
+  }) async {
+    if (!mounted) return;
+
+    final runId = ++_comboOverlayRunId;
+
+    final isMaxMultiplier =
+        multiplierTierIndex >= _multiplierTiers.length - 1;
+
+    setState(() {
+      _showComboOverlay = true;
+
+      _comboOverlayTitle = multiplierWentUp
+          ? isMaxMultiplier
+          ? 'MAX MULTIPLIER!'
+          : 'MULTIPLIER UP!'
+          : 'HOT STREAK!';
+
+      _comboOverlaySubtitle = multiplierWentUp
+          ? '$hotstreakCount ANSWER STREAK'
+          : '$hotstreakCount IN A ROW';
+
+      _comboOverlayMultiplier = multiplierLabel;
+      _comboOverlayStreak = hotstreakCount;
+      _comboOverlayAccent = _comboAccentForTier(multiplierTierIndex);
+
+      _comboOverlayOpacity = 0.0;
+      _comboOverlayScale = 0.45;
+      _comboOverlayRingScale = 0.0;
+      _comboOverlayPixelSpread = 0.0;
+      _comboOverlayTilt = -0.10;
+      _comboOverlaySlideY = 28.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 16));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    // Big entrance hit.
+    setState(() {
+      _comboOverlayOpacity = 1.0;
+      _comboOverlayScale = 1.18;
+      _comboOverlayRingScale = 0.72;
+      _comboOverlayPixelSpread = 0.55;
+      _comboOverlayTilt = 0.06;
+      _comboOverlaySlideY = 0.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 150));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    // Settle while pixels keep spreading.
+    setState(() {
+      _comboOverlayScale = 1.0;
+      _comboOverlayRingScale = 1.15;
+      _comboOverlayPixelSpread = 1.0;
+      _comboOverlayTilt = 0.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 680));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    // Exit burst.
+    setState(() {
+      _comboOverlayOpacity = 0.0;
+      _comboOverlayScale = 1.24;
+      _comboOverlayRingScale = 1.55;
+      _comboOverlayPixelSpread = 1.25;
+      _comboOverlaySlideY = -24.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 260));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    setState(() {
+      _showComboOverlay = false;
+    });
+  }
+
+  Widget _buildComboMultiplierOverlay() {
+    return _ComboMultiplierOverlay(
+      title: _comboOverlayTitle,
+      subtitle: _comboOverlaySubtitle,
+      multiplier: _comboOverlayMultiplier,
+      streak: _comboOverlayStreak,
+      accent: _comboOverlayAccent,
+      opacity: _comboOverlayOpacity,
+      scale: _comboOverlayScale,
+      ringScale: _comboOverlayRingScale,
+      pixelSpread: _comboOverlayPixelSpread,
+      tilt: _comboOverlayTilt,
+      slideY: _comboOverlaySlideY,
+    );
   }
 
   @override
@@ -221,6 +334,32 @@ void _closeBackOverlay() {
   int hotstreakCount = 0;
   int multiplierTierIndex = 0;
   int multiplierStepProgress = 0; // 0 or 1; 2 correct answers = tier up
+  bool _showComboOverlay = false;
+  int _comboOverlayRunId = 0;
+
+  String _comboOverlayTitle = '';
+  String _comboOverlaySubtitle = '';
+  String _comboOverlayMultiplier = '';
+  int _comboOverlayStreak = 0;
+
+  Color _comboOverlayAccent = const Color(0xFFFFE45C);
+
+  double _comboOverlayOpacity = 0.0;
+  double _comboOverlayScale = 0.55;
+  double _comboOverlayRingScale = 0.0;
+  double _comboOverlayPixelSpread = 0.0;
+  double _comboOverlayTilt = 0.0;
+  double _comboOverlaySlideY = 20.0;
+
+  static const List<Color> _comboTierColors = [
+    Color(0xFFFFE45C), // x1.0
+    Color(0xFFFFB000), // x1.25
+    Color(0xFFFF6B00), // x1.5
+    Color(0xFFFF3D81), // x1.75
+    Color(0xFFB85CFF), // x2.0
+    Color(0xFF00E5FF), // x3.0
+  ];
+
 
   static const List<double> _multiplierTiers = [1.0, 1.25, 1.5, 1.75, 2.0, 3.0];
 
@@ -509,6 +648,7 @@ void _closeBackOverlay() {
   double centerPopupScale = 0.9;
 
   void initializeSharedRun() {
+    _resetComboOverlayState();
     hotstreakCount = 0;
     multiplierTierIndex = 0;
     multiplierStepProgress = 0;
@@ -958,6 +1098,8 @@ Future<void> _performTimeout() async {
     if (isCorrect) {
       const gainedTime = 2;
 
+      final previousMultiplierTierIndex = multiplierTierIndex;
+
       correctCount++;
       hotstreakCount++;
       multiplierStepProgress++;
@@ -966,6 +1108,23 @@ Future<void> _performTimeout() async {
           multiplierTierIndex < _multiplierTiers.length - 1) {
         multiplierTierIndex++;
         multiplierStepProgress = 0;
+      }
+
+      final multiplierWentUp = multiplierTierIndex > previousMultiplierTierIndex;
+
+      // Shows a smaller celebration every 3 correct answers if the multiplier
+      // did not already trigger a bigger celebration.
+      final shouldShowHotStreakOverlay =
+          !multiplierWentUp && hotstreakCount >= 3 && hotstreakCount % 3 == 0;
+
+      if (multiplierWentUp || shouldShowHotStreakOverlay) {
+        HapticFeedback.heavyImpact();
+
+        unawaited(
+          _playComboMultiplierOverlay(
+            multiplierWentUp: multiplierWentUp,
+          ),
+        );
       }
 
       final gainedScore = (baseScore * currentMultiplier).round();
@@ -987,6 +1146,8 @@ Future<void> _performTimeout() async {
       wrongAttempts++;
       hotstreakCount = 0;
       multiplierStepProgress = 0;
+      _comboOverlayRunId++;
+      _showComboOverlay = false;
 
       if (multiplierTierIndex > 0) {
         multiplierTierIndex--;
@@ -1276,6 +1437,8 @@ Future<void> _performTimeout() async {
       }).toList(),
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -1635,6 +1798,9 @@ Future<void> _performTimeout() async {
                   ),
                 ),
 
+              if (_showComboOverlay)
+                _buildComboMultiplierOverlay(),
+
              
               if (showGameResultOverlay)
                 GameResultOverlay(
@@ -1754,3 +1920,405 @@ const Map<String, _OperatorConfig> _operatorConfigs = {
     color: _GatekeepingGamePageState._operatorXnor,
   ),
 };
+
+
+class _ComboMultiplierOverlay extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String multiplier;
+  final int streak;
+  final Color accent;
+
+  final double opacity;
+  final double scale;
+  final double ringScale;
+  final double pixelSpread;
+  final double tilt;
+  final double slideY;
+
+  static const Color _comboBoxColor = Color(0xFFD114F7);
+  static const Color _comboPurpleAccent = Color(0xFF7A1CFF);
+  static const Color _comboMagentaGlow = Color(0xFFFF4DFF);
+  static const Color _comboSoftPink = Color(0xFFFFB8FF);
+
+  const _ComboMultiplierOverlay({
+    required this.title,
+    required this.subtitle,
+    required this.multiplier,
+    required this.streak,
+    required this.accent,
+    required this.opacity,
+    required this.scale,
+    required this.ringScale,
+    required this.pixelSpread,
+    required this.tilt,
+    required this.slideY,
+  });
+
+  static const List<_ComboPixelParticle> _particles = [
+    _ComboPixelParticle(direction: Offset(-0.95, -0.45), size: 10),
+    _ComboPixelParticle(direction: Offset(-0.65, -0.75), size: 8),
+    _ComboPixelParticle(direction: Offset(-0.25, -0.92), size: 11),
+    _ComboPixelParticle(direction: Offset(0.25, -0.92), size: 8),
+    _ComboPixelParticle(direction: Offset(0.70, -0.68), size: 10),
+    _ComboPixelParticle(direction: Offset(0.98, -0.35), size: 9),
+    _ComboPixelParticle(direction: Offset(0.95, 0.22), size: 12),
+    _ComboPixelParticle(direction: Offset(0.62, 0.65), size: 8),
+    _ComboPixelParticle(direction: Offset(0.20, 0.88), size: 10),
+    _ComboPixelParticle(direction: Offset(-0.30, 0.88), size: 9),
+    _ComboPixelParticle(direction: Offset(-0.72, 0.58), size: 11),
+    _ComboPixelParticle(direction: Offset(-0.98, 0.15), size: 8),
+
+    // inner sparkle layer
+    _ComboPixelParticle(direction: Offset(-0.38, -0.28), size: 7),
+    _ComboPixelParticle(direction: Offset(0.38, -0.25), size: 7),
+    _ComboPixelParticle(direction: Offset(0.42, 0.30), size: 6),
+    _ComboPixelParticle(direction: Offset(-0.45, 0.32), size: 6),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final titleSize = (screenWidth * 0.095).clamp(30.0, 48.0).toDouble();
+    final multiplierSize = (screenWidth * 0.155).clamp(54.0, 82.0).toDouble();
+
+    return IgnorePointer(
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOut,
+        opacity: opacity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Full-screen arcade glow.
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 0.78,
+                    colors: [
+                      accent.withOpacity(0.34),
+                      accent.withOpacity(0.16),
+                      Colors.black.withOpacity(0.04),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.32, 0.62, 1.0],
+                  ),
+                ),
+              ),
+            ),
+
+            // Pixel burst particles.
+            for (int i = 0; i < _particles.length; i++)
+              AnimatedAlign(
+                duration: const Duration(milliseconds: 460),
+                curve: Curves.easeOutBack,
+                alignment: Alignment(
+                  _particles[i].direction.dx * pixelSpread * 0.82,
+                  _particles[i].direction.dy * pixelSpread * 0.58,
+                ),
+                child: Transform.rotate(
+                  angle: pixelSpread * 0.8,
+                  child: Container(
+                    width: _particles[i].size,
+                    height: _particles[i].size,
+                    decoration: BoxDecoration(
+                      color: _particleColor(i),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _particleColor(i).withOpacity(0.8),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Large square ring 1.
+            Center(
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 420),
+                curve: Curves.easeOutCubic,
+                scale: ringScale,
+                child: Transform.rotate(
+                  angle: 0.16,
+                  child: Container(
+                    width: 210,
+                    height: 210,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.72),
+                        width: 4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accent.withOpacity(0.55),
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Large square ring 2.
+            Center(
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 520),
+                curve: Curves.easeOutCubic,
+                scale: ringScale * 1.25,
+                child: Transform.rotate(
+                  angle: -0.22,
+                  child: Container(
+                    width: 190,
+                    height: 190,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: accent.withOpacity(0.70),
+                        width: 5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Horizontal pixel slash.
+            Center(
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 340),
+                curve: Curves.easeOutExpo,
+                scale: pixelSpread.clamp(0.0, 1.0),
+                child: Container(
+                  width: screenWidth * 0.82,
+                  height: 9,
+                  color: Colors.white.withOpacity(0.58),
+                ),
+              ),
+            ),
+
+            // Main arcade text card.
+            Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutBack,
+                transform: Matrix4.identity()
+                  ..translate(0.0, slideY)
+                  ..rotateZ(tilt),
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutBack,
+                  scale: scale,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 18,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _comboBoxColor.withOpacity(0.92),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: _comboSoftPink.withOpacity(0.95),
+                        width: 4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _comboMagentaGlow.withOpacity(0.85),
+                          blurRadius: 34,
+                          spreadRadius: 6,
+                        ),
+                        BoxShadow(
+                          color: _comboPurpleAccent.withOpacity(0.65),
+                          blurRadius: 24,
+                          spreadRadius: 3,
+                        ),
+                        const BoxShadow(
+                          color: Colors.black45,
+                          offset: Offset(0, 8),
+                          blurRadius: 12,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _ArcadeStrokeText(
+                          text: title,
+                          fontSize: titleSize,
+                          fillColor: Colors.white,
+                          strokeColor: _comboPurpleAccent,
+                          strokeWidth: 7,
+                          letterSpacing: 1.4,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          multiplier,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: multiplierSize,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2.0,
+                            height: 0.95,
+                            color: Colors.white,
+                            shadows: const [
+                              Shadow(
+                                color: Color(0xFFFF4DFF),
+                                offset: Offset(0, 0),
+                                blurRadius: 16,
+                              ),
+                              Shadow(
+                                color: Color(0xFF7A1CFF),
+                                offset: Offset(0, 4),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _comboPurpleAccent.withOpacity(0.92),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 2,
+                            ),
+                          ),
+                          child: Text(
+                            subtitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.1,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'STREAK $streak',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.95),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.black54,
+                                offset: Offset(0, 2),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _particleColor(int index) {
+    switch (index % 4) {
+      case 0:
+        return Colors.white;
+      case 1:
+        return accent;
+      case 2:
+        return const Color(0xFFFFF176);
+      default:
+        return const Color(0xFF00E5FF);
+    }
+  }
+}
+
+class _ComboPixelParticle {
+  final Offset direction;
+  final double size;
+
+  const _ComboPixelParticle({
+    required this.direction,
+    required this.size,
+  });
+}
+
+class _ArcadeStrokeText extends StatelessWidget {
+  final String text;
+  final double fontSize;
+  final Color fillColor;
+  final Color strokeColor;
+  final double strokeWidth;
+  final double letterSpacing;
+
+  const _ArcadeStrokeText({
+    required this.text,
+    required this.fontSize,
+    required this.fillColor,
+    required this.strokeColor,
+    required this.strokeWidth,
+    required this.letterSpacing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w900,
+            letterSpacing: letterSpacing,
+            height: 0.95,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = strokeWidth
+              ..color = strokeColor,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w900,
+            letterSpacing: letterSpacing,
+            height: 0.95,
+            color: fillColor,
+            shadows: const [
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(0, 3),
+                blurRadius: 3,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
