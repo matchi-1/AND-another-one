@@ -1,12 +1,108 @@
 import 'package:flutter/material.dart';
 
+enum TutorialAnchor {
+  topLeft,
+  topCenter,
+  topRight,
+  centerLeft,
+  center,
+  centerRight,
+  bottomLeft,
+  bottomCenter,
+  bottomRight,
+}
+
+class TutorialOverlayPlacement {
+  final TutorialAnchor anchor;
+
+  /// Pixel adjustment after anchoring.
+  ///
+  /// Example:
+  /// Offset(-20, 0) moves left.
+  /// Offset(0, 30) moves down.
+  final Offset offset;
+
+  /// Keeps Andy/dialogue away from screen edges.
+  final EdgeInsets margin;
+
+  final Duration duration;
+  final Curve curve;
+
+  const TutorialOverlayPlacement({
+    required this.anchor,
+    this.offset = Offset.zero,
+    this.margin = const EdgeInsets.all(18),
+    this.duration = const Duration(milliseconds: 480),
+    this.curve = Curves.easeOutCubic,
+  });
+}
+
+class TutorialPositions {
+  const TutorialPositions._();
+
+  static const topLeft = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.topLeft,
+  );
+
+  static const topCenter = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.topCenter,
+  );
+
+  static const topRight = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.topRight,
+  );
+
+  static const centerLeft = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.centerLeft,
+  );
+
+  static const center = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.center,
+  );
+
+  static const centerRight = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.centerRight,
+  );
+
+  static const bottomLeft = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.bottomLeft,
+  );
+
+  static const bottomCenter = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.bottomCenter,
+  );
+
+  static const bottomRight = TutorialOverlayPlacement(
+    anchor: TutorialAnchor.bottomRight,
+  );
+}
+
 class GameplayTutorialStep {
   final GlobalKey? targetKey;
   final String text;
+  final String andyAsset;
+
+  final TutorialOverlayPlacement andyPlacement;
+  final TutorialOverlayPlacement dialoguePlacement;
+
+  /// Width of Andy relative to screen width.
+  ///
+  /// 0.60 means 60% of the screen width.
+  final double andyWidthFactor;
+
+  /// Width of the dialogue box relative to screen width.
+  ///
+  /// 0.90 means 90% of the screen width.
+  final double dialogueWidthFactor;
 
   const GameplayTutorialStep({
     required this.targetKey,
     required this.text,
+    required this.andyAsset,
+    this.andyPlacement = TutorialPositions.bottomLeft,
+    this.dialoguePlacement = TutorialPositions.topCenter,
+    this.andyWidthFactor = 0.60,
+    this.dialogueWidthFactor = 0.90,
   });
 }
 
@@ -15,10 +111,12 @@ class GameplayTutorialOverlay extends StatefulWidget {
     super.key,
     required this.steps,
     required this.onFinish,
+    required this.onSkip,
   });
 
   final List<GameplayTutorialStep> steps;
   final VoidCallback onFinish;
+  final VoidCallback onSkip;
 
   @override
   State<GameplayTutorialOverlay> createState() =>
@@ -71,6 +169,7 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
 
   Rect? _targetRect(GlobalKey? key) {
     if (key == null) return null;
+
     final ctx = key.currentContext;
     if (ctx == null) return null;
 
@@ -99,7 +198,14 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
     final step = widget.steps[_index];
     final rect = _targetRect(step.targetKey);
     final size = MediaQuery.of(context).size;
-    final mascotWidth = size.width * 0.60;
+
+    final mascotWidth = (size.width * step.andyWidthFactor)
+        .clamp(120.0, size.width * 0.78)
+        .toDouble();
+
+    final dialogueWidth = (size.width * step.dialogueWidthFactor)
+        .clamp(220.0, size.width - 36)
+        .toDouble();
 
     return Material(
       color: Colors.transparent,
@@ -134,20 +240,17 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
                 ),
               ),
 
-            // Speech bubble
-            Positioned(
-              top: size.height * 0.09,
-              left: 18,
-              right: 18,
+            _AnchoredTutorialItem(
+              placement: step.dialoguePlacement,
+              width: dialogueWidth,
               child: _SpeechBubble(
                 text: step.text,
+                anchor: step.dialoguePlacement.anchor,
               ),
             ),
 
-            // Big mascot at lower-left / lower-center
-            Positioned(
-              left: 0,
-              bottom: 0,
+            _AnchoredTutorialItem(
+              placement: step.andyPlacement,
               width: mascotWidth,
               child: AnimatedBuilder(
                 animation: _jumpAnimation,
@@ -158,41 +261,45 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
                   );
                 },
                 child: IgnorePointer(
-                  child: Image.asset(
-                    'assets/images/sprites/andy-play.png',
-                    fit: BoxFit.contain,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    child: Image.asset(
+                      step.andyAsset,
+                      key: ValueKey(step.andyAsset),
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
             ),
 
-            // Tap hint
             Positioned(
               right: 18,
               bottom: 18,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.55),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _index == widget.steps.length - 1
-                      ? 'Tap to finish'
-                      : 'Tap to continue',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+              child: SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.55),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _index == widget.steps.length - 1
+                        ? 'Tap to finish'
+                        : 'Tap to continue',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ),
             ),
 
-            // Optional close/skip button
             Positioned(
               top: 16,
               right: 16,
@@ -202,7 +309,7 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
-                    onTap: widget.onFinish,
+                    onTap: widget.onSkip,
                     child: const Padding(
                       padding: EdgeInsets.all(10),
                       child: Icon(
@@ -222,55 +329,147 @@ class _GameplayTutorialOverlayState extends State<GameplayTutorialOverlay>
   }
 }
 
-class _SpeechBubble extends StatelessWidget {
-  const _SpeechBubble({
-    required this.text,
+class _AnchoredTutorialItem extends StatelessWidget {
+  const _AnchoredTutorialItem({
+    required this.placement,
+    required this.width,
+    required this.child,
   });
 
-  final String text;
+  final TutorialOverlayPlacement placement;
+  final double width;
+  final Widget child;
+
+  Alignment _alignmentFor(TutorialAnchor anchor) {
+    switch (anchor) {
+      case TutorialAnchor.topLeft:
+        return Alignment.topLeft;
+      case TutorialAnchor.topCenter:
+        return Alignment.topCenter;
+      case TutorialAnchor.topRight:
+        return Alignment.topRight;
+      case TutorialAnchor.centerLeft:
+        return Alignment.centerLeft;
+      case TutorialAnchor.center:
+        return Alignment.center;
+      case TutorialAnchor.centerRight:
+        return Alignment.centerRight;
+      case TutorialAnchor.bottomLeft:
+        return Alignment.bottomLeft;
+      case TutorialAnchor.bottomCenter:
+        return Alignment.bottomCenter;
+      case TutorialAnchor.bottomRight:
+        return Alignment.bottomRight;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10,
-                offset: Offset(0, 4),
+    return Positioned.fill(
+      child: SafeArea(
+        child: Padding(
+          padding: placement.margin,
+          child: AnimatedAlign(
+            alignment: _alignmentFor(placement.anchor),
+            duration: placement.duration,
+            curve: placement.curve,
+            child: AnimatedContainer(
+              duration: placement.duration,
+              curve: placement.curve,
+              width: width,
+              transform: Matrix4.translationValues(
+                placement.offset.dx,
+                placement.offset.dy,
+                0,
               ),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SpeechBubble extends StatelessWidget {
+  const _SpeechBubble({
+    required this.text,
+    required this.anchor,
+  });
+
+  final String text;
+  final TutorialAnchor anchor;
+
+  bool get _tailOnRight {
+    return anchor == TutorialAnchor.topRight ||
+        anchor == TutorialAnchor.centerRight ||
+        anchor == TutorialAnchor.bottomRight;
+  }
+
+  bool get _tailOnTop {
+    return anchor == TutorialAnchor.bottomLeft ||
+        anchor == TutorialAnchor.bottomCenter ||
+        anchor == TutorialAnchor.bottomRight;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bubble = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 17,
+          height: 1.35,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF222222),
+        ),
+      ),
+    );
+
+    final tail = Padding(
+      padding: EdgeInsets.only(
+        left: _tailOnRight ? 0 : 46,
+        right: _tailOnRight ? 46 : 0,
+      ),
+      child: Align(
+        alignment: _tailOnRight ? Alignment.centerRight : Alignment.centerLeft,
+        child: Transform.rotate(
+          angle: 0.78,
+          child: Container(
+            width: 20,
+            height: 20,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: _tailOnTop
+          ? [
+              tail,
+              const SizedBox(height: 2),
+              bubble,
+            ]
+          : [
+              bubble,
+              const SizedBox(height: 2),
+              tail,
             ],
-          ),
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 17,
-              height: 1.35,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF222222),
-            ),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Padding(
-          padding: const EdgeInsets.only(left: 46),
-          child: Transform.rotate(
-            angle: 0.78,
-            child: Container(
-              width: 20,
-              height: 20,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
