@@ -1,23 +1,23 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'dart:ui' show lerpDouble;
 
 class FlashyPageRoute<T> extends PageRouteBuilder<T> {
   FlashyPageRoute({
     required WidgetBuilder builder,
     required RouteSettings settings,
     Color flashColor = Colors.white,
-    Duration duration = const Duration(milliseconds: 680),
-    Duration reverseDuration = const Duration(milliseconds: 360),
+    Duration duration = const Duration(milliseconds: 1250),
+    Duration reverseDuration = const Duration(milliseconds: 1250),
   }) : super(
     settings: settings,
+    opaque: false,
     transitionDuration: duration,
     reverseTransitionDuration: reverseDuration,
     pageBuilder: (context, animation, secondaryAnimation) {
       return builder(context);
     },
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return _PixelBurstTransition(
+      return _PixelWaveRevealTransition(
         animation: animation,
         flashColor: flashColor,
         child: child,
@@ -26,8 +26,8 @@ class FlashyPageRoute<T> extends PageRouteBuilder<T> {
   );
 }
 
-class _PixelBurstTransition extends StatelessWidget {
-  const _PixelBurstTransition({
+class _PixelWaveRevealTransition extends StatelessWidget {
+  const _PixelWaveRevealTransition({
     required this.animation,
     required this.flashColor,
     required this.child,
@@ -42,72 +42,35 @@ class _PixelBurstTransition extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, _) {
-        final t = animation.value;
-
-        final pageCurve = Curves.easeOutBack.transform(
-          t.clamp(0.0, 1.0),
-        );
-
-        final flashOpacity = _flashOpacity(t);
-        final pixelOpacity = _pixelOpacity(t);
-        final wipeOpacity = _wipeOpacity(t);
-        final scanlineOpacity = _scanlineOpacity(t);
-
-        final slideX = lerpDouble(1.15, 0.0, pageCurve)!;
-        final scale = lerpDouble(0.72, 1.0, pageCurve)!;
-        final rotation = lerpDouble(0.12, 0.0, pageCurve)!;
+        final rawT = animation.value;
+        final revealT = Curves.easeInOutCubic.transform(rawT);
 
         return Stack(
           fit: StackFit.expand,
           children: [
-            Transform.translate(
-              offset: Offset(
-                MediaQuery.of(context).size.width * slideX,
-                0,
+            // New page reveals from top to bottom.
+            ClipRect(
+              clipper: _TopToBottomRevealClipper(
+                progress: revealT,
               ),
-              child: Transform.rotate(
-                angle: rotation,
-                child: Transform.scale(
-                  scale: scale,
-                  child: Opacity(
-                    opacity: Curves.easeOut.transform(t),
-                    child: child,
-                  ),
-                ),
-              ),
+              child: child,
             ),
 
+            // Pixel wave/trickle layer.
             IgnorePointer(
               child: CustomPaint(
-                painter: _PixelBurstPainter(
-                  progress: t,
+                painter: _PixelWavePainter(
+                  progress: rawT,
+                  revealProgress: revealT,
                   color: flashColor,
-                  opacity: pixelOpacity,
                 ),
               ),
             ),
 
-            IgnorePointer(
-              child: CustomPaint(
-                painter: _WipeBarsPainter(
-                  progress: t,
-                  color: flashColor,
-                  opacity: wipeOpacity,
-                ),
-              ),
-            ),
-
-            IgnorePointer(
-              child: CustomPaint(
-                painter: _ScanlinePainter(
-                  opacity: scanlineOpacity,
-                ),
-              ),
-            ),
-
+            // Quick initial flash so the transition feels punchier.
             IgnorePointer(
               child: ColoredBox(
-                color: flashColor.withOpacity(flashOpacity),
+                color: flashColor.withOpacity(_flashOpacity(rawT)),
               ),
             ),
           ],
@@ -117,97 +80,101 @@ class _PixelBurstTransition extends StatelessWidget {
   }
 
   double _flashOpacity(double t) {
-    if (t < 0.10) {
-      return t / 0.10;
-    }
-
-    if (t < 0.32) {
-      return 1.0 - ((t - 0.10) / 0.22);
-    }
-
-    return 0.0;
-  }
-
-  double _pixelOpacity(double t) {
     if (t < 0.08) {
-      return 0.0;
+      return t / 0.08 * 0.75;
     }
 
-    if (t < 0.22) {
-      return (t - 0.08) / 0.14;
+    if (t < 0.24) {
+      return 0.75 * (1.0 - ((t - 0.08) / 0.16));
     }
 
-    if (t < 0.72) {
-      return 1.0 - ((t - 0.22) / 0.50);
-    }
-
-    return 0.0;
-  }
-
-  double _wipeOpacity(double t) {
-    if (t < 0.03) {
-      return 0.0;
-    }
-
-    if (t < 0.18) {
-      return (t - 0.03) / 0.15;
-    }
-
-    if (t < 0.58) {
-      return 1.0 - ((t - 0.18) / 0.40);
-    }
-
-    return 0.0;
-  }
-
-  double _scanlineOpacity(double t) {
-    if (t < 0.12) return 0.30;
-    if (t < 0.62) return 0.30 * (1.0 - ((t - 0.12) / 0.50));
     return 0.0;
   }
 }
 
-class _PixelBurstPainter extends CustomPainter {
-  _PixelBurstPainter({
+class _TopToBottomRevealClipper extends CustomClipper<Rect> {
+  const _TopToBottomRevealClipper({
     required this.progress,
-    required this.color,
-    required this.opacity,
   });
 
   final double progress;
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(
+      0,
+      0,
+      size.width,
+      size.height * progress.clamp(0.0, 1.0),
+    );
+  }
+
+  @override
+  bool shouldReclip(covariant _TopToBottomRevealClipper oldClipper) {
+    return oldClipper.progress != progress;
+  }
+}
+
+class _PixelWavePainter extends CustomPainter {
+  _PixelWavePainter({
+    required this.progress,
+    required this.revealProgress,
+    required this.color,
+  });
+
+  final double progress;
+  final double revealProgress;
   final Color color;
-  final double opacity;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (opacity <= 0) return;
+    if (progress <= 0 || progress >= 1.0) return;
 
-    const double blockSize = 26;
+    const double blockSize = 24;
     final cols = (size.width / blockSize).ceil();
     final rows = (size.height / blockSize).ceil();
 
+    final waveY = size.height * revealProgress;
+    final waveBand = blockSize * 5.2;
+
     final paint = Paint();
 
-    for (int y = 0; y < rows; y++) {
-      for (int x = 0; x < cols; x++) {
-        final noise = ((x * 37 + y * 71) % 100) / 100.0;
+    for (int row = 0; row < rows; row++) {
+      for (int col = 0; col < cols; col++) {
+        final centerX = (col * blockSize) + blockSize / 2;
+        final centerY = (row * blockSize) + blockSize / 2;
 
-        final appearPoint = noise * 0.34;
-        final local = ((progress - appearPoint) / 0.46).clamp(0.0, 1.0);
+        final distanceFromWave = (centerY - waveY).abs();
 
-        if (local <= 0 || local >= 1) continue;
+        if (distanceFromWave > waveBand) continue;
 
-        final pulse = sin(local * pi);
-        final alpha = opacity * pulse * 0.82;
+        final noise = _noise(col, row);
 
-        final sizeBoost = lerpDouble(1.25, 0.65, local)!;
-        final rectSize = blockSize * sizeBoost;
+        // Creates a staggered / trickling edge instead of a straight line.
+        final stagger = (noise - 0.5) * blockSize * 3.2;
+        final adjustedDistance = (centerY + stagger - waveY).abs();
 
-        final dx = x * blockSize + (blockSize - rectSize) / 2;
-        final dy = y * blockSize + (blockSize - rectSize) / 2;
+        if (adjustedDistance > waveBand) continue;
 
-        final isWhiteBlock = (x + y) % 4 == 0;
-        final blockColor = isWhiteBlock ? Colors.white : color;
+        final closeness = 1.0 - (adjustedDistance / waveBand).clamp(0.0, 1.0);
+        final pulse = sin(closeness * pi);
+
+        final alpha = (pulse * 0.88).clamp(0.0, 0.88);
+
+        final isWhiteBlock = (col + row) % 5 == 0;
+        final isBrightBlock = (col * 3 + row * 7) % 11 == 0;
+
+        final blockColor = isWhiteBlock
+            ? Colors.white
+            : isBrightBlock
+            ? color.withOpacity(0.95)
+            : color;
+
+        final fallAmount = blockSize * 1.4 * (1.0 - closeness) * noise;
+        final rectSize = blockSize * (0.62 + (0.50 * closeness));
+
+        final dx = centerX - rectSize / 2;
+        final dy = centerY - rectSize / 2 + fallAmount;
 
         paint.color = blockColor.withOpacity(alpha);
 
@@ -217,94 +184,37 @@ class _PixelBurstPainter extends CustomPainter {
         );
       }
     }
+
+    _paintScanlines(canvas, size);
   }
 
-  @override
-  bool shouldRepaint(covariant _PixelBurstPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.color != color ||
-        oldDelegate.opacity != opacity;
-  }
-}
+  void _paintScanlines(Canvas canvas, Size size) {
+    if (progress > 0.72) return;
 
-class _WipeBarsPainter extends CustomPainter {
-  _WipeBarsPainter({
-    required this.progress,
-    required this.color,
-    required this.opacity,
-  });
-
-  final double progress;
-  final Color color;
-  final double opacity;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (opacity <= 0) return;
-
-    const int barCount = 9;
-    final barWidth = size.width / barCount;
-    final paint = Paint();
-
-    for (int i = 0; i < barCount; i++) {
-      final delay = i * 0.035;
-      final local = ((progress - delay) / 0.42).clamp(0.0, 1.0);
-
-      if (local <= 0) continue;
-
-      final height = size.height * Curves.easeOutCubic.transform(local);
-      final isAlt = i.isEven;
-
-      paint.color = (isAlt ? color : Colors.white).withOpacity(
-        opacity * (isAlt ? 0.42 : 0.28),
-      );
-
-      canvas.drawRect(
-        Rect.fromLTWH(
-          i * barWidth,
-          0,
-          barWidth + 1,
-          height,
-        ),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _WipeBarsPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.color != color ||
-        oldDelegate.opacity != opacity;
-  }
-}
-
-class _ScanlinePainter extends CustomPainter {
-  _ScanlinePainter({
-    required this.opacity,
-  });
-
-  final double opacity;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (opacity <= 0) return;
+    final opacity = 0.18 * (1.0 - (progress / 0.72).clamp(0.0, 1.0));
 
     final paint = Paint()
-      ..color = Colors.white.withOpacity(opacity * 0.22);
+      ..color = Colors.white.withOpacity(opacity);
 
-    const double gap = 8;
+    const gap = 8.0;
 
     for (double y = 0; y < size.height; y += gap) {
       canvas.drawRect(
-        Rect.fromLTWH(0, y, size.width, 1.5),
+        Rect.fromLTWH(0, y, size.width, 1.3),
         paint,
       );
     }
   }
 
+  double _noise(int x, int y) {
+    final value = (x * 73 + y * 151 + x * y * 17) % 100;
+    return value / 100.0;
+  }
+
   @override
-  bool shouldRepaint(covariant _ScanlinePainter oldDelegate) {
-    return oldDelegate.opacity != opacity;
+  bool shouldRepaint(covariant _PixelWavePainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.revealProgress != revealProgress ||
+        oldDelegate.color != color;
   }
 }
