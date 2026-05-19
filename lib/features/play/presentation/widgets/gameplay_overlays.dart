@@ -689,7 +689,7 @@ class _PauseOverlayState extends State<PauseOverlay> {
     final double cardWidth = (size.width * 0.9).clamp(390.0, 450.0);
     final double cardHeight = cardWidth * 1.60;
 
-    return Positioned.fill(
+    return SizedBox.expand(
       child: Material(
         color: Colors.black.withOpacity(0.72),
         child: Center(
@@ -897,7 +897,7 @@ class GameResultOverlay extends StatelessWidget {
     final double cardWidth = (size.width * 1.5).clamp(360.0, 410.0);
     final double cardHeight = cardWidth * 1.85;
 
-    return Positioned.fill(
+    return SizedBox.expand(
       child: Material(
         color: Colors.black.withOpacity(0.72),
         child: Center(
