@@ -14,7 +14,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GameMenuBackground(
-        backgroundColor: AppColors.blueBg,
+        backgroundColor: AppColors.purpleBg,
         child: SafeArea(
           child: Column(
             children: [
@@ -56,9 +56,9 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       const SizedBox(height: 10),
                       const _StepCard(
                         number: '3',
-                        title: 'Choose fast and accurately',
+                        title: 'Protect your lives',
                         body:
-                            'Tap the correct answer before the timer runs out to score more points.',
+                            'Tap the correct answer to keep your lives intact, because wrong answers cost a heart.',
                       ),
                       const SizedBox(height: 18),
 
@@ -139,20 +139,184 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       const SizedBox(height: 10),
-                      const _InfoBulletCard(
-                        items: [
-                          'For base score: BASIC gives 100 points, LOGIC gives 200 points, and MANIC gives 300 points per correct answer.',
-                          'If your streak is 0 or 1, your score is x1. Then every 2 more right answers makes it go up: x1.25, x1.5, x1.75, x2, and x3 is the max mutiplier',
-                          'If you get one wrong, your score only goes down by 1 step. Your streak stays, and Pass does not change anything.',
-                        ],
+
+                      // External header bar matching top image (outside the card)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.pinkButton,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.orangeButton, width: 4),
+                        ),
+                        child: const Text(
+                          'MULTIPLIER SYSTEM',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
                       ),
+
+                      const SizedBox(height: 8),
+
+                      // Multiplier panel matching in-game style (header + body)
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.orangeButton, width: 4),
+                        ),
+                        child: Column(
+                          children: [
+                            // Body (fills full rounded area so no blank header shows)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.beigeBg,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Keep chips on a single line; scale down if needed
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.star, color: AppColors.orangeButton, size: 18),
+                                          const SizedBox(width: 8),
+                                          const Text(
+                                            'Base score:',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontFamily: 'Nunito',
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF333333),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+
+                                          // 100 - Basic
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.yellowButton,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                            child: const Text('100', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Text('= Basic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800)),
+                                          const SizedBox(width: 12),
+
+                                          // 200 - Logic
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.pinkButton,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                            child: const Text('200', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Text('= Logic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800)),
+                                          const SizedBox(width: 12),
+
+                                          // 300 - Manic
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.redButton,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                            child: const Text('300', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Text('= Manic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  const Text(
+                                    'Multiplier Tiers:',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontFamily: 'Nunito',
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF333333),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Tiers list with purple 'Streak' and orange multiplier chips
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      _TierRow(label: 'Streak 0-1', multiplier: 'x1', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 2-3', multiplier: 'x1.25', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 4-5', multiplier: 'x1.5', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 6-7', multiplier: 'x1.75', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 8-9', multiplier: 'x2', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 10+', multiplier: 'x3', labelColor: AppColors.purpleButton),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    '(Two correct answers = +1 multiplier tier, up to x3 multiplier)',
+                                    style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF555555)),
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Wrong answer and Pass rows with icons
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      Icon(Icons.close, color: AppColors.redButton, size: 18),
+                                      SizedBox(width: 8),
+                                      Expanded(child: Text('Wrong answer = -1 multiplier tier only.', style: TextStyle(color: Color(0xFF333333), fontWeight: FontWeight.w800))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      Icon(Icons.double_arrow, color: AppColors.greyButton, size: 18),
+                                      SizedBox(width: 8),
+                                      Expanded(child: Text('Pass = no change in multiplier or streak.', style: TextStyle(color: Color(0xFF333333), fontWeight: FontWeight.w800))),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                       const SizedBox(height: 18),
 
                       const _SectionBanner('OTHER FEATURES'),
                       const SizedBox(height: 10),
                       const _InfoBulletCard(
                         items: [
-                          'A timer adds urgency and rewards quick reasoning.',
+                          'Each wrong answer removes one heart.',
                           'You can Pass a question when needed, depending on your remaining passes.',
                           'The interface keeps the answer choice simple: just 1 or 0.',
                         ],
@@ -753,7 +917,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(
-                'assets/images/how_to_play/oneornonemode.png',
+                'assets/images/how_to_play/oneornonemode2.png',
                 fit: BoxFit.contain,
                 width: double.infinity,
               ),
@@ -766,7 +930,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      // A: Timer
+                      // A: Lives
                       _buildHighlight(
                         w: w, h: h,
                         left: 0.020, top: 0.01, width: 0.32, height: 0.108,
@@ -777,7 +941,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // B: Score
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.40, top: 0.01, width: 0.600, height: 0.108,
+                        left: 0.35, top: 0.01, width: 0.635, height: 0.108,
                         label: 'B',
                         badgeAlign: Alignment.topRight,
                         badgeOffset: const Offset(-16, -16),
@@ -793,7 +957,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // D: Difficulty
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.05, top: 0.525, width: 0.88, height: 0.06 ,
+                        left: 0.05, top: 0.525, width: 0.92, height: 0.09 ,
                         label: 'D',
                         badgeAlign: Alignment.topLeft,
                         badgeOffset: const Offset(-16, -16),
@@ -801,7 +965,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // E: Action Buttons
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.035, top: 0.633, width: 0.93, height: 0.06,
+                        left: 0.035, top: 0.655, width: 0.93, height: 0.06,
                         label: 'E',
                         badgeAlign: Alignment.topLeft,
                         badgeOffset: const Offset(-16, -16),
@@ -809,7 +973,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // F: Choice Buttons
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.035, top: 0.705, width: 0.93, height: 0.245,
+                        left: 0.035, top: 0.750, width: 0.93, height: 0.245,
                         label: 'F',
                         badgeAlign: Alignment.bottomRight,
                         badgeOffset: const Offset(16, 16),
@@ -833,10 +997,10 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLegendRow('A', 'Timer'),
+              _buildLegendRow('A', 'Lives'),
               const SizedBox(height: 8),
               const Text(
-                'You start the round with exactly 60 seconds.',
+                'You start the round with exactly 3 lives.',
                 style: TextStyle(
                   fontSize: 15,
                   fontFamily: 'Nunito',
@@ -849,30 +1013,23 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.orangeButton.withOpacity(0.1),
+                    color: AppColors.redButton.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.orangeButton, width: 2),
+                    border: Border.all(color: AppColors.redButton, width: 2),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.timer_outlined, color: AppColors.orangeButton, size: 22),
+                      const Icon(Icons.favorite_rounded, color: AppColors.redButton, size: 22),
                       const SizedBox(width: 8),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return ScaleTransition(scale: animation, child: child);
-                        },
-                        child: Text(
-                          '$_timeLeft s',
-                          key: ValueKey<int>(_timeLeft),
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontFamily: 'Nunito',
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.orangeButton,
-                            letterSpacing: 1.0,
-                          ),
+                      const Text(
+                        '3 LIVES',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.redButton,
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ],
@@ -890,56 +1047,27 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                     height: 1.8,
                   ),
                   children: [
-                    const TextSpan(text: 'If your answer is correct, you gain '),
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: GestureDetector(
-                        onTap: _handleCorrectAnswer,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.greenButton,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: const [
-                              BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
-                            ],
-                          ),
-                          child: const Text(
-                            '+2s',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontFamily: 'Nunito',
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    const TextSpan(text: 'If your answer is correct, you keep your current lives.'),
                     const TextSpan(text: '.\nIf your answer is wrong, you lose '),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,
-                      child: GestureDetector(
-                        onTap: _handleIncorrectAnswer,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.redButton,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: const [
-                              BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
-                            ],
-                          ),
-                          child: const Text(
-                            '-1s',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontFamily: 'Nunito',
-                              fontSize: 14,
-                            ),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.redButton,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
+                          ],
+                        ),
+                        child: const Text(
+                          '1 LIFE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Nunito',
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -1156,6 +1284,40 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _TierRow extends StatelessWidget {
+  final String label;
+  final String multiplier;
+  final Color labelColor;
+  const _TierRow({required this.label, required this.multiplier, this.labelColor = const Color(0xFF333333)});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8,
+        runSpacing: 6,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, fontFamily: 'Nunito', fontWeight: FontWeight.w900, color: labelColor),
+          ),
+          const Text(' = ', style: TextStyle(fontSize: 14, fontFamily: 'Nunito', fontWeight: FontWeight.w900, color: Color(0xFF333333))),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(color: AppColors.orangeButton, borderRadius: BorderRadius.circular(8)),
+            child: Text(
+              multiplier,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
