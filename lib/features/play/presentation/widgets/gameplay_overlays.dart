@@ -122,7 +122,7 @@ class HelpOverlay extends StatelessWidget {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.beigeBg.withOpacity(0.70),
+                      color: AppColors.beigeBg,
                       borderRadius: BorderRadius.circular(_scaled(18, scale)),
                       border: Border.all(
                         color: const Color(0xFFFF9F00).withOpacity(0.88),
@@ -192,7 +192,7 @@ class HelpOverlay extends StatelessWidget {
           topLeft: Radius.circular(_scaled(14, scale)),
           topRight: Radius.circular(_scaled(14, scale)),
         ),
-        color: const Color(0xFF196EEA).withOpacity(0.68),
+        color: const Color(0xFF196EEA),
         border: const Border(
           bottom: BorderSide(color: Color(0xFFFF9F00), width: 3),
         ),
@@ -238,7 +238,7 @@ class HelpOverlay extends StatelessWidget {
         vertical: _scaled(7, scale),
       ),
       decoration: BoxDecoration(
-        color: AppColors.pinkButton.withOpacity(0.68),
+        color: AppColors.pinkButton,
         borderRadius: BorderRadius.circular(_scaled(10, scale)),
         border: Border.all(
           color: const Color(0xFFFF9F00),
@@ -263,7 +263,7 @@ class HelpOverlay extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(_scaled(10, scale)),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(_scaled(12, scale)),
         border: Border.all(
           color: const Color(0xFFD8C6B5),
