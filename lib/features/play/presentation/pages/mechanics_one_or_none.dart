@@ -184,72 +184,88 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Keep chips on a single line; scale down if needed
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
-                                      child: Row(
+                                  // Responsive: full-size on wide screens (tablets), scale down on phones
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final bool isWide = constraints.maxWidth >= 600;
+                                      final EdgeInsets chipPadding = isWide
+                                          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+                                          : const EdgeInsets.symmetric(horizontal: 10, vertical: 6);
+                                      final double labelFontSize = isWide ? 16 : 15;
+                                      // Build the row once and either render it flat (wide) or scale it down (narrow)
+                                      Widget row = Row(
                                         mainAxisSize: MainAxisSize.min,
                                         crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
-                                          const Icon(Icons.star, color: AppColors.orangeButton, size: 18),
+                                          Icon(Icons.star, color: AppColors.orangeButton, size: isWide ? 20 : 18),
                                           const SizedBox(width: 8),
-                                          const Text(
+                                          Text(
                                             'Base score:',
                                             style: TextStyle(
-                                              fontSize: 15,
+                                              fontSize: labelFontSize,
                                               fontFamily: 'Nunito',
                                               fontWeight: FontWeight.w800,
-                                              color: Color(0xFF333333),
+                                              color: const Color(0xFF333333),
                                             ),
                                           ),
-                                          const SizedBox(width: 12),
+                                          SizedBox(width: isWide ? 16 : 12),
 
                                           // 100 - Basic
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            padding: chipPadding,
                                             decoration: BoxDecoration(
                                               color: AppColors.yellowButton,
                                               borderRadius: BorderRadius.circular(8),
                                               border: Border.all(color: Colors.white, width: 2),
                                             ),
-                                            child: const Text('100', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                                            child: Text('100', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: labelFontSize - 1)),
                                           ),
-                                          const SizedBox(width: 8),
-                                          const Text('= Basic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800)),
-                                          const SizedBox(width: 12),
+                                          SizedBox(width: isWide ? 10 : 8),
+                                          Text('= Basic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800, fontSize: labelFontSize)),
+                                          SizedBox(width: isWide ? 18 : 12),
 
                                           // 200 - Logic
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            padding: chipPadding,
                                             decoration: BoxDecoration(
                                               color: AppColors.pinkButton,
                                               borderRadius: BorderRadius.circular(8),
                                               border: Border.all(color: Colors.white, width: 2),
                                             ),
-                                            child: const Text('200', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                                            child: Text('200', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: labelFontSize - 1)),
                                           ),
-                                          const SizedBox(width: 8),
-                                          const Text('= Logic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800)),
-                                          const SizedBox(width: 12),
+                                          SizedBox(width: isWide ? 10 : 8),
+                                          Text('= Logic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800, fontSize: labelFontSize)),
+                                          SizedBox(width: isWide ? 18 : 12),
 
                                           // 300 - Manic
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            padding: chipPadding,
                                             decoration: BoxDecoration(
                                               color: AppColors.redButton,
                                               borderRadius: BorderRadius.circular(8),
                                               border: Border.all(color: Colors.white, width: 2),
                                             ),
-                                            child: const Text('300', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                                            child: Text('300', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: labelFontSize - 1)),
                                           ),
-                                          const SizedBox(width: 8),
-                                          const Text('= Manic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800)),
+                                          SizedBox(width: isWide ? 10 : 8),
+                                          Text('= Manic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800, fontSize: labelFontSize)),
                                         ],
-                                      ),
-                                    ),
+                                      );
+
+                                      if (isWide) {
+                                        return row;
+                                      }
+
+                                      return Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: row,
+                                        ),
+                                      );
+                                    },
                                   ),
 
                                   const SizedBox(height: 12),
