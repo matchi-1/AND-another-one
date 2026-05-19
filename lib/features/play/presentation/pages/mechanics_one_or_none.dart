@@ -14,7 +14,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GameMenuBackground(
-        backgroundColor: AppColors.blueBg,
+        backgroundColor: AppColors.purpleBg,
         child: SafeArea(
           child: Column(
             children: [
@@ -44,7 +44,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                         number: '1',
                         title: 'Read the circuit',
                         body:
-                            'Observe the gates, inputs, and flow of logic of the circuit.',
+                            'Observe the gates, inputs, and flow of logic from left to right.',
                       ),
                       const SizedBox(height: 10),
                       const _StepCard(
@@ -56,9 +56,9 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       const SizedBox(height: 10),
                       const _StepCard(
                         number: '3',
-                        title: 'Choose accurately',
+                        title: 'Protect your lives',
                         body:
-                            'Tap the correct answer to avoid losing lives and rerandomizing the input values.',
+                            'Tap the correct answer to keep your lives intact, because wrong answers cost a heart.',
                       ),
                       const SizedBox(height: 18),
 
@@ -69,40 +69,46 @@ class MechanicsOneOrNonePage extends StatelessWidget {
 
                       const _SectionBanner('DIFFICULTIES'),
                       const SizedBox(height: 10),
-                      Row(
-                        children: const [
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'BASIC',
-                              color: AppColors.yellowButton,
-                              body:
-                              'Introductory recognition tasks with simpler circuits.',
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'LOGIC',
-                              color: AppColors.pinkButton,
-                              body:
-                              'Moderate circuit analysis with more reasoning required.',
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: _DifficultyCard(
-                              title: 'MANIC',
-                              color: AppColors.redButton,
-                              body:
-                              'Harder circuit structures with higher pressure.',
-                            ),
-                          ),
-                        ],
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final bool stackCards = constraints.maxWidth < 560;
+                          final double cardWidth = stackCards
+                              ? constraints.maxWidth
+                              : (constraints.maxWidth - 20) / 3;
+
+                          return Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: const [
+                              _DifficultyCard(
+                                title: 'BASIC',
+                                color: AppColors.yellowButton,
+                                body:
+                                    'Introductory recognition tasks with simpler circuits.',
+                              ),
+                              _DifficultyCard(
+                                title: 'LOGIC',
+                                color: AppColors.pinkButton,
+                                body:
+                                    'Moderate circuit analysis with more reasoning required.',
+                              ),
+                              _DifficultyCard(
+                                title: 'MANIC',
+                                color: AppColors.redButton,
+                                body:
+                                    'Harder circuit structures with faster pressure.',
+                              ),
+                            ]
+                                .map(
+                                  (card) => SizedBox(
+                                    width: cardWidth,
+                                    child: card,
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        },
                       ),
-
-                    
-
-
                       const SizedBox(height: 18),
 
                       const _SectionBanner('SCORING AND FEEDBACK'),
@@ -115,7 +121,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                               scoreText: '+POINTS',
                               color: AppColors.greenButton,
                               body:
-                                  'A green feedback screen confirms the right answer.',
+                                  'A green feedback screen confirms the right answer instantly.',
                             ),
                           ),
                           SizedBox(width: 10),
@@ -125,7 +131,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                               scoreText: '-POINTS',
                               color: AppColors.redButton,
                               body:
-                                  'A red feedback screen shows that the answer was wrong.',
+                                  'A red feedback screen clearly shows that the answer was wrong.',
                             ),
                           ),
                         ],
@@ -133,22 +139,202 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       const SizedBox(height: 10),
-                      
-                      const SizedBox(height: 18),
 
-                      const _SectionBanner('MULTIPLIER SYSTEM'),
-                      const SizedBox(height: 10),
-                      const _MultiplierSystemCard(),
+                      // External header bar matching top image (outside the card)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.pinkButton,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.orangeButton, width: 4),
+                        ),
+                        child: const Text(
+                          'MULTIPLIER SYSTEM',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Multiplier panel matching in-game style (header + body)
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.orangeButton, width: 4),
+                        ),
+                        child: Column(
+                          children: [
+                            // Body (fills full rounded area so no blank header shows)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.beigeBg,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Responsive: full-size on wide screens (tablets), scale down on phones
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final bool isWide = constraints.maxWidth >= 600;
+                                      final EdgeInsets chipPadding = isWide
+                                          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+                                          : const EdgeInsets.symmetric(horizontal: 10, vertical: 6);
+                                      final double labelFontSize = isWide ? 16 : 15;
+                                      // Build the row once and either render it flat (wide) or scale it down (narrow)
+                                      Widget row = Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.star, color: AppColors.orangeButton, size: isWide ? 20 : 18),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Base score:',
+                                            style: TextStyle(
+                                              fontSize: labelFontSize,
+                                              fontFamily: 'Nunito',
+                                              fontWeight: FontWeight.w800,
+                                              color: const Color(0xFF333333),
+                                            ),
+                                          ),
+                                          SizedBox(width: isWide ? 16 : 12),
+
+                                          // 100 - Basic
+                                          Container(
+                                            padding: chipPadding,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.yellowButton,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                            child: Text('100', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: labelFontSize - 1)),
+                                          ),
+                                          SizedBox(width: isWide ? 10 : 8),
+                                          Text('= Basic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800, fontSize: labelFontSize)),
+                                          SizedBox(width: isWide ? 18 : 12),
+
+                                          // 200 - Logic
+                                          Container(
+                                            padding: chipPadding,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.pinkButton,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                            child: Text('200', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: labelFontSize - 1)),
+                                          ),
+                                          SizedBox(width: isWide ? 10 : 8),
+                                          Text('= Logic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800, fontSize: labelFontSize)),
+                                          SizedBox(width: isWide ? 18 : 12),
+
+                                          // 300 - Manic
+                                          Container(
+                                            padding: chipPadding,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.redButton,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                            child: Text('300', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: labelFontSize - 1)),
+                                          ),
+                                          SizedBox(width: isWide ? 10 : 8),
+                                          Text('= Manic', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w800, fontSize: labelFontSize)),
+                                        ],
+                                      );
+
+                                      if (isWide) {
+                                        return row;
+                                      }
+
+                                      return Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: row,
+                                        ),
+                                      );
+                                    },
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  const Text(
+                                    'Multiplier Tiers:',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontFamily: 'Nunito',
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF333333),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Tiers list with purple 'Streak' and orange multiplier chips
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      _TierRow(label: 'Streak 0-1', multiplier: 'x1', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 2-3', multiplier: 'x1.25', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 4-5', multiplier: 'x1.5', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 6-7', multiplier: 'x1.75', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 8-9', multiplier: 'x2', labelColor: AppColors.purpleButton),
+                                      _TierRow(label: 'Streak 10+', multiplier: 'x3', labelColor: AppColors.purpleButton),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    '(Two correct answers = +1 multiplier tier, up to x3 multiplier)',
+                                    style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF555555)),
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Wrong answer and Pass rows with icons
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      Icon(Icons.close, color: AppColors.redButton, size: 18),
+                                      SizedBox(width: 8),
+                                      Expanded(child: Text('Wrong answer = -1 multiplier tier only.', style: TextStyle(color: Color(0xFF333333), fontWeight: FontWeight.w800))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      Icon(Icons.double_arrow, color: AppColors.greyButton, size: 18),
+                                      SizedBox(width: 8),
+                                      Expanded(child: Text('Pass = no change in multiplier or streak.', style: TextStyle(color: Color(0xFF333333), fontWeight: FontWeight.w800))),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                       const SizedBox(height: 18),
 
                       const _SectionBanner('OTHER FEATURES'),
                       const SizedBox(height: 10),
                       const _InfoBulletCard(
                         items: [
-                          'A lives system promotes thinking about the answer instead of spamming buttons.',
-                          'You can Pass if you want to skip a difficult question.',
+                          'Each wrong answer removes one heart.',
+                          'You can Pass a question when needed, depending on your remaining passes.',
                           'The interface keeps the answer choice simple: just 1 or 0.',
-                          'Each mode and difficulty has its own leaderboard.',
                         ],
                       ),
                     ],
@@ -257,16 +443,15 @@ class _SectionTitle extends StatelessWidget {
 
 class _SectionBanner extends StatelessWidget {
   final String text;
-  final Color color;
 
-  const _SectionBanner(this.text, {this.color = AppColors.pinkButton});
+  const _SectionBanner(this.text);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: color,
+        color: AppColors.pinkButton,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFFF9F00), width: 3),
       ),
@@ -748,7 +933,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(
-                'assets/images/how_to_play/oneornonemode.png',
+                'assets/images/how_to_play/oneornonemode2.png',
                 fit: BoxFit.contain,
                 width: double.infinity,
               ),
@@ -761,7 +946,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      // A: Timer
+                      // A: Lives
                       _buildHighlight(
                         w: w, h: h,
                         left: 0.020, top: 0.01, width: 0.32, height: 0.108,
@@ -772,7 +957,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // B: Score
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.40, top: 0.01, width: 0.600, height: 0.108,
+                        left: 0.35, top: 0.01, width: 0.635, height: 0.108,
                         label: 'B',
                         badgeAlign: Alignment.topRight,
                         badgeOffset: const Offset(-16, -16),
@@ -788,7 +973,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // D: Difficulty
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.05, top: 0.525, width: 0.88, height: 0.06 ,
+                        left: 0.05, top: 0.525, width: 0.92, height: 0.09 ,
                         label: 'D',
                         badgeAlign: Alignment.topLeft,
                         badgeOffset: const Offset(-16, -16),
@@ -796,7 +981,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // E: Action Buttons
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.035, top: 0.633, width: 0.93, height: 0.06,
+                        left: 0.035, top: 0.655, width: 0.93, height: 0.06,
                         label: 'E',
                         badgeAlign: Alignment.topLeft,
                         badgeOffset: const Offset(-16, -16),
@@ -804,7 +989,7 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                       // F: Choice Buttons
                       _buildHighlight(
                         w: w, h: h,
-                        left: 0.035, top: 0.705, width: 0.93, height: 0.245,
+                        left: 0.035, top: 0.750, width: 0.93, height: 0.245,
                         label: 'F',
                         badgeAlign: Alignment.bottomRight,
                         badgeOffset: const Offset(16, 16),
@@ -828,10 +1013,10 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLegendRow('A', 'Timer'),
+              _buildLegendRow('A', 'Lives'),
               const SizedBox(height: 8),
               const Text(
-                'You start the round with exactly 60 seconds.',
+                'You start the round with exactly 3 lives.',
                 style: TextStyle(
                   fontSize: 15,
                   fontFamily: 'Nunito',
@@ -844,30 +1029,23 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.orangeButton.withOpacity(0.1),
+                    color: AppColors.redButton.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.orangeButton, width: 2),
+                    border: Border.all(color: AppColors.redButton, width: 2),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.timer_outlined, color: AppColors.orangeButton, size: 22),
+                      const Icon(Icons.favorite_rounded, color: AppColors.redButton, size: 22),
                       const SizedBox(width: 8),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return ScaleTransition(scale: animation, child: child);
-                        },
-                        child: Text(
-                          '$_timeLeft s',
-                          key: ValueKey<int>(_timeLeft),
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontFamily: 'Nunito',
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.orangeButton,
-                            letterSpacing: 1.0,
-                          ),
+                      const Text(
+                        '3 LIVES',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.redButton,
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ],
@@ -885,56 +1063,27 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
                     height: 1.8,
                   ),
                   children: [
-                    const TextSpan(text: 'If your answer is correct, you gain '),
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: GestureDetector(
-                        onTap: _handleCorrectAnswer,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.greenButton,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: const [
-                              BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
-                            ],
-                          ),
-                          child: const Text(
-                            '+2s',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontFamily: 'Nunito',
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    const TextSpan(text: 'If your answer is correct, you keep your current lives.'),
                     const TextSpan(text: '.\nIf your answer is wrong, you lose '),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,
-                      child: GestureDetector(
-                        onTap: _handleIncorrectAnswer,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.redButton,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: const [
-                              BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
-                            ],
-                          ),
-                          child: const Text(
-                            '-1s',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontFamily: 'Nunito',
-                              fontSize: 14,
-                            ),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.redButton,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 2),
+                          ],
+                        ),
+                        child: const Text(
+                          '1 LIFE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Nunito',
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -1155,6 +1304,40 @@ class _OneOrNoneMockScreenState extends State<_OneOrNoneMockScreen> {
   }
 }
 
+class _TierRow extends StatelessWidget {
+  final String label;
+  final String multiplier;
+  final Color labelColor;
+  const _TierRow({required this.label, required this.multiplier, this.labelColor = const Color(0xFF333333)});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8,
+        runSpacing: 6,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, fontFamily: 'Nunito', fontWeight: FontWeight.w900, color: labelColor),
+          ),
+          const Text(' = ', style: TextStyle(fontSize: 14, fontFamily: 'Nunito', fontWeight: FontWeight.w900, color: Color(0xFF333333))),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(color: AppColors.orangeButton, borderRadius: BorderRadius.circular(8)),
+            child: Text(
+              multiplier,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ControlChip extends StatelessWidget {
   final String label;
   final Color color;
@@ -1254,206 +1437,6 @@ class _LegendBadge extends StatelessWidget {
             height: 1.1,
           ),
         ),
-      ),
-    );
-  }
-}
-class _MultiplierSystemCard extends StatelessWidget {
-  const _MultiplierSystemCard();
-
-  Widget _buildBadge(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white, width: 1.5),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            offset: Offset(0, 1),
-            blurRadius: 2,
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontFamily: 'Nunito',
-          fontSize: 13,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const textStyle = TextStyle(
-      color: Color(0xFF333333),
-      fontSize: 14.5,
-      height: 1.35,
-      fontFamily: 'Nunito',
-      fontWeight: FontWeight.w800,
-    );
-
-    Widget buildTierRow(String range, String mult) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Row(
-          children: [
-            ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [Color(0xFFE040FB), Color(0xFF9C27B0), Color(0xFF673AB7)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ).createShader(bounds),
-              child: Text(
-                'Streak',
-                style: textStyle.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 36,
-              child: Text(range, style: textStyle),
-            ),
-            const Text(' =  ', style: textStyle),
-            _buildBadge(mult, AppColors.orangeButton),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.beigeBg,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Base Score
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Icon(Icons.star_rounded, size: 14, color: AppColors.orangeButton),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    const Text('Base score:', style: textStyle),
-                    _buildBadge('100', AppColors.yellowButton),
-                    const Text('= Basic,', style: textStyle),
-                    _buildBadge('200', AppColors.pinkButton),
-                    const Text('= Logic,', style: textStyle),
-                    _buildBadge('300', AppColors.redButton),
-                    const Text('= Manic.', style: textStyle),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          
-          // Multiplier Tiers
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Icon(Icons.rocket_launch_rounded, size: 14, color: AppColors.orangeButton),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Multiplier Tiers:', style: textStyle),
-                    const SizedBox(height: 8),
-                    buildTierRow('0-1', 'x1'),
-                    buildTierRow('2-3', 'x1.25'),
-                    buildTierRow('4-5', 'x1.5'),
-                    buildTierRow('6-7', 'x1.75'),
-                    buildTierRow('8-9', 'x2'),
-                    buildTierRow('10+', 'x3'),
-                    const SizedBox(height: 2),
-                    Text(
-                      '(Two correct answers = +1 multiplier tier, up to x3 multiplier)',
-                      style: textStyle.copyWith(fontStyle: FontStyle.italic, color: const Color(0xFF666666), fontSize: 13.5),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          
-          // Wrong Answer
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 2),
-                child: Icon(Icons.close_rounded, size: 18, color: AppColors.redButton),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: RichText(
-                  text: const TextSpan(
-                    style: textStyle,
-                    children: [
-                      TextSpan(
-                        text: 'Wrong answer',
-                        style: TextStyle(color: AppColors.redButton, fontWeight: FontWeight.w900),
-                      ),
-                      TextSpan(text: ' = -1 multiplier tier only.'),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          
-          // Pass
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 2),
-                child: Icon(Icons.fast_forward_rounded, size: 16, color: Color(0xFF666666)),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: RichText(
-                  text: const TextSpan(
-                    style: textStyle,
-                    children: [
-                      TextSpan(
-                        text: 'Pass',
-                        style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF666666)),
-                      ),
-                      TextSpan(text: ' = no change in multiplier or streak.'),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
