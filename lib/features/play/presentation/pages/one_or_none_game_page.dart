@@ -1626,6 +1626,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                   wrongAttempts: _wrongAttempts,
                   passesUsed: _passesUsed,
                   onRetry: _resetWholeGame,
+                  highestStreak: 0,
                   onLeaderboards: () {
                     unawaited(SfxController.instance.playMenuPress());
                     Navigator.pushNamed(context, AppRoutes.leaderboards);

@@ -457,6 +457,7 @@ enum _PauseConfirmMode {
 
 
 class GameResultOverlay extends StatelessWidget {
+  final int highestStreak;
   const GameResultOverlay({
     super.key,
     required this.backgroundAssetPath,
@@ -469,10 +470,10 @@ class GameResultOverlay extends StatelessWidget {
     required this.onRetry,
     required this.onLeaderboards,
     required this.onBackToMenu,
+    required this.highestStreak,
   });
 
   final String backgroundAssetPath;
-
   final String modeLabel;
   final String difficultyLabel;
   final int score;

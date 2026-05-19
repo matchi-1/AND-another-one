@@ -111,7 +111,7 @@ class _AnimatedAndySplashPageState extends State<AnimatedAndySplashPage>
     unawaited(_introController.forward());
 
     // Minimum splash duration so the livelier animation is visible.
-    await Future.delayed(const Duration(milliseconds: 2600));
+    await Future.delayed(const Duration(seconds: 5));
 
     if (!mounted) return;
 

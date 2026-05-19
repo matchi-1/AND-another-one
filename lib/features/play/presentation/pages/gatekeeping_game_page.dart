@@ -31,6 +31,7 @@ class GatekeepingGamePage extends StatefulWidget {
 
 class _GatekeepingGamePageState extends State<GatekeepingGamePage>
     with WidgetsBindingObserver {
+  bool _didPrecacheOverlayImages = false;
 
   @override
   void initState() {
@@ -49,6 +50,28 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
     //WidgetsBinding.instance.addPostFrameCallback((_) {
     // _maybeShowTutorial();
     //});
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_didPrecacheOverlayImages) return;
+    _didPrecacheOverlayImages = true;
+
+    final overlayAssets = <String>[
+      AppAssets.andyPauseGame,
+      _gameOverOverlayAsset,
+      _guideOverlayAsset,
+      _difficultyAndyAsset,
+      AppAssets.thumbsUp,
+      AppAssets.thumbsDown,
+      AppAssets.handPass,
+    ];
+
+    for (final asset in overlayAssets) {
+      precacheImage(AssetImage(asset), context);
+    }
   }
 
   Color _comboAccentForTier(int tierIndex) {
@@ -87,12 +110,9 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
           : 'MULTIPLIER UP!'
           : 'HOT STREAK!';
 
-      _comboOverlaySubtitle = multiplierWentUp
-          ? '$hotstreakCount ANSWER STREAK'
-          : '$hotstreakCount IN A ROW';
+      _comboOverlaySubtitle = '$hotstreakCount IN A ROW';
 
       _comboOverlayMultiplier = multiplierLabel;
-      _comboOverlayStreak = hotstreakCount;
       _comboOverlayAccent = _comboAccentForTier(multiplierTierIndex);
 
       _comboOverlayOpacity = 0.0;
@@ -152,7 +172,6 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
       title: _comboOverlayTitle,
       subtitle: _comboOverlaySubtitle,
       multiplier: _comboOverlayMultiplier,
-      streak: _comboOverlayStreak,
       accent: _comboOverlayAccent,
       opacity: _comboOverlayOpacity,
       scale: _comboOverlayScale,
@@ -365,7 +384,7 @@ void _closeBackOverlay() {
   String _comboOverlayTitle = '';
   String _comboOverlaySubtitle = '';
   String _comboOverlayMultiplier = '';
-  int _comboOverlayStreak = 0;
+
 
   Color _comboOverlayAccent = const Color(0xFFFFE45C);
 
@@ -649,6 +668,7 @@ void _closeBackOverlay() {
   int passesLeft = 0;
   int correctCount = 0;
   int wrongAttempts = 0;
+  int highestHotstreakCount = 0;
 
   bool roundLocked = false;
   bool gameFinished = false;
@@ -685,6 +705,7 @@ void _closeBackOverlay() {
     passesLeft = startingPasses;
     correctCount = 0;
     wrongAttempts = 0;
+    highestHotstreakCount = 0;
 
     showGameResultOverlay = false;
     gameFinished = false;
@@ -1129,6 +1150,10 @@ Future<void> _performTimeout() async {
       hotstreakCount++;
       multiplierStepProgress++;
 
+      if (hotstreakCount > highestHotstreakCount) {
+        highestHotstreakCount = hotstreakCount;
+      }
+
       if (multiplierStepProgress >= 2 &&
           multiplierTierIndex < _multiplierTiers.length - 1) {
         multiplierTierIndex++;
@@ -1497,7 +1522,7 @@ Future<void> _performTimeout() async {
     final double gap = 8;
     final double operatorButtonWidth =
         (size.width - (sidePadding * 2) - gap) / 2;
-    final double operatorButtonHeight = 85;
+    final double operatorButtonHeight = 100;
 
     return Scaffold(
       body: GameMenuBackground(
@@ -1833,27 +1858,35 @@ Future<void> _performTimeout() async {
               if (_showComboOverlay)
                 _buildComboMultiplierOverlay(),
 
-             
+
               if (showGameResultOverlay)
-                GameResultOverlay(
-                  backgroundAssetPath: _gameOverOverlayAsset,
-                  modeLabel: 'Gatekeeping',
-                  difficultyLabel: _difficultyLabel,
-                  score: score,
-                  correctCount: correctCount,
-                  wrongAttempts: wrongAttempts,
-                  passesUsed: passesUsed,
-                  onRetry: () {
-                    resetWholeGame();
-                  },
-                  onLeaderboards: () {
-                    unawaited(SfxController.instance.playMenuPress());
-                    Navigator.pushNamed(context, AppRoutes.leaderboards);
-                  },
-                  onBackToMenu: () {
-                    unawaited(SfxController.instance.playMenuBack());
-                    _exitToHome();
-                  },
+                _GameOverPixelRevealEntrance(
+                  key: ValueKey('game-over-pixel-reveal-$_gameOverOverlayAsset'),
+                  child: GameResultOverlay(
+                    backgroundAssetPath: _gameOverOverlayAsset,
+                    modeLabel: 'Gatekeeping',
+                    difficultyLabel: _difficultyLabel,
+                    score: score,
+                    correctCount: correctCount,
+                    wrongAttempts: wrongAttempts,
+                    passesUsed: passesUsed,
+
+                    // Keep this only if you already added highestStreak
+                    // to GameResultOverlay from the previous change.
+                    highestStreak: highestHotstreakCount,
+
+                    onRetry: () {
+                      resetWholeGame();
+                    },
+                    onLeaderboards: () {
+                      unawaited(SfxController.instance.playMenuPress());
+                      Navigator.pushNamed(context, AppRoutes.leaderboards);
+                    },
+                    onBackToMenu: () {
+                      unawaited(SfxController.instance.playMenuBack());
+                      _exitToHome();
+                    },
+                  ),
                 ),
 
               if (showPreGameOverlay)
@@ -1870,22 +1903,25 @@ Future<void> _performTimeout() async {
                   spriteScaleDuration: preGameSpriteScaleDuration,
                   spriteFadeDuration: preGameSpriteFadeDuration,
                 ),
-              
-               if (showBackConfirmOverlay)
-                PauseOverlay(
-                  backgroundAssetPath: AppAssets.andyPauseGame,
-                  onResume: _closeBackOverlay,
-                  onRetry: () {
-                    setState(() {
-                      showBackConfirmOverlay = false;
-                    });
 
-                    resetWholeGame();
-                  },
-                  onExitToMenu: () {
-                    unawaited(SfxController.instance.playGameOver());
-                    _exitToHome();
-                  },
+              if (showBackConfirmOverlay)
+                _OverlayEntrance(
+                  key: const ValueKey('pause-overlay'),
+                  child: PauseOverlay(
+                    backgroundAssetPath: AppAssets.andyPauseGame,
+                    onResume: _closeBackOverlay,
+                    onRetry: () {
+                      setState(() {
+                        showBackConfirmOverlay = false;
+                      });
+
+                      resetWholeGame();
+                    },
+                    onExitToMenu: () {
+                      unawaited(SfxController.instance.playGameOver());
+                      _exitToHome();
+                    },
+                  ),
                 ),
 
 
@@ -1950,7 +1986,6 @@ class _ComboMultiplierOverlay extends StatelessWidget {
   final String title;
   final String subtitle;
   final String multiplier;
-  final int streak;
   final Color accent;
 
   final double opacity;
@@ -1969,7 +2004,6 @@ class _ComboMultiplierOverlay extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.multiplier,
-    required this.streak,
     required this.accent,
     required this.opacity,
     required this.scale,
@@ -2236,22 +2270,6 @@ class _ComboMultiplierOverlay extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          'STREAK $streak',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.95),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
-                            shadows: const [
-                              Shadow(
-                                color: Colors.black54,
-                                offset: Offset(0, 2),
-                                blurRadius: 2,
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -2344,5 +2362,349 @@ class _ArcadeStrokeText extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _OverlayEntrance extends StatelessWidget {
+  const _OverlayEntrance({
+    super.key,
+    required this.child,
+    this.isGameOver = false,
+  });
+
+  final Widget child;
+  final bool isGameOver;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: isGameOver ? 520 : 360),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) {
+        final safeOpacity = value.clamp(0.0, 1.0);
+        final scale = isGameOver
+            ? 0.72 + (0.28 * value)
+            : 0.86 + (0.14 * value);
+
+        final yOffset = isGameOver
+            ? 42 * (1 - value)
+            : -28 * (1 - value);
+
+        final angle = isGameOver
+            ? -0.035 * (1 - value)
+            : 0.025 * (1 - value);
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Opacity(
+              opacity: safeOpacity,
+              child: Transform.translate(
+                offset: Offset(0, yOffset),
+                child: Transform.rotate(
+                  angle: angle,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: child,
+                  ),
+                ),
+              ),
+            ),
+
+            IgnorePointer(
+              child: Opacity(
+                opacity: (1 - safeOpacity).clamp(0.0, 1.0),
+                child: const ColoredBox(
+                  color: Color(0x3300E5FF),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      child: child,
+    );
+  }
+}
+
+class _GameOverPixelRevealEntrance extends StatefulWidget {
+  const _GameOverPixelRevealEntrance({
+    super.key,
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  State<_GameOverPixelRevealEntrance> createState() =>
+      _GameOverPixelRevealEntranceState();
+}
+
+class _GameOverTopToBottomRevealClipper extends CustomClipper<Rect> {
+  const _GameOverTopToBottomRevealClipper({
+    required this.progress,
+  });
+
+  final double progress;
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(
+      0,
+      0,
+      size.width,
+      size.height * progress.clamp(0.0, 1.0),
+    );
+  }
+
+  @override
+  bool shouldReclip(
+      covariant _GameOverTopToBottomRevealClipper oldClipper,
+      ) {
+    return oldClipper.progress != progress;
+  }
+}
+
+class _GameOverPixelRevealEntranceState
+    extends State<_GameOverPixelRevealEntrance>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _revealAnimation;
+  late final Animation<double> _contentOpacityAnimation;
+  late final Animation<double> _contentScaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1250),
+    );
+
+    _revealAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOutCubic,
+    );
+
+    _contentOpacityAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(
+        0.28,
+        1.00,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _contentScaleAnimation = Tween<double>(
+      begin: 0.96,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(
+          0.36,
+          1.00,
+          curve: Curves.easeOutBack,
+        ),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  double _flashOpacity(double t) {
+    if (t < 0.08) {
+      return t / 0.08 * 0.65;
+    }
+
+    if (t < 0.24) {
+      return 0.65 * (1.0 - ((t - 0.08) / 0.16));
+    }
+
+    return 0.0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      child: widget.child,
+      builder: (context, child) {
+        final rawT = _controller.value;
+        final revealT = _revealAnimation.value;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            // Dark red base so the screen immediately feels like game over.
+            Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black.withOpacity(0.36),
+              ),
+            ),
+
+            // Reveal the actual GameResultOverlay from top to bottom.
+            ClipRect(
+              clipper: _GameOverTopToBottomRevealClipper(
+                progress: revealT,
+              ),
+              child: Opacity(
+                opacity: _contentOpacityAnimation.value,
+                child: Transform.scale(
+                  scale: _contentScaleAnimation.value,
+                  child: child,
+                ),
+              ),
+            ),
+
+            // Red pixel trickle layer.
+            IgnorePointer(
+              child: CustomPaint(
+                painter: _GameOverPixelTricklePainter(
+                  progress: rawT,
+                  revealProgress: revealT,
+                  color: const Color(0xFFFF1E1E),
+                ),
+              ),
+            ),
+
+            // Quick red flash at the start.
+            IgnorePointer(
+              child: ColoredBox(
+                color: const Color(0xFFFF1E1E).withOpacity(
+                  _flashOpacity(rawT),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+
+class _GameOverPixelTricklePainter extends CustomPainter {
+  _GameOverPixelTricklePainter({
+    required this.progress,
+    required this.revealProgress,
+    required this.color,
+  });
+
+  final double progress;
+  final double revealProgress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= 1.0) return;
+
+    const double blockSize = 24;
+    final cols = (size.width / blockSize).ceil();
+    final rows = (size.height / blockSize).ceil();
+
+    final waveY = size.height * revealProgress;
+    final waveBand = blockSize * 5.8;
+
+    final paint = Paint();
+
+    // Slight red wash behind the trickle.
+    final washHeight = size.height * revealProgress;
+    if (washHeight > 0) {
+      paint.color = const Color(0xFF8B0000).withOpacity(0.18);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, washHeight),
+        paint,
+      );
+    }
+
+    for (int row = 0; row < rows; row++) {
+      for (int col = 0; col < cols; col++) {
+        final centerX = (col * blockSize) + blockSize / 2;
+        final centerY = (row * blockSize) + blockSize / 2;
+
+        final distanceFromWave = (centerY - waveY).abs();
+
+        if (distanceFromWave > waveBand) continue;
+
+        final noise = _noise(col, row);
+
+        // Higher value = more uneven / more trickly edge.
+        final stagger = (noise - 0.5) * blockSize * 4.0;
+        final adjustedDistance = (centerY + stagger - waveY).abs();
+
+        if (adjustedDistance > waveBand) continue;
+
+        final closeness = 1.0 - (adjustedDistance / waveBand).clamp(0.0, 1.0);
+        final pulse = sin(closeness * pi);
+
+        final alpha = (pulse * 0.95).clamp(0.0, 0.95);
+
+        final isWhiteBlock = (col + row) % 7 == 0;
+        final isHotRedBlock = (col * 3 + row * 7) % 9 == 0;
+        final isDarkBlock = (col * 5 + row * 11) % 13 == 0;
+
+        final blockColor = isWhiteBlock
+            ? Colors.white
+            : isHotRedBlock
+            ? const Color(0xFFFF5A5A)
+            : isDarkBlock
+            ? const Color(0xFF5A0000)
+            : color;
+
+        final fallAmount = blockSize * 1.8 * (1.0 - closeness) * noise;
+        final rectSize = blockSize * (0.58 + (0.55 * closeness));
+
+        final dx = centerX - rectSize / 2;
+        final dy = centerY - rectSize / 2 + fallAmount;
+
+        paint.color = blockColor.withOpacity(alpha);
+
+        canvas.drawRect(
+          Rect.fromLTWH(dx, dy, rectSize, rectSize),
+          paint,
+        );
+      }
+    }
+
+    _paintRedScanlines(canvas, size);
+  }
+
+  void _paintRedScanlines(Canvas canvas, Size size) {
+    if (progress > 0.78) return;
+
+    final opacity = 0.16 * (1.0 - (progress / 0.78).clamp(0.0, 1.0));
+
+    final paint = Paint()
+      ..color = const Color(0xFFFFD0D0).withOpacity(opacity);
+
+    const gap = 8.0;
+
+    for (double y = 0; y < size.height; y += gap) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, y, size.width, 1.4),
+        paint,
+      );
+    }
+  }
+
+  double _noise(int x, int y) {
+    final value = (x * 73 + y * 151 + x * y * 17) % 100;
+    return value / 100.0;
+  }
+
+  @override
+  bool shouldRepaint(covariant _GameOverPixelTricklePainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.revealProgress != revealProgress ||
+        oldDelegate.color != color;
   }
 }
