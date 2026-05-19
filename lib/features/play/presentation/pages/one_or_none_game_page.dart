@@ -32,10 +32,132 @@ class OneOrNoneGamePage extends StatefulWidget {
 
 class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     with WidgetsBindingObserver {
+  bool _didPrecacheOverlayImages = false;
+
+  Color _comboAccentForTier(int tierIndex) {
+    final safeIndex = tierIndex.clamp(0, _comboTierColors.length - 1).toInt();
+    return _comboTierColors[safeIndex];
+  }
+
+  void _resetComboOverlayState() {
+    _comboOverlayRunId++;
+
+    _showComboOverlay = false;
+    _comboOverlayOpacity = 0.0;
+    _comboOverlayScale = 0.55;
+    _comboOverlayRingScale = 0.0;
+    _comboOverlayPixelSpread = 0.0;
+    _comboOverlayTilt = 0.0;
+    _comboOverlaySlideY = 20.0;
+  }
+
+  Future<void> _playComboMultiplierOverlay({
+    required bool multiplierWentUp,
+  }) async {
+    if (!mounted) return;
+
+    final runId = ++_comboOverlayRunId;
+
+    final isMaxMultiplier =
+        _multiplierTierIndex >= _multiplierTiers.length - 1;
+
+    setState(() {
+      _showComboOverlay = true;
+
+      _comboOverlayTitle = multiplierWentUp
+          ? isMaxMultiplier
+          ? 'MAX MULTIPLIER!'
+          : 'MULTIPLIER UP!'
+          : 'HOT STREAK!';
+
+      _comboOverlaySubtitle = '$_hotstreakCount IN A ROW';
+
+      _comboOverlayMultiplier = _multiplierLabel;
+      _comboOverlayAccent = _comboAccentForTier(_multiplierTierIndex);
+
+      _comboOverlayOpacity = 0.0;
+      _comboOverlayScale = 0.45;
+      _comboOverlayRingScale = 0.0;
+      _comboOverlayPixelSpread = 0.0;
+      _comboOverlayTilt = -0.10;
+      _comboOverlaySlideY = 28.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 16));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    setState(() {
+      _comboOverlayOpacity = 1.0;
+      _comboOverlayScale = 1.18;
+      _comboOverlayRingScale = 0.72;
+      _comboOverlayPixelSpread = 0.55;
+      _comboOverlayTilt = 0.06;
+      _comboOverlaySlideY = 0.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 150));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    setState(() {
+      _comboOverlayScale = 1.0;
+      _comboOverlayRingScale = 1.15;
+      _comboOverlayPixelSpread = 1.0;
+      _comboOverlayTilt = 0.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 680));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    setState(() {
+      _comboOverlayOpacity = 0.0;
+      _comboOverlayScale = 1.24;
+      _comboOverlayRingScale = 1.55;
+      _comboOverlayPixelSpread = 1.25;
+      _comboOverlaySlideY = -24.0;
+    });
+
+    await _pauseAwareDelay(const Duration(milliseconds: 260));
+    if (!mounted || runId != _comboOverlayRunId) return;
+
+    setState(() {
+      _showComboOverlay = false;
+    });
+  }
+
+  Widget _buildComboMultiplierOverlay() {
+    return _ComboMultiplierOverlay(
+      title: _comboOverlayTitle,
+      subtitle: _comboOverlaySubtitle,
+      multiplier: _comboOverlayMultiplier,
+      accent: _comboOverlayAccent,
+      opacity: _comboOverlayOpacity,
+      scale: _comboOverlayScale,
+      ringScale: _comboOverlayRingScale,
+      pixelSpread: _comboOverlayPixelSpread,
+      tilt: _comboOverlayTilt,
+      slideY: _comboOverlaySlideY,
+    );
+  }
 
   int _hotstreakCount = 0;
   int _multiplierTierIndex = 0;
   int _multiplierStepProgress = 0; // 2 correct answers = tier up
+
+  bool _showComboOverlay = false;
+  int _comboOverlayRunId = 0;
+
+  String _comboOverlayTitle = '';
+  String _comboOverlaySubtitle = '';
+  String _comboOverlayMultiplier = '';
+
+  Color _comboOverlayAccent = const Color(0xFFFFE45C);
+
+  double _comboOverlayOpacity = 0.0;
+  double _comboOverlayScale = 0.55;
+  double _comboOverlayRingScale = 0.0;
+  double _comboOverlayPixelSpread = 0.0;
+  double _comboOverlayTilt = 0.0;
+  double _comboOverlaySlideY = 20.0;
 
   static const List<double> _multiplierTiers = [
     1.0,
@@ -44,6 +166,15 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     1.75,
     2.0,
     3.0,
+  ];
+
+  static const List<Color> _comboTierColors = [
+    Color(0xFFFFE45C), // x1.0
+    Color(0xFFFFB000), // x1.25
+    Color(0xFFFF6B00), // x1.5
+    Color(0xFFFF3D81), // x1.75
+    Color(0xFFB85CFF), // x2.0
+    Color(0xFF00E5FF), // x3.0
   ];
 
   double get _currentMultiplier => _multiplierTiers[_multiplierTierIndex];
@@ -91,6 +222,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
 
   int _correctCount = 0;
   int _wrongAttempts = 0;
+  int _highestHotstreakCount = 0;
 
   bool _roundLocked = false;
   bool _gameFinished = false;
@@ -208,7 +340,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
 
   int get _passesUsed => _startingPasses - _passesLeft;
 
-  
+
 
   @override
   void initState() {
@@ -223,6 +355,28 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     };
 
     unawaited(BgmController.instance.playScene(scene));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_didPrecacheOverlayImages) return;
+    _didPrecacheOverlayImages = true;
+
+    final overlayAssets = <String>[
+      AppAssets.andyPauseGame,
+      _gameOverOverlayAsset,
+      _guideOverlayAsset,
+      _difficultyAndyAsset,
+      AppAssets.thumbsUp,
+      AppAssets.thumbsDown,
+      AppAssets.handPass,
+    ];
+
+    for (final asset in overlayAssets) {
+      precacheImage(AssetImage(asset), context);
+    }
   }
 
   @override
@@ -328,7 +482,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
       }
     });
   }
-  
+
   void _exitToHome() {
     unawaited(SfxController.instance.playMenuBack());
 
@@ -342,12 +496,13 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
       _showGameResultOverlay = false;
       _showPreGameOverlay = false;
       _roundLocked = true;
+      _resetComboOverlayState();
     });
 
     unawaited(BgmController.instance.playScene(BgmScene.home));
 
     Navigator.of(context).popUntil(
-      (route) => route.settings.name == AppRoutes.home || route.isFirst,
+          (route) => route.settings.name == AppRoutes.home || route.isFirst,
     );
   }
 
@@ -413,6 +568,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
       });
       return;
     }
+    _resetComboOverlayState();
     _hotstreakCount = 0;
     _multiplierTierIndex = 0;
     _multiplierStepProgress = 0;
@@ -423,6 +579,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     _livesLeft = _startingLives;
     _correctCount = 0;
     _wrongAttempts = 0;
+    _highestHotstreakCount = 0;
     _roundLocked = false;
     _gameFinished = false;
     _showBackConfirmOverlay = false;
@@ -614,7 +771,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
           variable: _random.nextBool() ? 1 : 0,
       };
     } while (
-        avoidSame &&
+    avoidSame &&
         previous.isNotEmpty &&
         _mapsEqual(previous, _currentVariableValues));
 
@@ -638,33 +795,33 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
         .replaceAll('__', '')
         .replaceAll('¬', ' NOT ')
         .replaceAllMapped(
-          RegExp(r'(?<![A-Z])NOT(?![A-Z])'),
+      RegExp(r'(?<![A-Z])NOT(?![A-Z])'),
           (_) => ' NOT ',
-        )
+    )
         .replaceAllMapped(
-          RegExp(r'(?<![A-Z])AND(?![A-Z])'),
+      RegExp(r'(?<![A-Z])AND(?![A-Z])'),
           (_) => ' AND ',
-        )
+    )
         .replaceAllMapped(
-          RegExp(r'(?<![A-Z])OR(?![A-Z])'),
+      RegExp(r'(?<![A-Z])OR(?![A-Z])'),
           (_) => ' OR ',
-        )
+    )
         .replaceAllMapped(
-          RegExp(r'(?<![A-Z])XOR(?![A-Z])'),
+      RegExp(r'(?<![A-Z])XOR(?![A-Z])'),
           (_) => ' XOR ',
-        )
+    )
         .replaceAllMapped(
-          RegExp(r'(?<![A-Z])XNOR(?![A-Z])'),
+      RegExp(r'(?<![A-Z])XNOR(?![A-Z])'),
           (_) => ' XNOR ',
-        )
+    )
         .replaceAllMapped(
-          RegExp(r'(?<![A-Z])NAND(?![A-Z])'),
+      RegExp(r'(?<![A-Z])NAND(?![A-Z])'),
           (_) => ' NAND ',
-        )
+    )
         .replaceAllMapped(
-          RegExp(r'(?<![A-Z])NOR(?![A-Z])'),
+      RegExp(r'(?<![A-Z])NOR(?![A-Z])'),
           (_) => ' NOR ',
-        )
+    )
         .replaceAll('(', ' ( ')
         .replaceAll(')', ' ) ')
         .replaceAll(RegExp(r'\s+'), ' ')
@@ -730,7 +887,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
         while (stack.isNotEmpty &&
             _isOperator(stack.last) &&
             ((_isRightAssociative(token) &&
-                    _precedence(token) < _precedence(stack.last)) ||
+                _precedence(token) < _precedence(stack.last)) ||
                 (!_isRightAssociative(token) &&
                     _precedence(token) <= _precedence(stack.last)))) {
           output.add(stack.removeLast());
@@ -938,7 +1095,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     );
   }
 
-  
+
 
   Future<void> _checkCurrentAnswer(int selectedValue) async {
     if (_roundLocked || _gameFinished) return;
@@ -950,8 +1107,15 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     final isCorrect = selectedValue == _correctOutput;
 
     if (isCorrect) {
+      final previousMultiplierTierIndex = _multiplierTierIndex;
+
+      _correctCount++;
       _hotstreakCount++;
       _multiplierStepProgress++;
+
+      if (_hotstreakCount > _highestHotstreakCount) {
+        _highestHotstreakCount = _hotstreakCount;
+      }
 
       if (_multiplierStepProgress >= 2 &&
           _multiplierTierIndex < _multiplierTiers.length - 1) {
@@ -959,9 +1123,25 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
         _multiplierStepProgress = 0;
       }
 
-      final gainedScore = (_baseScore * _currentMultiplier).round();
+      final multiplierWentUp =
+          _multiplierTierIndex > previousMultiplierTierIndex;
 
-      _correctCount++;
+      final shouldShowHotStreakOverlay =
+          !multiplierWentUp &&
+              _hotstreakCount >= 3 &&
+              _hotstreakCount % 3 == 0;
+
+      if (multiplierWentUp || shouldShowHotStreakOverlay) {
+        HapticFeedback.heavyImpact();
+
+        unawaited(
+          _playComboMultiplierOverlay(
+            multiplierWentUp: multiplierWentUp,
+          ),
+        );
+      }
+
+      final gainedScore = (_baseScore * _currentMultiplier).round();
 
       unawaited(SfxController.instance.playCorrect());
       await _showActionFeedback(
@@ -983,6 +1163,8 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
 
       _hotstreakCount = 0;
       _multiplierStepProgress = 0;
+      _comboOverlayRunId++;
+      _showComboOverlay = false;
 
       if (_multiplierTierIndex > 0) {
         _multiplierTierIndex--;
@@ -994,7 +1176,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
         asset: AppAssets.thumbsDown,
       );
 
-      _showLivesDelta('-$lostLives', Colors.redAccent);
+      //_showLivesDelta('-$lostLives', Colors.redAccent);
       await _animateLostHeart();
 
       await _finishRound(
@@ -1107,7 +1289,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
       _scoreDeltaXOffset = 0.0;
     });
   }
-  
+
 
   Future<void> _showLivesDelta(String text, Color color) async {
     if (!mounted) return;
@@ -1141,7 +1323,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     });
   }
 
-  
+
 
   Widget _buildLivesDisplay(double width) {
     return Column(
@@ -1265,12 +1447,19 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
           width: 2,
         ),
       ),
-      child: Text(
-        'PASSES LEFT: $_passesLeft',
-        style: const TextStyle(
-          color: _passOrange,
-          fontSize: 14,
-          fontWeight: FontWeight.w900,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'PASSES LEFT: $_passesLeft',
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
+          style: const TextStyle(
+            color: _passOrange,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
     );
@@ -1429,7 +1618,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                     top: h * 0.13 + _livesDeltaYOffset,
                                     child: AnimatedOpacity(
                                       duration:
-                                          const Duration(milliseconds: 250),
+                                      const Duration(milliseconds: 250),
                                       opacity: _livesDeltaOpacity,
                                       child: Text(
                                         _livesDeltaText!,
@@ -1449,13 +1638,13 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                     ),
                                   ),
 
-                                  Positioned(
-                                    left: w * 0.315,
-                                    right: w * 0.4,
-                                    top: h * 0.02,
-                                    height: h * 0.11,
-                                    child: _buildMultiplierText(w),
-                                  ),
+                                Positioned(
+                                  left: w * 0.315,
+                                  right: w * 0.4,
+                                  top: h * 0.02,
+                                  height: h * 0.11,
+                                  child: _buildMultiplierText(w),
+                                ),
 
 
                                 Positioned(
@@ -1471,7 +1660,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                     top: h * 0.13 + _scoreDeltaYOffset,
                                     child: AnimatedOpacity(
                                       duration:
-                                          const Duration(milliseconds: 250),
+                                      const Duration(milliseconds: 250),
                                       opacity: _scoreDeltaOpacity,
                                       child: Stack(
                                         alignment: Alignment.center,
@@ -1485,7 +1674,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                                 ..style = PaintingStyle.stroke
                                                 ..strokeWidth = 4
                                                 ..color = _scoreDeltaText!
-                                                        .startsWith('-')
+                                                    .startsWith('-')
                                                     ? const Color(0xFFD50000)
                                                     : const Color(0xFF0FAF2A),
                                             ),
@@ -1496,7 +1685,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                               fontSize: w * 0.09,
                                               fontWeight: FontWeight.w900,
                                               color: _scoreDeltaText!
-                                                      .startsWith('-')
+                                                  .startsWith('-')
                                                   ? const Color(0xFFFFD0D0)
                                                   : const Color(0xFFBEFFC9),
                                               shadows: const [
@@ -1615,26 +1804,31 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                   scaleCurve: _reactionScaleCurve,
                 ),
 
+              if (_showComboOverlay)
+                _buildComboMultiplierOverlay(),
 
               if (_showGameResultOverlay)
-                GameResultOverlay(
-                  backgroundAssetPath: _gameOverOverlayAsset,
-                  modeLabel: 'One or None',
-                  difficultyLabel: _difficultyLabel,
-                  score: _score,
-                  correctCount: _correctCount,
-                  wrongAttempts: _wrongAttempts,
-                  passesUsed: _passesUsed,
-                  onRetry: _resetWholeGame,
-                  highestStreak: 0,
-                  onLeaderboards: () {
-                    unawaited(SfxController.instance.playMenuPress());
-                    Navigator.pushNamed(context, AppRoutes.leaderboards);
-                  },
-                  onBackToMenu: () {
-                    unawaited(SfxController.instance.playMenuBack());
-                    _exitToHome();
-                  },
+                _GameOverPixelRevealEntrance(
+                  key: ValueKey('game-over-pixel-reveal-$_gameOverOverlayAsset'),
+                  child: GameResultOverlay(
+                    backgroundAssetPath: _gameOverOverlayAsset,
+                    modeLabel: 'One or None',
+                    difficultyLabel: _difficultyLabel,
+                    score: _score,
+                    correctCount: _correctCount,
+                    wrongAttempts: _wrongAttempts,
+                    passesUsed: _passesUsed,
+                    onRetry: _resetWholeGame,
+                    highestStreak: _highestHotstreakCount,
+                    onLeaderboards: () {
+                      unawaited(SfxController.instance.playMenuPress());
+                      Navigator.pushNamed(context, AppRoutes.leaderboards);
+                    },
+                    onBackToMenu: () {
+                      unawaited(SfxController.instance.playMenuBack());
+                      _exitToHome();
+                    },
+                  ),
                 ),
 
               if (_showPreGameOverlay)
@@ -1653,20 +1847,23 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                 ),
 
               if (_showBackConfirmOverlay)
-                PauseOverlay(
-                  backgroundAssetPath: AppAssets.andyPauseGame,
-                  onResume: _closeBackOverlay,
-                  onRetry: () {
-                    setState(() {
-                      _showBackConfirmOverlay = false;
-                    });
+                _OverlayEntrance(
+                  key: const ValueKey('pause-overlay'),
+                  child: PauseOverlay(
+                    backgroundAssetPath: AppAssets.andyPauseGame,
+                    onResume: _closeBackOverlay,
+                    onRetry: () {
+                      setState(() {
+                        _showBackConfirmOverlay = false;
+                      });
 
-                    _resetWholeGame();
-                  },
-                  onExitToMenu: () {
-                    unawaited(SfxController.instance.playGameOver());
-                    _exitToHome();
-                  },
+                      _resetWholeGame();
+                    },
+                    onExitToMenu: () {
+                      unawaited(SfxController.instance.playGameOver());
+                      _exitToHome();
+                    },
+                  ),
                 ),
             ],
           ),
@@ -1675,3 +1872,720 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     );
   }
 }
+
+class _ComboMultiplierOverlay extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String multiplier;
+  final Color accent;
+
+  final double opacity;
+  final double scale;
+  final double ringScale;
+  final double pixelSpread;
+  final double tilt;
+  final double slideY;
+
+  static const Color _comboBoxColor = Color(0xFFD114F7);
+  static const Color _comboPurpleAccent = Color(0xFF7A1CFF);
+  static const Color _comboMagentaGlow = Color(0xFFFF4DFF);
+  static const Color _comboSoftPink = Color(0xFFFFB8FF);
+
+  const _ComboMultiplierOverlay({
+    required this.title,
+    required this.subtitle,
+    required this.multiplier,
+    required this.accent,
+    required this.opacity,
+    required this.scale,
+    required this.ringScale,
+    required this.pixelSpread,
+    required this.tilt,
+    required this.slideY,
+  });
+
+  static const List<_ComboPixelParticle> _particles = [
+    _ComboPixelParticle(direction: Offset(-0.95, -0.45), size: 10),
+    _ComboPixelParticle(direction: Offset(-0.65, -0.75), size: 8),
+    _ComboPixelParticle(direction: Offset(-0.25, -0.92), size: 11),
+    _ComboPixelParticle(direction: Offset(0.25, -0.92), size: 8),
+    _ComboPixelParticle(direction: Offset(0.70, -0.68), size: 10),
+    _ComboPixelParticle(direction: Offset(0.98, -0.35), size: 9),
+    _ComboPixelParticle(direction: Offset(0.95, 0.22), size: 12),
+    _ComboPixelParticle(direction: Offset(0.62, 0.65), size: 8),
+    _ComboPixelParticle(direction: Offset(0.20, 0.88), size: 10),
+    _ComboPixelParticle(direction: Offset(-0.30, 0.88), size: 9),
+    _ComboPixelParticle(direction: Offset(-0.72, 0.58), size: 11),
+    _ComboPixelParticle(direction: Offset(-0.98, 0.15), size: 8),
+
+    // inner sparkle layer
+    _ComboPixelParticle(direction: Offset(-0.38, -0.28), size: 7),
+    _ComboPixelParticle(direction: Offset(0.38, -0.25), size: 7),
+    _ComboPixelParticle(direction: Offset(0.42, 0.30), size: 6),
+    _ComboPixelParticle(direction: Offset(-0.45, 0.32), size: 6),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final titleSize = (screenWidth * 0.095).clamp(30.0, 48.0).toDouble();
+    final multiplierSize = (screenWidth * 0.155).clamp(54.0, 82.0).toDouble();
+
+    return IgnorePointer(
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOut,
+        opacity: opacity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Full-screen arcade glow.
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 0.78,
+                    colors: [
+                      accent.withOpacity(0.34),
+                      accent.withOpacity(0.16),
+                      Colors.black.withOpacity(0.04),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.32, 0.62, 1.0],
+                  ),
+                ),
+              ),
+            ),
+
+            // Pixel burst particles.
+            for (int i = 0; i < _particles.length; i++)
+              AnimatedAlign(
+                duration: const Duration(milliseconds: 460),
+                curve: Curves.easeOutBack,
+                alignment: Alignment(
+                  _particles[i].direction.dx * pixelSpread * 0.82,
+                  _particles[i].direction.dy * pixelSpread * 0.58,
+                ),
+                child: Transform.rotate(
+                  angle: pixelSpread * 0.8,
+                  child: Container(
+                    width: _particles[i].size,
+                    height: _particles[i].size,
+                    decoration: BoxDecoration(
+                      color: _particleColor(i),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _particleColor(i).withOpacity(0.8),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Large square ring 1.
+            Center(
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 420),
+                curve: Curves.easeOutCubic,
+                scale: ringScale,
+                child: Transform.rotate(
+                  angle: 0.16,
+                  child: Container(
+                    width: 210,
+                    height: 210,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.72),
+                        width: 4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accent.withOpacity(0.55),
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Large square ring 2.
+            Center(
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 520),
+                curve: Curves.easeOutCubic,
+                scale: ringScale * 1.25,
+                child: Transform.rotate(
+                  angle: -0.22,
+                  child: Container(
+                    width: 190,
+                    height: 190,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: accent.withOpacity(0.70),
+                        width: 5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Horizontal pixel slash.
+            Center(
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 340),
+                curve: Curves.easeOutExpo,
+                scale: pixelSpread.clamp(0.0, 1.0),
+                child: Container(
+                  width: screenWidth * 0.82,
+                  height: 9,
+                  color: Colors.white.withOpacity(0.58),
+                ),
+              ),
+            ),
+
+            // Main arcade text card.
+            Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutBack,
+                transform: Matrix4.identity()
+                  ..translate(0.0, slideY)
+                  ..rotateZ(tilt),
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutBack,
+                  scale: scale,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 18,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _comboBoxColor.withOpacity(0.92),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: _comboSoftPink.withOpacity(0.95),
+                        width: 4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _comboMagentaGlow.withOpacity(0.85),
+                          blurRadius: 34,
+                          spreadRadius: 6,
+                        ),
+                        BoxShadow(
+                          color: _comboPurpleAccent.withOpacity(0.65),
+                          blurRadius: 24,
+                          spreadRadius: 3,
+                        ),
+                        const BoxShadow(
+                          color: Colors.black45,
+                          offset: Offset(0, 8),
+                          blurRadius: 12,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _ArcadeStrokeText(
+                          text: title,
+                          fontSize: titleSize,
+                          fillColor: Colors.white,
+                          strokeColor: _comboPurpleAccent,
+                          strokeWidth: 7,
+                          letterSpacing: 1.4,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          multiplier,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: multiplierSize,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2.0,
+                            height: 0.95,
+                            color: Colors.white,
+                            shadows: const [
+                              Shadow(
+                                color: Color(0xFFFF4DFF),
+                                offset: Offset(0, 0),
+                                blurRadius: 16,
+                              ),
+                              Shadow(
+                                color: Color(0xFF7A1CFF),
+                                offset: Offset(0, 4),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _comboPurpleAccent.withOpacity(0.92),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 2,
+                            ),
+                          ),
+                          child: Text(
+                            subtitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.1,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _particleColor(int index) {
+    switch (index % 4) {
+      case 0:
+        return Colors.white;
+      case 1:
+        return accent;
+      case 2:
+        return const Color(0xFFFFF176);
+      default:
+        return const Color(0xFF00E5FF);
+    }
+  }
+}
+
+class _ComboPixelParticle {
+  final Offset direction;
+  final double size;
+
+  const _ComboPixelParticle({
+    required this.direction,
+    required this.size,
+  });
+}
+
+class _ArcadeStrokeText extends StatelessWidget {
+  final String text;
+  final double fontSize;
+  final Color fillColor;
+  final Color strokeColor;
+  final double strokeWidth;
+  final double letterSpacing;
+
+  const _ArcadeStrokeText({
+    required this.text,
+    required this.fontSize,
+    required this.fillColor,
+    required this.strokeColor,
+    required this.strokeWidth,
+    required this.letterSpacing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w900,
+            letterSpacing: letterSpacing,
+            height: 0.95,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = strokeWidth
+              ..color = strokeColor,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w900,
+            letterSpacing: letterSpacing,
+            height: 0.95,
+            color: fillColor,
+            shadows: const [
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(0, 3),
+                blurRadius: 3,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class _OverlayEntrance extends StatelessWidget {
+  const _OverlayEntrance({
+    super.key,
+    required this.child,
+    this.isGameOver = false,
+  });
+
+  final Widget child;
+  final bool isGameOver;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: isGameOver ? 520 : 360),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) {
+        final safeOpacity = value.clamp(0.0, 1.0);
+        final scale = isGameOver
+            ? 0.72 + (0.28 * value)
+            : 0.86 + (0.14 * value);
+
+        final yOffset = isGameOver
+            ? 42 * (1 - value)
+            : -28 * (1 - value);
+
+        final angle = isGameOver
+            ? -0.035 * (1 - value)
+            : 0.025 * (1 - value);
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Opacity(
+              opacity: safeOpacity,
+              child: Transform.translate(
+                offset: Offset(0, yOffset),
+                child: Transform.rotate(
+                  angle: angle,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: child,
+                  ),
+                ),
+              ),
+            ),
+            IgnorePointer(
+              child: Opacity(
+                opacity: (1 - safeOpacity).clamp(0.0, 1.0),
+                child: const ColoredBox(
+                  color: Color(0x3300E5FF),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      child: child,
+    );
+  }
+}
+
+class _GameOverPixelRevealEntrance extends StatefulWidget {
+  const _GameOverPixelRevealEntrance({
+    super.key,
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  State<_GameOverPixelRevealEntrance> createState() =>
+      _GameOverPixelRevealEntranceState();
+}
+
+class _GameOverPixelRevealEntranceState
+    extends State<_GameOverPixelRevealEntrance>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _revealAnimation;
+  late final Animation<double> _contentOpacityAnimation;
+  late final Animation<double> _contentScaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1250),
+    );
+
+    _revealAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOutCubic,
+    );
+
+    _contentOpacityAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(
+        0.28,
+        1.00,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _contentScaleAnimation = Tween<double>(
+      begin: 0.96,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(
+          0.36,
+          1.00,
+          curve: Curves.easeOutBack,
+        ),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  double _flashOpacity(double t) {
+    if (t < 0.08) {
+      return t / 0.08 * 0.65;
+    }
+
+    if (t < 0.24) {
+      return 0.65 * (1.0 - ((t - 0.08) / 0.16));
+    }
+
+    return 0.0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      child: widget.child,
+      builder: (context, child) {
+        final rawT = _controller.value;
+        final revealT = _revealAnimation.value;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black.withOpacity(0.36),
+              ),
+            ),
+            ClipRect(
+              clipper: _GameOverTopToBottomRevealClipper(
+                progress: revealT,
+              ),
+              child: Opacity(
+                opacity: _contentOpacityAnimation.value,
+                child: Transform.scale(
+                  scale: _contentScaleAnimation.value,
+                  child: child,
+                ),
+              ),
+            ),
+            IgnorePointer(
+              child: CustomPaint(
+                painter: _GameOverPixelTricklePainter(
+                  progress: rawT,
+                  revealProgress: revealT,
+                  color: const Color(0xFFFF1E1E),
+                ),
+              ),
+            ),
+            IgnorePointer(
+              child: ColoredBox(
+                color: const Color(0xFFFF1E1E).withOpacity(
+                  _flashOpacity(rawT),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _GameOverTopToBottomRevealClipper extends CustomClipper<Rect> {
+  const _GameOverTopToBottomRevealClipper({
+    required this.progress,
+  });
+
+  final double progress;
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(
+      0,
+      0,
+      size.width,
+      size.height * progress.clamp(0.0, 1.0),
+    );
+  }
+
+  @override
+  bool shouldReclip(
+      covariant _GameOverTopToBottomRevealClipper oldClipper,
+      ) {
+    return oldClipper.progress != progress;
+  }
+}
+
+class _GameOverPixelTricklePainter extends CustomPainter {
+  _GameOverPixelTricklePainter({
+    required this.progress,
+    required this.revealProgress,
+    required this.color,
+  });
+
+  final double progress;
+  final double revealProgress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= 1.0) return;
+
+    const double blockSize = 24;
+    final cols = (size.width / blockSize).ceil();
+    final rows = (size.height / blockSize).ceil();
+
+    final waveY = size.height * revealProgress;
+    final waveBand = blockSize * 5.8;
+
+    final paint = Paint();
+
+    final washHeight = size.height * revealProgress;
+    if (washHeight > 0) {
+      paint.color = const Color(0xFF8B0000).withOpacity(0.18);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, washHeight),
+        paint,
+      );
+    }
+
+    for (int row = 0; row < rows; row++) {
+      for (int col = 0; col < cols; col++) {
+        final centerX = (col * blockSize) + blockSize / 2;
+        final centerY = (row * blockSize) + blockSize / 2;
+
+        final distanceFromWave = (centerY - waveY).abs();
+
+        if (distanceFromWave > waveBand) continue;
+
+        final noise = _noise(col, row);
+        final stagger = (noise - 0.5) * blockSize * 4.0;
+        final adjustedDistance = (centerY + stagger - waveY).abs();
+
+        if (adjustedDistance > waveBand) continue;
+
+        final closeness = 1.0 - (adjustedDistance / waveBand).clamp(0.0, 1.0);
+        final pulse = sin(closeness * pi);
+
+        final alpha = (pulse * 0.95).clamp(0.0, 0.95);
+
+        final isWhiteBlock = (col + row) % 7 == 0;
+        final isHotRedBlock = (col * 3 + row * 7) % 9 == 0;
+        final isDarkBlock = (col * 5 + row * 11) % 13 == 0;
+
+        final blockColor = isWhiteBlock
+            ? Colors.white
+            : isHotRedBlock
+            ? const Color(0xFFFF5A5A)
+            : isDarkBlock
+            ? const Color(0xFF5A0000)
+            : color;
+
+        final fallAmount = blockSize * 1.8 * (1.0 - closeness) * noise;
+        final rectSize = blockSize * (0.58 + (0.55 * closeness));
+
+        final dx = centerX - rectSize / 2;
+        final dy = centerY - rectSize / 2 + fallAmount;
+
+        paint.color = blockColor.withOpacity(alpha);
+
+        canvas.drawRect(
+          Rect.fromLTWH(dx, dy, rectSize, rectSize),
+          paint,
+        );
+      }
+    }
+
+    _paintRedScanlines(canvas, size);
+  }
+
+  void _paintRedScanlines(Canvas canvas, Size size) {
+    if (progress > 0.78) return;
+
+    final opacity = 0.16 * (1.0 - (progress / 0.78).clamp(0.0, 1.0));
+
+    final paint = Paint()
+      ..color = const Color(0xFFFFD0D0).withOpacity(opacity);
+
+    const gap = 8.0;
+
+    for (double y = 0; y < size.height; y += gap) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, y, size.width, 1.4),
+        paint,
+      );
+    }
+  }
+
+  double _noise(int x, int y) {
+    final value = (x * 73 + y * 151 + x * y * 17) % 100;
+    return value / 100.0;
+  }
+
+  @override
+  bool shouldRepaint(covariant _GameOverPixelTricklePainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.revealProgress != revealProgress ||
+        oldDelegate.color != color;
+  }
+}
+
