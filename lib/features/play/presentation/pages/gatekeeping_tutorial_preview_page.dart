@@ -298,24 +298,28 @@ Widget _buildDiagramPlaceholder() {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Container(
-                                      key: TutorialTargets.previewPassesLeft,
                                       height: 32,
                                       alignment: Alignment.centerLeft,
                                       padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      margin: const EdgeInsets.only(bottom: 6),
                                       decoration: BoxDecoration(
                                         color: AppColors.beigeBg,
                                         borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                          color: const Color(0xFFD8C6B5),
-                                          width: 2,
-                                        ),
+                                        border: Border.all(color: const Color(0xFFD8C6B5), width: 2),
                                       ),
-                                      child: const Text(
-                                        'PASSES LEFT: 5',
-                                        style: TextStyle(
-                                          color: Color(0xFFFF6B00),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w900,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'PASSES LEFT: 5',
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          overflow: TextOverflow.visible,
+                                          style: const TextStyle(
+                                            color: Color(0xFFFF6B00),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                          ),
                                         ),
                                       ),
                                     ),
