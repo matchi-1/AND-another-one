@@ -37,7 +37,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     setState(() {
       _currentLessonIndex =
           (_currentLessonIndex - 1 + LogicLessonData.lessons.length) %
-          LogicLessonData.lessons.length;
+              LogicLessonData.lessons.length;
     });
   }
 
@@ -53,7 +53,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         useGrid: false,
         child: Column(
           children: [
-            // row with Back, pagination, and Sound buttons
             Padding(
               padding: EdgeInsets.symmetric(horizontal: _scaled(10, scale)),
               child: Row(
@@ -86,7 +85,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               ),
             ),
 
-            // diagram container for logic guide
             SizedBox(
               height: size.height * _topPanelHeightFactor(size),
               child: Stack(
@@ -99,7 +97,10 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                   ),
                   Positioned.fill(
                     child: Padding(
-                      padding: _getDiagramPadding(size.width, currentLesson.id),
+                      padding: _getDiagramPadding(
+                        size.width,
+                        currentLesson.id,
+                      ),
                       child: _buildTopDiagram(currentLesson, scale),
                     ),
                   ),
@@ -113,18 +114,17 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                         padding: EdgeInsets.symmetric(
                           horizontal: _scaled(20, scale),
                         ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            _getDisplayTitle(currentLesson.id, currentLesson.title),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: _getTitleFontSize(currentLesson.id) * scale,
-                              height: 1.05,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Nunito',
-                            ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: _scaled(
+                            currentLesson.id == 'distributive_associative'
+                                ? 42
+                                : 34,
+                            scale,
+                          ),
+                          child: _buildResponsiveTitle(
+                            currentLesson,
+                            scale,
                           ),
                         ),
                       ),
@@ -136,7 +136,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
             SizedBox(height: _scaled(7, scale)),
 
-            // beige rectangle container for explanation content
             Expanded(
               child: _buildBottomSectionWithNav(currentLesson, scale),
             ),
@@ -149,8 +148,12 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   double _scaleForSize(Size size) {
-    final scale = size.width / 360;
-    return scale.clamp(0.85, 1.2);
+    final widthScale = size.width / 390;
+    final heightScale = size.height / 844;
+
+    final scale = (widthScale * 0.75) + (heightScale * 0.25);
+
+    return scale.clamp(0.90, 1.08);
   }
 
   double _topPanelHeightFactor(Size size) {
@@ -166,22 +169,162 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
   double _scaled(double value, double scale) => value * scale;
 
+  double _fontThatFits({
+    required String text,
+    required TextStyle style,
+    required double maxWidth,
+    required double maxHeight,
+    required double minFontSize,
+    required double maxFontSize,
+    int? maxLines,
+  }) {
+    var low = minFontSize;
+    var high = maxFontSize;
+
+    for (int i = 0; i < 10; i++) {
+      final mid = (low + high) / 2;
+
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: style.copyWith(fontSize: mid),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        maxLines: maxLines,
+        textScaler: TextScaler.noScaling,
+      )..layout(maxWidth: maxWidth);
+
+      final fits = !painter.didExceedMaxLines &&
+          painter.width <= maxWidth &&
+          painter.height <= maxHeight;
+
+      if (fits) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+
+    return low;
+  }
+
+  Widget _buildResponsiveTitle(LogicLesson lesson, double scale) {
+    final title = _getDisplayTitle(lesson.id, lesson.title);
+
+    const baseStyle = TextStyle(
+      height: 1.05,
+      fontWeight: FontWeight.bold,
+      color: Colors.white,
+      fontFamily: 'Nunito',
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fontSize = _fontThatFits(
+          text: title,
+          style: baseStyle,
+          maxWidth: constraints.maxWidth,
+          maxHeight: constraints.maxHeight,
+          minFontSize: _scaled(13, scale),
+          maxFontSize: _scaled(_getTitleFontSize(lesson.id), scale),
+          maxLines: 2,
+        );
+
+        return Center(
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textScaler: TextScaler.noScaling,
+            style: baseStyle.copyWith(fontSize: fontSize),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildResponsiveExplanationBox(LogicLesson lesson, double scale) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = _scaled(16, scale);
+        final verticalPadding = _scaled(6, scale);
+
+        final availableWidth =
+        (constraints.maxWidth - (horizontalPadding * 2))
+            .clamp(1.0, double.infinity)
+            .toDouble();
+
+        final availableHeight =
+        (constraints.maxHeight - (verticalPadding * 2))
+            .clamp(1.0, double.infinity)
+            .toDouble();
+
+        const baseStyle = TextStyle(
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Nunito',
+          color: Colors.white,
+          height: 1.15,
+        );
+
+        final fontSize = _fontThatFits(
+          text: lesson.explanation,
+          style: baseStyle,
+          maxWidth: availableWidth,
+          maxHeight: availableHeight,
+          minFontSize: _scaled(10.5, scale),
+          maxFontSize: _scaled(13, scale),
+          maxLines: 7,
+        );
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: verticalPadding,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1B6B3D),
+            borderRadius: BorderRadius.circular(_scaled(8, scale)),
+            border: Border.all(
+              color: const Color(0xFFFF9F00),
+              width: _scaled(3, scale),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              lesson.explanation,
+              textAlign: TextAlign.center,
+              maxLines: 7,
+              overflow: TextOverflow.ellipsis,
+              textScaler: TextScaler.noScaling,
+              style: baseStyle.copyWith(fontSize: fontSize),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   String _getFormulaLine(String formulas, int lineIndex) {
     final lines = formulas
         .split('\n')
         .map((line) => line.trim())
         .where((line) => line.isNotEmpty)
         .toList();
+
     if (lineIndex >= lines.length) return '';
     return lines[lineIndex];
   }
 
   Widget _buildBottomSectionWithNav(LogicLesson lesson, double scale) {
     final navYOffset = lesson.id == 'demorgans_law'
-      ? 0.0
-      : lesson.id == 'symbol_names'
+        ? 0.0
+        : lesson.id == 'symbol_names'
         ? 0.0
         : 0.0;
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -192,7 +335,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             padding: EdgeInsets.symmetric(
               horizontal: _scaled(16, scale),
               vertical: lesson.id == 'symbol_names'
-              ? _scaled(2, scale)
+                  ? _scaled(2, scale)
                   : _scaled(8, scale),
             ),
             decoration: BoxDecoration(
@@ -220,7 +363,10 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     );
   }
 
-  Widget _buildNavButton({required bool isNext, required double scale}) {
+  Widget _buildNavButton({
+    required bool isNext,
+    required double scale,
+  }) {
     return GestureDetector(
       onTap: isNext ? _nextLesson : _previousLesson,
       child: Transform.rotate(
@@ -237,6 +383,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   Widget _buildPaginationBar({required double scale}) {
     final current = _currentLessonIndex + 1;
     final total = LogicLessonData.lessons.length;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: _scaled(8, scale),
@@ -252,6 +399,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       ),
       child: Text(
         '$current / $total',
+        textScaler: TextScaler.noScaling,
         style: TextStyle(
           fontSize: _scaled(13, scale),
           fontWeight: FontWeight.bold,
@@ -274,7 +422,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // Formula box 1
         Align(
           child: FractionallySizedBox(
             widthFactor: _getFormulaBoxWidthFactor(lesson.id),
@@ -297,6 +444,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                   Text(
                     _getFormulaLine(lesson.formulas, 0),
                     textAlign: TextAlign.center,
+                    textScaler: TextScaler.noScaling,
                     style: TextStyle(
                       fontSize: _scaled(15, scale),
                       fontWeight: FontWeight.bold,
@@ -309,6 +457,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     Text(
                       'will be equivalent to',
                       textAlign: TextAlign.center,
+                      textScaler: TextScaler.noScaling,
                       style: TextStyle(
                         fontSize: _scaled(14, scale),
                         fontWeight: FontWeight.bold,
@@ -320,6 +469,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                     Text(
                       _getFormulaLine(lesson.formulas, 1),
                       textAlign: TextAlign.center,
+                      textScaler: TextScaler.noScaling,
                       style: TextStyle(
                         fontSize: _scaled(15, scale),
                         fontWeight: FontWeight.bold,
@@ -336,31 +486,8 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
         SizedBox(height: _scaled(12, scale)),
 
-        // Explanation box
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(
-            horizontal: _scaled(16, scale),
-            vertical: _scaled(4, scale),
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1B6B3D),
-            borderRadius: BorderRadius.circular(_scaled(8, scale)),
-            border: Border.all(
-              color: const Color(0xFFFF9F00),
-              width: _scaled(3, scale),
-            ),
-          ),
-          child: Text(
-            lesson.explanation,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: _scaled(13, scale),
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Nunito',
-              color: Colors.white,
-            ),
-          ),
+        Flexible(
+          child: _buildResponsiveExplanationBox(lesson, scale),
         ),
       ],
     );
@@ -449,10 +576,10 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   Widget _buildSymbolNamesImage(
-    String assetPath,
-    Alignment alignment,
-    double xOffset,
-  ) {
+      String assetPath,
+      Alignment alignment,
+      double xOffset,
+      ) {
     return OverflowBox(
       alignment: alignment,
       maxWidth: double.infinity,
@@ -466,7 +593,10 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     );
   }
 
-  Widget _buildSymbolNamesTable(double scale, BoxConstraints constraints) {
+  Widget _buildSymbolNamesTable(
+      double scale,
+      BoxConstraints constraints,
+      ) {
     final rows = [
       ('AND', 'assets/images/logic_guide/symbol_dot.png'),
       ('OR', 'assets/images/logic_guide/symbol_plus.png'),
@@ -477,17 +607,21 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       ('XAND', 'assets/images/logic_guide/symbol_xand.png'),
       ('XNOR', 'assets/images/logic_guide/symbol_xnor.png'),
     ];
+
     final maxHeight = constraints.maxHeight;
     final maxWidth = constraints.maxWidth;
     final aspect = maxWidth / maxHeight;
     final isNarrow = aspect < 0.5;
+
     final tableWidth = maxWidth * (isNarrow ? 0.78 : 0.7);
     final fillHeight = maxHeight * (isNarrow ? 0.9 : 0.85);
     final rowHeight = fillHeight / rows.length;
+
     final symbolHeight =
-        (rowHeight * 0.55).clamp(_scaled(10, scale), _scaled(24, scale));
+    (rowHeight * 0.55).clamp(_scaled(10, scale), _scaled(24, scale));
+
     final labelSize =
-      _scaled(15, scale).clamp(_scaled(12, scale), _scaled(18, scale));
+    _scaled(15, scale).clamp(_scaled(12, scale), _scaled(18, scale));
 
     return Center(
       child: SizedBox(
@@ -505,38 +639,39 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           children: rows
               .map(
                 (row) => TableRow(
-                  children: [
-                    SizedBox(
-                      height: rowHeight,
-                      child: Center(
-                        child: Text(
-                          row.$1,
-                          style: TextStyle(
-                            fontSize: labelSize,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFFCF6AA5),
-                            fontFamily: 'Nunito',
-                          ),
-                        ),
+              children: [
+                SizedBox(
+                  height: rowHeight,
+                  child: Center(
+                    child: Text(
+                      row.$1,
+                      textScaler: TextScaler.noScaling,
+                      style: TextStyle(
+                        fontSize: labelSize.toDouble(),
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFCF6AA5),
+                        fontFamily: 'Nunito',
                       ),
                     ),
-                    SizedBox(
-                      height: rowHeight,
-                      child: Center(
-                        child: Image.asset(
-                          row.$2,
-                          height: _symbolHeightForLabel(
-                            row.$1,
-                            symbolHeight,
-                            scale,
-                          ),
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              )
+                SizedBox(
+                  height: rowHeight,
+                  child: Center(
+                    child: Image.asset(
+                      row.$2,
+                      height: _symbolHeightForLabel(
+                        row.$1,
+                        symbolHeight.toDouble(),
+                        scale,
+                      ),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
               .toList(),
         ),
       ),
@@ -550,7 +685,11 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     return _scaled(19, scale);
   }
 
-  double _symbolHeightForLabel(String label, double baseHeight, double scale) {
+  double _symbolHeightForLabel(
+      String label,
+      double baseHeight,
+      double scale,
+      ) {
     if (label == 'AND' || label == 'NOT') {
       return (baseHeight * 0.5).clamp(_scaled(6, scale), baseHeight);
     }
@@ -558,12 +697,12 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   Widget _buildGateLegendItem(
-    String imagePath,
-    String label,
-    Color color, {
-    required double scale,
-    double imageXOffset = 0,
-  }) {
+      String imagePath,
+      String label,
+      Color color, {
+        required double scale,
+        double imageXOffset = 0,
+      }) {
     return SizedBox(
       width: _scaled(132, scale),
       child: Row(
@@ -583,6 +722,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textScaler: TextScaler.noScaling,
               style: TextStyle(
                 fontSize: _scaled(20, scale),
                 fontWeight: FontWeight.bold,
@@ -597,7 +737,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   }
 
   EdgeInsets _getDiagramPadding(double width, String lessonId) {
-    // Keep circuit images clear of the frame title and footer badge.
     final basePadding = EdgeInsets.only(
       top: width * 0.10,
       bottom: width * 0.25,
@@ -606,7 +745,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     );
 
     if (lessonId == 'double_negation') {
-      // Nudge content slightly lower for better top-frame clearance.
       return EdgeInsets.only(
         top: width * 0.13,
         bottom: width * 0.26,
@@ -616,7 +754,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     }
 
     if (lessonId == 'idempotent_law') {
-      // Idempotent law artwork has taller vertical content and needs tighter bounds.
       return EdgeInsets.only(
         top: width * 0.17,
         bottom: width * 0.29,
@@ -626,7 +763,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     }
 
     if (lessonId == 'distributive_associative') {
-      // Distributive/associative art is also vertically dense, so constrain further.
       return EdgeInsets.only(
         top: width * 0.15,
         bottom: width * 0.30,
@@ -636,7 +772,6 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     }
 
     if (lessonId == 'demorgans_law') {
-      // De Morgan's art needs more top clearance and a mild lower lift.
       return EdgeInsets.only(
         top: width * 0.16,
         bottom: width * 0.30,
@@ -689,6 +824,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         lessonId == 'demorgans_law') {
       return 0.82;
     }
+
     return 0.82;
   }
 
@@ -718,4 +854,3 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     }
   }
 }
-
