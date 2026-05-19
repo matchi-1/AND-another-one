@@ -229,6 +229,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
   bool _scoreSubmitted = false;
 
   bool _showBackConfirmOverlay = false;
+  bool _showHelpOverlay = false;
   bool _showGameResultOverlay = false;
 
   bool _pausedByLifecycle = false;
@@ -493,6 +494,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
 
     setState(() {
       _showBackConfirmOverlay = false;
+      _showHelpOverlay = false;
       _showGameResultOverlay = false;
       _showPreGameOverlay = false;
       _roundLocked = true;
@@ -556,6 +558,34 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     }
   }
 
+
+  void _openHelpOverlay() {
+    unawaited(SfxController.instance.playMenuPress());
+
+    if (!mounted ||
+        _showHelpOverlay ||
+        _showBackConfirmOverlay ||
+        _showGameResultOverlay ||
+        _showPreGameOverlay ||
+        _gameFinished) {
+      return;
+    }
+
+    setState(() {
+      _showHelpOverlay = true;
+    });
+  }
+
+  void _closeHelpOverlay() {
+    unawaited(SfxController.instance.playMenuBack());
+    if (!mounted) return;
+
+    setState(() {
+      _showHelpOverlay = false;
+    });
+  }
+
+
   void _resetWholeGame() {
     unawaited(SfxController.instance.playPlaySelect());
     _questions = GatekeepingQuestionRepository.getShuffledByDifficulty(
@@ -583,6 +613,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     _roundLocked = false;
     _gameFinished = false;
     _showBackConfirmOverlay = false;
+    _showHelpOverlay = false;
     _showGameResultOverlay = false;
     _gameResultTitle = 'ROUND COMPLETE';
 
@@ -1227,6 +1258,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
       _roundLocked = true;
 
       _showBackConfirmOverlay = false;
+      _showHelpOverlay = false;
       _showPreGameOverlay = false;
       _countdownRunning = false;
 
@@ -1582,7 +1614,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                                 Icons.help_outline,
                                 color: Colors.white,
                               ),
-                              onPressed: () => (), //_showGatekeepingTutorial(),
+                              onPressed: _openHelpOverlay
                             ),
 
 
@@ -1806,6 +1838,12 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
 
               if (_showComboOverlay)
                 _buildComboMultiplierOverlay(),
+
+              if (_showHelpOverlay)
+                _OverlayEntrance(
+                  key: const ValueKey('one-or-none-help-overlay'),
+                  child: HelpOverlay(onClose: _closeHelpOverlay),
+                ),
 
               if (_showGameResultOverlay)
                 _GameOverPixelRevealEntrance(

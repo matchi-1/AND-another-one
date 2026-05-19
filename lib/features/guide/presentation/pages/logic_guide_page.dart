@@ -408,7 +408,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             ),
             _buildGateLegendItem(
               'assets/images/logic_guide/symbols_nor.png',
-              'NOR',
+              'XOR',
               const Color(0xFFD13ED6),
               scale: scale,
             ),
@@ -425,7 +425,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             ),
             _buildGateLegendItem(
               'assets/images/logic_guide/symbols_xor.png',
-              'XOR',
+              'NOR',
               const Color(0xFF2FAF1D),
               scale: scale,
               imageXOffset: 3,

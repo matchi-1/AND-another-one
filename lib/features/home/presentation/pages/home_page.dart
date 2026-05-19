@@ -248,7 +248,7 @@ class _HomePageState extends State<HomePage>
                       await AppTutorialController.instance.start(context);
                     },
                     child: const Text(
-                      'Restart Tutorial',
+                      'Play Tutorial',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 15,

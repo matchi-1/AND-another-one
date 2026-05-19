@@ -1,5 +1,5 @@
 import 'dart:math';
-
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -191,6 +191,7 @@ class _GatekeepingGamePageState extends State<GatekeepingGamePage>
   }
 
   bool showBackConfirmOverlay = false;
+  bool showHelpOverlay = false;
 
 void _onPausePressed() {
   unawaited(SfxController.instance.playMenuPress());
@@ -232,6 +233,7 @@ void _onPausePressed() {
 
     setState(() {
       showBackConfirmOverlay = false;
+      showHelpOverlay = false;
       showGameResultOverlay = false;
       showPreGameOverlay = false;
       roundLocked = true;
@@ -305,6 +307,7 @@ void _resumeGameFromLifecycle() {
 
   setState(() {
     if (showBackConfirmOverlay ||
+        showHelpOverlay ||
         showGameResultOverlay ||
         showPreGameOverlay ||
         gameFinished) {
@@ -365,10 +368,49 @@ void _closeBackOverlay() {
   }
 }
 
+void _openHelpOverlay() {
+  unawaited(SfxController.instance.playMenuPress());
+
+  if (!mounted ||
+      showHelpOverlay ||
+      showBackConfirmOverlay ||
+      showGameResultOverlay ||
+      showPreGameOverlay ||
+      gameFinished) {
+    return;
+  }
+
+  _wasRoundLockedBeforeHelpOverlay = roundLocked;
+
+  setState(() {
+    showHelpOverlay = true;
+  });
+}
+
+void _closeHelpOverlay() {
+  unawaited(SfxController.instance.playMenuBack());
+  if (!mounted) return;
+
+  setState(() {
+    showHelpOverlay = false;
+
+    if (showBackConfirmOverlay ||
+        showGameResultOverlay ||
+        showPreGameOverlay ||
+        countdownRunning ||
+        gameFinished) {
+      roundLocked = true;
+    } else {
+      roundLocked = _wasRoundLockedBeforeHelpOverlay;
+    }
+  });
+}
+
   bool _pausedByLifecycle = false;
   bool _wasRoundLockedBeforeLifecyclePause = false;
   Completer<void>? _lifecycleResumeCompleter;
   bool _wasRoundLockedBeforePauseOverlay = false;
+  bool _wasRoundLockedBeforeHelpOverlay = false;
 
   bool showGameResultOverlay = false;
   String gameResultTitle = 'ROUND COMPLETE';
@@ -708,6 +750,7 @@ void _closeBackOverlay() {
     highestHotstreakCount = 0;
 
     showGameResultOverlay = false;
+    showHelpOverlay = false;
     gameFinished = false;
     roundLocked = false;
     timeLeft = startingRoundTime;
@@ -775,6 +818,7 @@ Future<void> _performTimeout() async {
     timeLeft = 0;
 
     showBackConfirmOverlay = false;
+    showHelpOverlay = false;
     showPreGameOverlay = false;
     countdownRunning = false;
 
@@ -1556,7 +1600,7 @@ Future<void> _performTimeout() async {
                                 Icons.help_outline,
                                 color: Colors.white,
                               ),
-                              onPressed: () => (), //_showGatekeepingTutorial(),
+                              onPressed: _openHelpOverlay,
                             ),
 
                           
@@ -1858,6 +1902,11 @@ Future<void> _performTimeout() async {
               if (_showComboOverlay)
                 _buildComboMultiplierOverlay(),
 
+              if (showHelpOverlay)
+                _OverlayEntrance(
+                  key: const ValueKey('gatekeeping-help-overlay'),
+                  child: HelpOverlay(onClose: _closeHelpOverlay),
+                ),
 
               if (showGameResultOverlay)
                 _GameOverPixelRevealEntrance(
@@ -1932,6 +1981,8 @@ Future<void> _performTimeout() async {
     );
   }
 }
+
+
 
 class _ExpressionPart {
   const _ExpressionPart.text(this.text) : answer = null, isSlot = false;
