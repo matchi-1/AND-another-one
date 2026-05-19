@@ -281,7 +281,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             child: Container(
               padding: EdgeInsets.symmetric(
                 horizontal: _scaled(16, scale),
-                vertical: _scaled(7, scale),
+                vertical: _scaled(4, scale),
               ),
               decoration: BoxDecoration(
                 color: AppColors.pinkButton,
@@ -341,7 +341,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(
             horizontal: _scaled(16, scale),
-            vertical: _scaled(7, scale),
+            vertical: _scaled(4, scale),
           ),
           decoration: BoxDecoration(
             color: const Color(0xFF1B6B3D),
