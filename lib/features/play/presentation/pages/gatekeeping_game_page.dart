@@ -201,6 +201,31 @@ void _onPausePressed() {
     showBackConfirmOverlay = true;
   });
 }
+
+  void _exitToHome() {
+
+    if (!mounted) return;
+
+    gameplayTimer?.cancel();
+
+    _lifecycleResumeCompleter?.complete();
+    _lifecycleResumeCompleter = null;
+
+    setState(() {
+      showBackConfirmOverlay = false;
+      showGameResultOverlay = false;
+      showPreGameOverlay = false;
+      roundLocked = true;
+      _resetComboOverlayState();
+    });
+
+    unawaited(BgmController.instance.playScene(BgmScene.home));
+
+    Navigator.of(context).popUntil(
+      (route) => route.settings.name == AppRoutes.home || route.isFirst,
+    );
+  }
+
   
   @override
 void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -1384,12 +1409,19 @@ Future<void> _performTimeout() async {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFD8C6B5), width: 2),
       ),
-      child: Text(
-        'PASSES LEFT: $passesLeft',
-        style: const TextStyle(
-          color: _passOrange,
-          fontSize: 14,
-          fontWeight: FontWeight.w900,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'PASSES LEFT: $passesLeft',
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
+          style: const TextStyle(
+            color: _passOrange,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
     );
@@ -1489,7 +1521,7 @@ Future<void> _performTimeout() async {
                           children: [
                             PauseIconButton(onTap: _onPausePressed),
 
-                            /*
+                            
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -1502,7 +1534,7 @@ Future<void> _performTimeout() async {
                               onPressed: () => (), //_showGatekeepingTutorial(),
                             ),
 
-                            */
+                          
                             const MusicButton(size: 26),
                           ],
                         ),
@@ -1820,11 +1852,7 @@ Future<void> _performTimeout() async {
                   },
                   onBackToMenu: () {
                     unawaited(SfxController.instance.playMenuBack());
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
+                    _exitToHome();
                   },
                 ),
 
@@ -1856,11 +1884,7 @@ Future<void> _performTimeout() async {
                   },
                   onExitToMenu: () {
                     unawaited(SfxController.instance.playGameOver());
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
+                    _exitToHome();
                   },
                 ),
 

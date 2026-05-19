@@ -208,6 +208,8 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
 
   int get _passesUsed => _startingPasses - _passesLeft;
 
+  
+
   @override
   void initState() {
     super.initState();
@@ -325,6 +327,28 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
         _roundLocked = _wasRoundLockedBeforeLifecyclePause;
       }
     });
+  }
+  
+  void _exitToHome() {
+    unawaited(SfxController.instance.playMenuBack());
+
+    if (!mounted) return;
+
+    _lifecycleResumeCompleter?.complete();
+    _lifecycleResumeCompleter = null;
+
+    setState(() {
+      _showBackConfirmOverlay = false;
+      _showGameResultOverlay = false;
+      _showPreGameOverlay = false;
+      _roundLocked = true;
+    });
+
+    unawaited(BgmController.instance.playScene(BgmScene.home));
+
+    Navigator.of(context).popUntil(
+      (route) => route.settings.name == AppRoutes.home || route.isFirst,
+    );
   }
 
   Future<void> _waitWhilePausedByLifecycle() async {
@@ -914,6 +938,8 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
     );
   }
 
+  
+
   Future<void> _checkCurrentAnswer(int selectedValue) async {
     if (_roundLocked || _gameFinished) return;
 
@@ -1357,6 +1383,20 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                             PauseIconButton(
                               onTap: _onPausePressed,
                             ),
+
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              visualDensity: VisualDensity.compact,
+                              iconSize: 24,
+                              icon: const Icon(
+                                Icons.help_outline,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => (), //_showGatekeepingTutorial(),
+                            ),
+
+
                             const MusicButton(size: 26),
                           ],
                         ),
@@ -1592,11 +1632,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                   },
                   onBackToMenu: () {
                     unawaited(SfxController.instance.playMenuBack());
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
+                    _exitToHome();
                   },
                 ),
 
@@ -1628,11 +1664,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
                   },
                   onExitToMenu: () {
                     unawaited(SfxController.instance.playGameOver());
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
+                    _exitToHome();
                   },
                 ),
             ],
