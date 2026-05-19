@@ -128,6 +128,25 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 18),
 
+                      const _SectionTitle('MULTIPLIER SYSTEM'),
+                      const SizedBox(height: 10),
+                      const _InfoBulletCard(
+                        items: [
+                          'Base score = 100 for Basic, 200 for Logic, 300 for Manic.',
+                          'Multiplier Tiers:\n'
+                              '• Streak 0-1 = x1\n'
+                              '• Streak 2-3 = x1.25\n'
+                              '• Streak 4-5 = x1.5\n'
+                              '• Streak 6-7 = x1.75\n'
+                              '• Streak 8-9 = x2\n'
+                              '• Streak 10+ = x3\n'
+                              '(Two correct answers = +1 multiplier tier, up to x3 multiplier)',
+                          'Wrong answer = -1 multiplier tier only.',
+                          'Pass = no change in multiplier or streak.',
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+
                       const _SectionTitle('OTHER FEATURES'),
                       const SizedBox(height: 10),
                       const _InfoBulletCard(
@@ -135,7 +154,6 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                           'A timer increases urgency and quick reasoning.',
                           'You can use Pass if you want to skip a difficult question.',
                           'A correction or backspace button lets you revise your answer.',
-                          'Multiplier increases as correct streak increases, up to a 10-answer streak with 3.0x multiplier.',
                           'Each mode and difficulty has its own leaderboard.',
                         ],
                       ),
