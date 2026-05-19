@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../constants/app_assets.dart';
@@ -20,8 +21,50 @@ class SfxController {
   final AudioPlayer _menuBackPlayer = AudioPlayer();
   final AudioPlayer _playSelectPlayer = AudioPlayer();
 
+  bool _countdownPausedByGamePause = false;
+  Duration _countdownPausePosition = Duration.zero;
+
   bool _initialized = false;
   bool _useOperatorA = true;
+
+List<AudioPlayer> get _oneShotPlayers => [
+  _passPlayer,
+  _operatorPlayerA,
+  _operatorPlayerB,
+  _backspacePlayer,
+  _correctPlayer,
+  _wrongPlayer,
+  _gameOverPlayer,
+  _menuPressPlayer,
+  _menuBackPlayer,
+  _playSelectPlayer,
+];
+
+
+Future<void> stopAllForLifecycle() async {
+  if (!_initialized) return;
+
+  await Future.wait(
+    _oneShotPlayers.map((player) async {
+      try {
+        await player.pause();
+        await player.seek(Duration.zero);
+      } catch (e) {
+        debugPrint('Failed to stop SFX on app background: $e');
+      }
+    }),
+  );
+
+  try {
+    if (_countdownPlayer.playing) {
+      _countdownPausePosition = _countdownPlayer.position;
+      await _countdownPlayer.pause();
+    }
+  } catch (e) {
+    debugPrint('Failed to pause countdown SFX on app background: $e');
+  }
+}
+
 
   Future<void> init() async {
     if (_initialized) return;
@@ -72,19 +115,21 @@ class SfxController {
   }
 
   Future<void> _play(AudioPlayer player) async {
-    await init();
+  await init();
 
-    // Reuse the same global mute toggle for now.
-    if (!BgmController.instance.isOn.value) return;
+  if (!BgmController.instance.isOn.value) return;
 
-    try {
-      await player.stop();
-      await player.seek(Duration.zero);
-      unawaited(player.play());
-    } catch (_) {
-      // ignore occasional playback hiccups
-    }
+  try {
+    await player.pause();
+    await player.seek(Duration.zero);
+    unawaited(player.play());
+  } catch (e, st) {
+    // Temporarily keep this while debugging release/device playback.
+    // Later you can reduce it if it gets noisy.
+    debugPrint('SFX playback failed: $e');
+    debugPrintStack(stackTrace: st);
   }
+}
 
   Future<void> playPass() async {
     await _play(_passPlayer);
@@ -113,23 +158,31 @@ class SfxController {
     await _play(_gameOverPlayer);
   }
 
-  Future<void> playCountdown() async {
-    await init();
+Future<void> playCountdown() async {
+  await init();
 
-    if (!BgmController.instance.isOn.value) return;
+  if (!BgmController.instance.isOn.value) return;
 
-    try {
-      unawaited(BgmController.instance.duckBgm());
+  try {
+    _countdownPausedByGamePause = false;
+    _countdownPausePosition = Duration.zero;
 
-      await _countdownPlayer.stop();
-      await _countdownPlayer.seek(Duration.zero);
-      unawaited(_countdownPlayer.play());
+    unawaited(BgmController.instance.duckBgm());
 
-      _countdownPlayer.playerStateStream
-          .firstWhere((state) => state.processingState == ProcessingState.completed)
-          .then((_) => BgmController.instance.restoreBgm());
-    } catch (_) {}
+    await _countdownPlayer.pause();
+    await _countdownPlayer.seek(Duration.zero);
+    unawaited(_countdownPlayer.play());
+
+    await _countdownPlayer.playerStateStream.firstWhere(
+      (state) => state.processingState == ProcessingState.completed,
+    );
+
+    await BgmController.instance.restoreBgm();
+  } catch (e, st) {
+    debugPrint('Countdown playback failed: $e');
+    debugPrintStack(stackTrace: st);
   }
+}
 
   Future<void> playMenuPress() async {
     await _play(_menuPressPlayer);
@@ -143,14 +196,77 @@ class SfxController {
     await _play(_playSelectPlayer);
   }
 
-  Future<void> dispose() async {
-    await Future.wait([
-      _passPlayer.dispose(),
-      _operatorPlayerA.dispose(),
-      _operatorPlayerB.dispose(),
-      _backspacePlayer.dispose(),
-      _correctPlayer.dispose(),
-      _wrongPlayer.dispose(),
-    ]);
+Future<void> pauseCountdownForGamePause({bool force = false}) async {
+  await init();
+
+  if (_countdownPausedByGamePause) return;
+
+  final countdownIsActive =
+      _countdownPlayer.playing ||
+      _countdownPlayer.processingState == ProcessingState.ready ||
+      _countdownPlayer.processingState == ProcessingState.buffering;
+
+  if (!force && !countdownIsActive) return;
+  if (_countdownPlayer.processingState == ProcessingState.completed) return;
+
+  _countdownPausedByGamePause = true;
+  _countdownPausePosition = _countdownPlayer.position;
+
+  try {
+    _countdownPausePosition = _countdownPlayer.position;
+
+    if (_countdownPlayer.playing) {
+      await _countdownPlayer.pause();
+    }
+
+    await BgmController.instance.restoreBgm();
+  } catch (e, st) {
+    debugPrint('Failed to pause countdown for game pause: $e');
+    debugPrintStack(stackTrace: st);
   }
+}
+
+Future<void> resumeCountdownFromGamePause() async {
+  await init();
+
+  if (!_countdownPausedByGamePause) return;
+
+  _countdownPausedByGamePause = false;
+
+  if (!BgmController.instance.isOn.value) return;
+  if (_countdownPlayer.processingState == ProcessingState.completed) return;
+
+  try {
+    unawaited(BgmController.instance.duckBgm());
+
+    final currentPosition = _countdownPlayer.position;
+
+    // If something rewound the countdown while the app was paused,
+    // restore the saved position before playing.
+    if (currentPosition < _countdownPausePosition) {
+      await _countdownPlayer.seek(_countdownPausePosition);
+    }
+
+    unawaited(_countdownPlayer.play());
+  } catch (e, st) {
+    debugPrint('Failed to resume countdown from game pause: $e');
+    debugPrintStack(stackTrace: st);
+  }
+}
+
+  Future<void> dispose() async {
+  await Future.wait([
+    _passPlayer.dispose(),
+    _operatorPlayerA.dispose(),
+    _operatorPlayerB.dispose(),
+    _backspacePlayer.dispose(),
+    _correctPlayer.dispose(),
+    _wrongPlayer.dispose(),
+    _gameOverPlayer.dispose(),
+    _countdownPlayer.dispose(),
+    _menuPressPlayer.dispose(),
+    _menuBackPlayer.dispose(),
+    _playSelectPlayer.dispose(),
+  ]);
+}
 }

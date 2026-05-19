@@ -44,6 +44,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final scale = _scaleForSize(size);
     final currentLesson = LogicLessonData.lessons[_currentLessonIndex];
 
     return Scaffold(
@@ -54,13 +55,16 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           children: [
             // row with Back, pagination, and Sound buttons
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(horizontal: _scaled(10, scale)),
               child: Row(
                 children: [
                   SizedBox(
-                    width: 48,
+                    width: _scaled(48, scale),
                     child: IconButton(
-                      icon: Image.asset(AppAssets.backBtn, width: 30),
+                      icon: Image.asset(
+                        AppAssets.backBtn,
+                        width: _scaled(30, scale),
+                      ),
                       onPressed: () {
                         unawaited(SfxController.instance.playMenuBack());
                         Navigator.pop(context);
@@ -69,13 +73,13 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                   ),
                   Expanded(
                     child: Center(
-                      child: _buildPaginationBar(),
+                      child: _buildPaginationBar(scale: scale),
                     ),
                   ),
-                  const SizedBox(
-                    width: 48,
+                  SizedBox(
+                    width: _scaled(48, scale),
                     child: Center(
-                      child: MusicButton(size: 32),
+                      child: MusicButton(size: _scaled(32, scale)),
                     ),
                   ),
                 ],
@@ -83,59 +87,84 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
             ),
 
             // diagram container for logic guide
-            Stack(
-              children: [
-                Image.asset(
-                  AppAssets.diagramContainerPink,
-                  width: size.width,
-                ),
-                Positioned.fill(
-                  child: Padding(
-                    padding: _getDiagramPadding(size.width, currentLesson.id),
-                    child: _buildTopDiagram(currentLesson),
+            SizedBox(
+              height: size.height * _topPanelHeightFactor(size),
+              child: Stack(
+                children: [
+                  Image.asset(
+                    AppAssets.diagramContainerPink,
+                    width: size.width,
+                    height: size.height * _topPanelHeightFactor(size),
+                    fit: BoxFit.fill,
                   ),
-                ),
-                Positioned.fill(
-                  child: Align(
-                    alignment: Alignment(
-                      0,
-                      _getTitleAlignmentY(currentLesson.id),
-                    ),
+                  Positioned.fill(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          _getDisplayTitle(currentLesson.id, currentLesson.title),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: _getTitleFontSize(currentLesson.id),
-                            height: 1.05,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: 'Nunito',
+                      padding: _getDiagramPadding(size.width, currentLesson.id),
+                      child: _buildTopDiagram(currentLesson, scale),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment(
+                        0,
+                        _getTitleAlignmentY(currentLesson.id),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: _scaled(20, scale),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            _getDisplayTitle(currentLesson.id, currentLesson.title),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: _getTitleFontSize(currentLesson.id) * scale,
+                              height: 1.05,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'Nunito',
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
-            const SizedBox(height: 7),
+            SizedBox(height: _scaled(7, scale)),
 
             // beige rectangle container for explanation content
             Expanded(
-              child: _buildBottomSectionWithNav(currentLesson, size),
+              child: _buildBottomSectionWithNav(currentLesson, scale),
             ),
 
-            const SizedBox(height: 7),
+            SizedBox(height: _scaled(7, scale)),
           ],
         ),
       ),
     );
   }
+
+  double _scaleForSize(Size size) {
+    final scale = size.width / 360;
+    return scale.clamp(0.85, 1.2);
+  }
+
+  double _topPanelHeightFactor(Size size) {
+    final aspect = size.width / size.height;
+    if (aspect < 0.42) {
+      return 0.73;
+    }
+    if (aspect < 0.5) {
+      return 0.66;
+    }
+    return 0.58;
+  }
+
+  double _scaled(double value, double scale) => value * scale;
 
   String _getFormulaLine(String formulas, int lineIndex) {
     final lines = formulas
@@ -147,7 +176,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     return lines[lineIndex];
   }
 
-  Widget _buildBottomSectionWithNav(LogicLesson lesson, Size size) {
+  Widget _buildBottomSectionWithNav(LogicLesson lesson, double scale) {
     final navYOffset = lesson.id == 'demorgans_law'
       ? 0.0
       : lesson.id == 'symbol_names'
@@ -157,74 +186,74 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       alignment: Alignment.center,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: _scaled(20, scale)),
           child: Container(
             height: double.infinity,
             padding: EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: lesson.id == 'symbol_names' ? 4 : 8,
+              horizontal: _scaled(16, scale),
+              vertical: lesson.id == 'symbol_names'
+              ? _scaled(2, scale)
+                  : _scaled(8, scale),
             ),
             decoration: BoxDecoration(
               color: AppColors.beigeBg,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(_scaled(8, scale)),
             ),
-            child: SingleChildScrollView(
-              physics: lesson.id == 'symbol_names'
-                  ? const NeverScrollableScrollPhysics()
-                  : null,
-              child: _buildBottomSectionContent(lesson),
-            ),
+            child: _buildBottomSectionContent(lesson, scale),
           ),
         ),
         Positioned(
-          left: 4,
+          left: _scaled(4, scale),
           child: Transform.translate(
             offset: Offset(0, navYOffset),
-            child: _buildNavButton(isNext: false),
+            child: _buildNavButton(isNext: false, scale: scale),
           ),
         ),
         Positioned(
-          right: 4,
+          right: _scaled(4, scale),
           child: Transform.translate(
             offset: Offset(0, navYOffset),
-            child: _buildNavButton(isNext: true),
+            child: _buildNavButton(isNext: true, scale: scale),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildNavButton({required bool isNext}) {
+  Widget _buildNavButton({required bool isNext, required double scale}) {
     return GestureDetector(
       onTap: isNext ? _nextLesson : _previousLesson,
       child: Transform.rotate(
         angle: isNext ? 3.14159 : 0,
         child: Image.asset(
           AppAssets.backBtn,
-          width: 30,
+          width: _scaled(30, scale),
           opacity: const AlwaysStoppedAnimation(1.0),
         ),
       ),
     );
   }
 
-  Widget _buildPaginationBar() {
+  Widget _buildPaginationBar({required double scale}) {
     final current = _currentLessonIndex + 1;
     final total = LogicLessonData.lessons.length;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: EdgeInsets.symmetric(
+        horizontal: _scaled(8, scale),
+        vertical: _scaled(3, scale),
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF196EEA),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(_scaled(10, scale)),
         border: Border.all(
           color: const Color(0xFFFF9F00),
-          width: 1.4,
+          width: _scaled(1.4, scale),
         ),
       ),
       child: Text(
         '$current / $total',
-        style: const TextStyle(
-          fontSize: 13,
+        style: TextStyle(
+          fontSize: _scaled(13, scale),
           fontWeight: FontWeight.bold,
           fontFamily: 'Nunito',
           color: Colors.white,
@@ -233,11 +262,12 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     );
   }
 
-  Widget _buildBottomSectionContent(LogicLesson lesson) {
+  Widget _buildBottomSectionContent(LogicLesson lesson, double scale) {
     if (lesson.id == 'symbol_names') {
-      return SizedBox(
-        height: 240,
-        child: _buildSymbolNamesTable(),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return _buildSymbolNamesTable(scale, constraints);
+        },
       );
     }
 
@@ -249,16 +279,16 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           child: FractionallySizedBox(
             widthFactor: _getFormulaBoxWidthFactor(lesson.id),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 3,
+              padding: EdgeInsets.symmetric(
+                horizontal: _scaled(16, scale),
+                vertical: _scaled(4, scale),
               ),
               decoration: BoxDecoration(
                 color: AppColors.pinkButton,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(_scaled(8, scale)),
                 border: Border.all(
                   color: const Color(0xFFFF9F00),
-                  width: 3,
+                  width: _scaled(3, scale),
                 ),
               ),
               child: Column(
@@ -267,31 +297,31 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
                   Text(
                     _getFormulaLine(lesson.formulas, 0),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 15,
+                    style: TextStyle(
+                      fontSize: _scaled(15, scale),
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       fontFamily: 'Nunito',
                     ),
                   ),
                   if (_getFormulaLine(lesson.formulas, 1).isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    const Text(
+                    SizedBox(height: _scaled(6, scale)),
+                    Text(
                       'will be equivalent to',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: _scaled(14, scale),
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Nunito',
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: _scaled(6, scale)),
                     Text(
                       _getFormulaLine(lesson.formulas, 1),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
+                      style: TextStyle(
+                        fontSize: _scaled(15, scale),
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Nunito',
                         color: Colors.white,
@@ -304,28 +334,28 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
           ),
         ),
 
-        const SizedBox(height: 12),
+        SizedBox(height: _scaled(12, scale)),
 
         // Explanation box
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 3,
+          padding: EdgeInsets.symmetric(
+            horizontal: _scaled(16, scale),
+            vertical: _scaled(4, scale),
           ),
           decoration: BoxDecoration(
             color: const Color(0xFF1B6B3D),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(_scaled(8, scale)),
             border: Border.all(
               color: const Color(0xFFFF9F00),
-              width: 3,
+              width: _scaled(3, scale),
             ),
           ),
           child: Text(
             lesson.explanation,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
+            style: TextStyle(
+              fontSize: _scaled(13, scale),
               fontWeight: FontWeight.bold,
               fontFamily: 'Nunito',
               color: Colors.white,
@@ -336,7 +366,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     );
   }
 
-  Widget _buildTopDiagram(LogicLesson lesson) {
+  Widget _buildTopDiagram(LogicLesson lesson, double scale) {
     if (lesson.id != 'symbol_names') {
       return Image.asset(
         _getImagePath(lesson.id),
@@ -354,12 +384,14 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               'assets/images/logic_guide/symbols_and.png',
               'AND',
               const Color(0xFF196EEA),
+              scale: scale,
               imageXOffset: -10,
             ),
             _buildGateLegendItem(
               'assets/images/logic_guide/symbols_or.png',
               'OR',
               const Color(0xFFFF9800),
+              scale: scale,
               imageXOffset: -6,
             ),
           ],
@@ -371,19 +403,31 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
               'assets/images/logic_guide/symbols_not.png',
               'NOT',
               const Color(0xFFFF2E2E),
+              scale: scale,
               imageXOffset: -3,
             ),
-            _buildGateLegendItem('assets/images/logic_guide/symbols_nor.png', 'NOR', const Color(0xFFD13ED6)),
+            _buildGateLegendItem(
+              'assets/images/logic_guide/symbols_nor.png',
+              'NOR',
+              const Color(0xFFD13ED6),
+              scale: scale,
+            ),
           ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildGateLegendItem('assets/images/logic_guide/symbols_nand.png', 'NAND', const Color(0xFF8B2DE2)),
+            _buildGateLegendItem(
+              'assets/images/logic_guide/symbols_nand.png',
+              'NAND',
+              const Color(0xFF8B2DE2),
+              scale: scale,
+            ),
             _buildGateLegendItem(
               'assets/images/logic_guide/symbols_xor.png',
               'XOR',
               const Color(0xFF2FAF1D),
+              scale: scale,
               imageXOffset: 3,
             ),
           ],
@@ -391,8 +435,13 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildGateLegendItem('assets/images/logic_guide/symbols_xnor.png', 'XNOR', const Color(0xFF14AFA7)),
-            const SizedBox(width: 132),
+            _buildGateLegendItem(
+              'assets/images/logic_guide/symbols_xnor.png',
+              'XNOR',
+              const Color(0xFF14AFA7),
+              scale: scale,
+            ),
+            SizedBox(width: _scaled(132, scale)),
           ],
         ),
       ],
@@ -417,7 +466,7 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
     );
   }
 
-  Widget _buildSymbolNamesTable() {
+  Widget _buildSymbolNamesTable(double scale, BoxConstraints constraints) {
     final rows = [
       ('AND', 'assets/images/logic_guide/symbol_dot.png'),
       ('OR', 'assets/images/logic_guide/symbol_plus.png'),
@@ -428,95 +477,114 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
       ('XAND', 'assets/images/logic_guide/symbol_xand.png'),
       ('XNOR', 'assets/images/logic_guide/symbol_xnor.png'),
     ];
+    final maxHeight = constraints.maxHeight;
+    final maxWidth = constraints.maxWidth;
+    final aspect = maxWidth / maxHeight;
+    final isNarrow = aspect < 0.5;
+    final tableWidth = maxWidth * (isNarrow ? 0.78 : 0.7);
+    final fillHeight = maxHeight * (isNarrow ? 0.9 : 0.85);
+    final rowHeight = fillHeight / rows.length;
+    final symbolHeight =
+        (rowHeight * 0.55).clamp(_scaled(10, scale), _scaled(24, scale));
+    final labelSize =
+      _scaled(15, scale).clamp(_scaled(12, scale), _scaled(18, scale));
 
-    return Align(
-      alignment: Alignment.topCenter,
-      child: Transform.translate(
-        offset: const Offset(0, -30),
-        child: Transform.scale(
-          scale: 0.67,
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            border: TableBorder.all(
-              color: const Color(0xFFD66AA9),
-              width: 1.7,
-            ),
-            columnWidths: const {
-              0: FlexColumnWidth(1.2),
-              1: FlexColumnWidth(1),
-            },
-            children: rows
-                .map(
-                  (row) => TableRow(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 1),
-                        child: Center(
-                          child: Text(
-                            row.$1,
-                            style: const TextStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFCF6AA5),
-                              fontFamily: 'Nunito',
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 1),
-                        child: Center(
-                          child: Image.asset(
-                            row.$2,
-                            height: _getSymbolRowHeight(row.$1),
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-                .toList(),
+    return Center(
+      child: SizedBox(
+        width: tableWidth,
+        child: Table(
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          border: TableBorder.all(
+            color: const Color(0xFFD66AA9),
+            width: _scaled(1.7, scale),
           ),
+          columnWidths: const {
+            0: FlexColumnWidth(1.2),
+            1: FlexColumnWidth(1),
+          },
+          children: rows
+              .map(
+                (row) => TableRow(
+                  children: [
+                    SizedBox(
+                      height: rowHeight,
+                      child: Center(
+                        child: Text(
+                          row.$1,
+                          style: TextStyle(
+                            fontSize: labelSize,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFCF6AA5),
+                            fontFamily: 'Nunito',
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: rowHeight,
+                      child: Center(
+                        child: Image.asset(
+                          row.$2,
+                          height: _symbolHeightForLabel(
+                            row.$1,
+                            symbolHeight,
+                            scale,
+                          ),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              .toList(),
         ),
       ),
     );
   }
 
-  double _getSymbolRowHeight(String label) {
+  double _getSymbolRowHeight(String label, double scale) {
     if (label == 'AND' || label == 'NOT') {
-      return 10;
+      return _scaled(10, scale);
     }
-    return 19;
+    return _scaled(19, scale);
+  }
+
+  double _symbolHeightForLabel(String label, double baseHeight, double scale) {
+    if (label == 'AND' || label == 'NOT') {
+      return (baseHeight * 0.5).clamp(_scaled(6, scale), baseHeight);
+    }
+    return baseHeight;
   }
 
   Widget _buildGateLegendItem(
     String imagePath,
     String label,
     Color color, {
+    required double scale,
     double imageXOffset = 0,
   }) {
     return SizedBox(
-      width: 132,
+      width: _scaled(132, scale),
       child: Row(
         children: [
           Transform.translate(
-            offset: Offset(imageXOffset, 0),
+            offset: Offset(_scaled(imageXOffset, scale), 0),
             child: Image.asset(
               imagePath,
-              width: 56,
-              height: 56,
+              width: _scaled(56, scale),
+              height: _scaled(56, scale),
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: _scaled(10, scale)),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: _scaled(20, scale),
                 fontWeight: FontWeight.bold,
                 color: color,
                 fontFamily: 'Nunito',
@@ -608,20 +676,20 @@ class _LogicGuidePageState extends State<LogicGuidePage> {
 
   double _getTitleAlignmentY(String lessonId) {
     if (lessonId == 'distributive_associative') {
-      return 0.88;
+      return 0.84;
     }
 
     if (lessonId == 'symbol_names') {
-      return 0.84;
+      return 0.82;
     }
 
     if (lessonId == 'double_negation' ||
         lessonId == 'idempotent_law' ||
         lessonId == 'absorption_law' ||
         lessonId == 'demorgans_law') {
-      return 0.84;
+      return 0.82;
     }
-    return 0.84;
+    return 0.82;
   }
 
   double _getFormulaBoxWidthFactor(String lessonId) {

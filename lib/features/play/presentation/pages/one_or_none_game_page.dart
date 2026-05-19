@@ -30,7 +30,8 @@ class OneOrNoneGamePage extends StatefulWidget {
   State<OneOrNoneGamePage> createState() => _OneOrNoneGamePageState();
 }
 
-class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
+class _OneOrNoneGamePageState extends State<OneOrNoneGamePage>
+    with WidgetsBindingObserver {
 
   int _hotstreakCount = 0;
   int _multiplierTierIndex = 0;
@@ -95,8 +96,13 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   bool _gameFinished = false;
   bool _scoreSubmitted = false;
 
-  bool _showPauseOverlay = false;
+  bool _showBackConfirmOverlay = false;
   bool _showGameResultOverlay = false;
+
+  bool _pausedByLifecycle = false;
+  bool _wasRoundLockedBeforeLifecyclePause = false;
+  Completer<void>? _lifecycleResumeCompleter;
+  bool _wasRoundLockedBeforePauseOverlay = false;
 
   String _gameResultTitle = 'ROUND COMPLETE';
 
@@ -202,9 +208,12 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
 
   int get _passesUsed => _startingPasses - _passesLeft;
 
+  
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _resetWholeGame();
 
     final scene = switch (widget.difficulty) {
@@ -216,24 +225,180 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     unawaited(BgmController.instance.playScene(scene));
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _lifecycleResumeCompleter?.complete();
+    super.dispose();
+  }
+
   void _onPausePressed() {
     unawaited(SfxController.instance.playMenuPress());
-    if (_gameFinished) return;
+
+    if (_gameFinished) {
+      if (!_showGameResultOverlay && mounted) {
+        setState(() {
+          _showGameResultOverlay = true;
+          _showBackConfirmOverlay = false;
+        });
+      }
+      return;
+    }
+
+    if (!_showBackConfirmOverlay) {
+      _wasRoundLockedBeforePauseOverlay = _roundLocked;
+    }
+
+    if (_countdownRunning) {
+      unawaited(
+        SfxController.instance.pauseCountdownForGamePause(force: true),
+      );
+    }
 
     setState(() {
       _roundLocked = true;
-      _showPauseOverlay = true;
+      _showBackConfirmOverlay = true;
     });
   }
 
-  void _closePauseOverlay() {
-    unawaited(SfxController.instance.playMenuBack());
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _resumeGameFromLifecycle();
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        _pauseGameForLifecycle();
+        break;
+    }
+  }
+
+  void _pauseGameForLifecycle() {
+    if (_pausedByLifecycle) return;
+
+    _pausedByLifecycle = true;
+    _wasRoundLockedBeforeLifecyclePause = _roundLocked;
+
+    if (!_showBackConfirmOverlay) {
+      _wasRoundLockedBeforePauseOverlay = _roundLocked;
+    }
+
+    if (_countdownRunning) {
+      unawaited(
+        SfxController.instance.pauseCountdownForGamePause(force: true),
+      );
+    }
+
     if (!mounted) return;
 
     setState(() {
-      _showPauseOverlay = false;
-      _roundLocked = false;
+      _roundLocked = true;
+
+      if (!_gameFinished && !_showGameResultOverlay) {
+        _showBackConfirmOverlay = true;
+      }
+
+      _preGameSpriteScaleDuration = Duration.zero;
+      _preGameSpriteFadeDuration = Duration.zero;
+      _reactionScaleDuration = Duration.zero;
     });
+  }
+
+  void _resumeGameFromLifecycle() {
+    if (!_pausedByLifecycle) return;
+
+    _pausedByLifecycle = false;
+
+    _lifecycleResumeCompleter?.complete();
+    _lifecycleResumeCompleter = null;
+
+    if (!mounted) return;
+
+    setState(() {
+      if (_showBackConfirmOverlay ||
+          _showGameResultOverlay ||
+          _showPreGameOverlay ||
+          _gameFinished) {
+        _roundLocked = true;
+      } else {
+        _roundLocked = _wasRoundLockedBeforeLifecyclePause;
+      }
+    });
+  }
+  
+  void _exitToHome() {
+    unawaited(SfxController.instance.playMenuBack());
+
+    if (!mounted) return;
+
+    _lifecycleResumeCompleter?.complete();
+    _lifecycleResumeCompleter = null;
+
+    setState(() {
+      _showBackConfirmOverlay = false;
+      _showGameResultOverlay = false;
+      _showPreGameOverlay = false;
+      _roundLocked = true;
+    });
+
+    unawaited(BgmController.instance.playScene(BgmScene.home));
+
+    Navigator.of(context).popUntil(
+      (route) => route.settings.name == AppRoutes.home || route.isFirst,
+    );
+  }
+
+  Future<void> _waitWhilePausedByLifecycle() async {
+    while (_pausedByLifecycle || _showBackConfirmOverlay) {
+      _lifecycleResumeCompleter ??= Completer<void>();
+      await _lifecycleResumeCompleter!.future;
+    }
+  }
+
+  Future<void> _pauseAwareDelay(Duration duration) async {
+    const tick = Duration(milliseconds: 50);
+    var remaining = duration;
+
+    while (mounted && remaining > Duration.zero) {
+      await _waitWhilePausedByLifecycle();
+
+      final step = remaining < tick ? remaining : tick;
+      await Future<void>.delayed(step);
+
+      if (!_pausedByLifecycle && !_showBackConfirmOverlay) {
+        remaining -= step;
+      }
+    }
+  }
+
+  void _closeBackOverlay() {
+    unawaited(SfxController.instance.playMenuBack());
+    if (!mounted) return;
+
+    final shouldResumeCountdownSfx = _countdownRunning;
+
+    setState(() {
+      _showBackConfirmOverlay = false;
+
+      if (_showGameResultOverlay ||
+          _showPreGameOverlay ||
+          _countdownRunning ||
+          _gameFinished) {
+        _roundLocked = true;
+      } else {
+        _roundLocked = _wasRoundLockedBeforePauseOverlay;
+      }
+    });
+
+    _lifecycleResumeCompleter?.complete();
+    _lifecycleResumeCompleter = null;
+
+    if (shouldResumeCountdownSfx) {
+      unawaited(SfxController.instance.resumeCountdownFromGamePause());
+    }
   }
 
   void _resetWholeGame() {
@@ -260,7 +425,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     _wrongAttempts = 0;
     _roundLocked = false;
     _gameFinished = false;
-    _showPauseOverlay = false;
+    _showBackConfirmOverlay = false;
     _showGameResultOverlay = false;
     _gameResultTitle = 'ROUND COMPLETE';
 
@@ -294,7 +459,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _preGameSpriteFadeDuration = Duration.zero;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 16));
+    await _pauseAwareDelay(const Duration(milliseconds: 16));
     if (!mounted) return;
 
     setState(() {
@@ -302,10 +467,10 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _preGameSpriteScaleDuration = const Duration(milliseconds: 100);
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await _pauseAwareDelay(const Duration(milliseconds: 100));
     if (!mounted) return;
 
-    await Future<void>.delayed(const Duration(milliseconds: 700));
+    await _pauseAwareDelay(const Duration(milliseconds: 700));
     if (!mounted) return;
 
     setState(() {
@@ -313,7 +478,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _preGameSpriteFadeDuration = const Duration(milliseconds: 200);
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    await _pauseAwareDelay(const Duration(milliseconds: 200));
   }
 
   Future<void> _handlePreGameTap() async {
@@ -375,7 +540,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _reactionScaleCurve = Curves.easeInOutCubic;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 16));
+    await _pauseAwareDelay(const Duration(milliseconds: 16));
     if (!mounted) return;
 
     setState(() {
@@ -385,7 +550,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _reactionScaleCurve = Curves.easeOutCubic;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await _pauseAwareDelay(const Duration(milliseconds: 100));
     if (!mounted) return;
 
     setState(() {
@@ -394,7 +559,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _reactionScaleCurve = Curves.easeInOutCubic;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 450));
+    await _pauseAwareDelay(const Duration(milliseconds: 450));
     if (!mounted) return;
 
     setState(() {
@@ -404,7 +569,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _reactionScaleCurve = Curves.easeInCubic;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await _pauseAwareDelay(const Duration(milliseconds: 100));
     if (!mounted) return;
 
     setState(() {
@@ -690,7 +855,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _lostHeartAnimating = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 320));
+    await _pauseAwareDelay(const Duration(milliseconds: 320));
     if (!mounted) return;
 
     setState(() {
@@ -773,6 +938,8 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
     );
   }
 
+  
+
   Future<void> _checkCurrentAnswer(int selectedValue) async {
     if (_roundLocked || _gameFinished) return;
 
@@ -849,7 +1016,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _livesLeft = (_livesLeft + livesDelta).clamp(0, 999999);
     });
 
-    await Future.delayed(const Duration(milliseconds: 850));
+    await _pauseAwareDelay(const Duration(milliseconds: 850));
 
     if (!mounted || _gameFinished) return;
 
@@ -869,23 +1036,30 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
   }
 
   Future<void> _handleGameOver() async {
-    if (_gameFinished) return;
+    if (_gameFinished && _showGameResultOverlay) return;
+
+    if (!mounted) return;
 
     setState(() {
       _gameFinished = true;
       _roundLocked = true;
-    });
 
-    await _submitFinalScoreOnce();
+      _showBackConfirmOverlay = false;
+      _showPreGameOverlay = false;
+      _countdownRunning = false;
 
-    if (!mounted) return;
-
-    await SfxController.instance.playGameOver();
-
-    setState(() {
       _gameResultTitle = 'GAME OVER';
       _showGameResultOverlay = true;
     });
+
+    unawaited(SfxController.instance.playGameOver());
+
+    try {
+      await _submitFinalScoreOnce();
+    } catch (e, st) {
+      debugPrint('Failed to submit final score: $e');
+      debugPrintStack(stackTrace: st);
+    }
   }
 
   Future<void> _submitFinalScoreOnce() async {
@@ -909,7 +1083,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _scoreDeltaXOffset = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 60));
+    await _pauseAwareDelay(const Duration(milliseconds: 60));
     if (!mounted) return;
 
     setState(() {
@@ -917,14 +1091,14 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _scoreDeltaXOffset = -10.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 900));
+    await _pauseAwareDelay(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     setState(() {
       _scoreDeltaOpacity = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 220));
+    await _pauseAwareDelay(const Duration(milliseconds: 220));
     if (!mounted) return;
 
     setState(() {
@@ -944,21 +1118,21 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
       _livesDeltaYOffset = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 60));
+    await _pauseAwareDelay(const Duration(milliseconds: 60));
     if (!mounted) return;
 
     setState(() {
       _livesDeltaYOffset = -15.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 900));
+    await _pauseAwareDelay(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     setState(() {
       _livesDeltaOpacity = 0.0;
     });
 
-    await Future.delayed(const Duration(milliseconds: 220));
+    await _pauseAwareDelay(const Duration(milliseconds: 220));
     if (!mounted) return;
 
     setState(() {
@@ -1209,6 +1383,20 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                             PauseIconButton(
                               onTap: _onPausePressed,
                             ),
+
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              visualDensity: VisualDensity.compact,
+                              iconSize: 24,
+                              icon: const Icon(
+                                Icons.help_outline,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => (), //_showGatekeepingTutorial(),
+                            ),
+
+
                             const MusicButton(size: 26),
                           ],
                         ),
@@ -1427,20 +1615,6 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                   scaleCurve: _reactionScaleCurve,
                 ),
 
-              if (_showPauseOverlay)
-                PauseOverlay(
-                  backgroundAssetPath: AppAssets.andyPauseGame,
-                  onResume: _closePauseOverlay,
-                  onRetry: _resetWholeGame,
-                  onExitToMenu: () {
-                    unawaited(SfxController.instance.playGameOver());
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
-                  },
-                ),
 
               if (_showGameResultOverlay)
                 GameResultOverlay(
@@ -1458,11 +1632,7 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                   },
                   onBackToMenu: () {
                     unawaited(SfxController.instance.playMenuBack());
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
+                    _exitToHome();
                   },
                 ),
 
@@ -1479,6 +1649,23 @@ class _OneOrNoneGamePageState extends State<OneOrNoneGamePage> {
                   spriteScale: _preGameSpriteScale,
                   spriteScaleDuration: _preGameSpriteScaleDuration,
                   spriteFadeDuration: _preGameSpriteFadeDuration,
+                ),
+
+              if (_showBackConfirmOverlay)
+                PauseOverlay(
+                  backgroundAssetPath: AppAssets.andyPauseGame,
+                  onResume: _closeBackOverlay,
+                  onRetry: () {
+                    setState(() {
+                      _showBackConfirmOverlay = false;
+                    });
+
+                    _resetWholeGame();
+                  },
+                  onExitToMenu: () {
+                    unawaited(SfxController.instance.playGameOver());
+                    _exitToHome();
+                  },
                 ),
             ],
           ),

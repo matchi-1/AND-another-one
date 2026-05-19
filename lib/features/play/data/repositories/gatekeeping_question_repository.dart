@@ -686,8 +686,8 @@ class GatekeepingQuestionRepository {
     GatekeepingQuestion(
       id: 'logic_44',
       imagePath: _diagramPath(Difficulty.logic, 'logic_44.png'),
-      expression: '__NOT(A __XNOR B) __NOR C',
-      answers: ['NOT', 'XNOR', 'NOR'],
+      expression: '__NOT(A __XNOR B) __XOR C',
+      answers: ['NOT', 'XNOR', 'XOR'],
       difficulty: Difficulty.logic,
     ),
     GatekeepingQuestion(
@@ -879,8 +879,8 @@ class GatekeepingQuestionRepository {
     GatekeepingQuestion(
       id: 'manic_26',
       imagePath: _diagramPath(Difficulty.manic, 'manic_26.png'),
-      expression: 'A __NAND B __AND C',
-      answers: ['NAND', 'AND'],
+      expression: 'A __AND B __AND C',
+      answers: ['AND', 'AND'],
       difficulty: Difficulty.manic,
     ),
     GatekeepingQuestion(

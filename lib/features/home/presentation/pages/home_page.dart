@@ -34,10 +34,22 @@ class _HomePageState extends State<HomePage>
     super.initState();
     debugPrint('HOME initState fired');
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      AppTutorialController.instance.onPageReady(context, AppRoutes.home);
+      unawaited(_prepareTutorial());
     });
+  }
+
+  Future<void> _prepareTutorial() async {
+    final username = await _authService.currentUsername();
+
+    if (!mounted) return;
+
+    AppTutorialController.instance.setPlayerName(username);
+
+    AppTutorialController.instance.onPageReady(context, AppRoutes.home);
+
+    await AppTutorialController.instance.maybeStart(context);
   }
 
   @override
@@ -77,6 +89,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildMenuButtonWithAndy({
+    required Key? key,
     required String label,
     required Color color,
     required double width,
@@ -100,6 +113,7 @@ class _HomePageState extends State<HomePage>
           Align(
             alignment: Alignment.bottomCenter,
             child: BeveledMenuButton(
+              key: key,
               label: label,
               color: color,
               width: width,
@@ -157,7 +171,7 @@ class _HomePageState extends State<HomePage>
                   const SizedBox(height: 30),
 
                   _buildMenuButtonWithAndy(
-                    // key: TutorialTargets.homePlay,
+                    key: TutorialTargets.homePlay,
                     label: 'PLAY',
                     color: AppColors.yellowButton,
                     width: btnWidth,
@@ -179,7 +193,7 @@ class _HomePageState extends State<HomePage>
                   const SizedBox(height: btnGap),
 
                   _buildMenuButtonWithAndy(
-                    // key: TutorialTargets.homeLogicGuide,
+                    key: TutorialTargets.homeLogicGuide,
                     label: 'LOGIC GUIDE',
                     color: AppColors.pinkButton,
                     width: btnWidth,
@@ -201,7 +215,7 @@ class _HomePageState extends State<HomePage>
                   const SizedBox(height: btnGap),
 
                   _buildMenuButtonWithAndy(
-                    // key: TutorialTargets.homeLeaderboards,
+                    key: TutorialTargets.homeLeaderboards,
                     label: 'LEADERBOARDS',
                     color: AppColors.greenButton,
                     width: btnWidth,
@@ -223,8 +237,14 @@ class _HomePageState extends State<HomePage>
                   const SizedBox(height: 8),
 
                   TextButton(
-                    // key: TutorialTargets.homeRestart,
+                    key: TutorialTargets.homeRestart,
                     onPressed: () async {
+                      SfxController.instance.playMenuPress();
+                      final username = await _authService.currentUsername();
+
+                      if (!mounted) return;
+
+                      AppTutorialController.instance.setPlayerName(username);
                       await AppTutorialController.instance.start(context);
                     },
                     child: const Text(
@@ -245,7 +265,7 @@ class _HomePageState extends State<HomePage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       BeveledMenuButton(
-                        // key: TutorialTargets.homeExit,
+                        key: TutorialTargets.homeExit,
                         label: 'EXIT',
                         color: AppColors.greyButton,
                         width: 132,
@@ -258,7 +278,7 @@ class _HomePageState extends State<HomePage>
                       ),
                       const SizedBox(width: 12),
                       BeveledMenuButton(
-                        // key: TutorialTargets.homeLogout,
+                        key: TutorialTargets.homeLogout,
                         label: 'LOGOUT',
                         color: AppColors.redButton,
                         width: 132,
