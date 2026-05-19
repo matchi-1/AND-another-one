@@ -505,14 +505,14 @@ class _PixelSpeechBubblePainter extends CustomPainter {
       ..strokeCap = StrokeCap.square;
 
     final neonBorderPaint = Paint()
-      ..color = const Color(0xFFD114F7)
+      ..color = const Color.fromARGB(255, 183, 94, 255)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4
       ..strokeJoin = StrokeJoin.miter
       ..strokeCap = StrokeCap.square;
 
     final innerHighlightPaint = Paint()
-      ..color = const Color(0xFFFFD23F)
+      ..color = const Color.fromARGB(255, 255, 88, 222)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeJoin = StrokeJoin.miter

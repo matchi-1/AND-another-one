@@ -75,63 +75,112 @@ class AppTutorialController {
                   'Hey, $_playerName! I’m Andy. Welcome to AND Another One, where logic gates become a game!',
               andyAsset: AppAssets.tutorialAndy1,
 
-                        // Andy appears at bottom-left.
+                // Andy appears at bottom-left.
               andyPlacement: TutorialOverlayPlacement(
                 anchor: TutorialAnchor.bottomLeft,
                 offset: Offset(-20, 0),
               ),
 
-              // Dialogue appears at top-center.
               dialoguePlacement: TutorialOverlayPlacement(
-                anchor: TutorialAnchor.topCenter,
-                offset: Offset(0, 10),
+                anchor: TutorialAnchor.center,
+                //offset: Offset(0, 20),
               ),
 
-              andyWidthFactor: 0.58,
-              dialogueWidthFactor: 0.90,
+              //andyWidthFactor: 0.58,
+              //dialogueWidthFactor: 0.90,
             ),
+
 
             const TutorialStepSpec(
               targetId: null,
               text:
-                  'This is your home base. From here, you can play, study logic gates, check rankings, or restart this tutorial anytime.',
+                  'This is the home page. From here, you can play, study logic gates, check rankings, or restart this tutorial anytime.',
               andyAsset: AppAssets.tutorialAndy1,
+              
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                //offset: Offset(0, 20),
+              ),
             ),
+
+
             const TutorialStepSpec(
               targetId: 'homePlay',
               text:
                   'Tap PLAY when you’re ready to jump into the logic challenges.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -175),
+              ),
+
             ),
+
+
             const TutorialStepSpec(
               targetId: 'homeLogicGuide',
               text:
-                  'Need a refresher? The LOGIC GUIDE explains the operators before you start solving.',
+                  'Need a refresher? The LOGIC GUIDE explains the operators and Boolean Algebra rules before you start solving.',
               andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -175),
+              ),
             ),
+
+
             const TutorialStepSpec(
               targetId: 'homeLeaderboards',
               text:
                   'The LEADERBOARDS show who’s dominating the circuit board.',
               andyAsset: AppAssets.tutorialAndy2,
-            ),
-            const TutorialStepSpec(
-              targetId: 'homeRestart',
-              text:
-                  'Forgot something? You can replay my tutorial here anytime.',
-              andyAsset: AppAssets.tutorialAndy3,
+
               andyPlacement: TutorialOverlayPlacement(
-              anchor: TutorialAnchor.topRight,
-              offset: Offset(12, 0),
+                anchor: TutorialAnchor.topLeft,
+                offset: Offset(-20, 100),
               ),
 
               dialoguePlacement: TutorialOverlayPlacement(
-                anchor: TutorialAnchor.bottomLeft,
-                offset: Offset(0, -24),
+                anchor: TutorialAnchor.bottomCenter,
+                offset: Offset(0, -300),
+              ),
+              
+            ),
+
+
+            const TutorialStepSpec(
+              targetId: 'homeRestart',
+              text:
+                  'Forgot something? You can replay this tutorial here anytime.',
+              andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topLeft,
+                offset: Offset(-20, 100),
               ),
 
-              andyWidthFactor: 0.42,
-              dialogueWidthFactor: 0.78,
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomCenter,
+                offset: Offset(0, -300),
+              ),
+
             ),
           ],
         ),
@@ -141,26 +190,71 @@ class AppTutorialController {
             TutorialStepSpec(
               targetId: null,
               text:
-                  'Now choose your game mode. Each mode tests logic in a different way.',
+                  'After pressing play, you can choose your game mode. Each mode tests logic in a different way.',
               andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, 70),
+              ),
+
             ),
             TutorialStepSpec(
               targetId: 'modeGatekeeping',
               text:
                   'In Gatekeeping, you fill in the missing logic operator that completes the expression.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -90),
+              ),
+
+
             ),
             TutorialStepSpec(
               targetId: 'modeOneOrNone',
               text:
                   'In One or None, you decide whether the whole circuit outputs a 1 or a 0.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topLeft,
+                offset: Offset(-20, 100),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomCenter,
+                offset: Offset(0, -300),
+              ),
+
             ),
             TutorialStepSpec(
               targetId: 'modeBack',
               text:
                   'Use BACK whenever you want to return to the previous screen.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topLeft,
+                offset: Offset(-20, 100),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomCenter,
+                offset: Offset(0, -300),
+              ),
+
             ),
           ],
         ),
@@ -170,111 +264,485 @@ class AppTutorialController {
             TutorialStepSpec(
               targetId: null,
               text:
-                  'This is the Gatekeeping difficulty screen. Pick the level that matches your confidence.',
-              andyAsset: AppAssets.tutorialAndy2,
+                  'This is the Gatekeeping difficulty screen. You\'ll find a similar difficulty screen for One or None. Pick the level that matches your confidence.',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, 50),
+              ),
+
+
             ),
             TutorialStepSpec(
               targetId: 'gateHowToPlay',
               text:
-                  'The HOW TO PLAY button gives a more detailed explanation of this mode.',
+                  'The \'HOW TO PLAY?\' button gives a more detailed explanation of this mode.',
               andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, 50),
+              ),
             ),
+
+
             TutorialStepSpec(
               targetId: 'gateBasic',
               text:
                   'BASIC is the best place to start. It uses simpler gates and friendlier patterns.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -100),
+              ),
+
             ),
             TutorialStepSpec(
               targetId: 'gateLogic',
               text:
                   'LOGIC adds more challenge, so expect trickier operator combinations.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -100),
+              ),
+
+              andyWidthFactor: 0.56
             ),
+
+
             TutorialStepSpec(
               targetId: 'gateManic',
               text:
                   'MANIC is fast, chaotic, and definitely not for sleepy brains.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topLeft,
+                offset: Offset(-20, 100),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomCenter,
+                offset: Offset(0, -300),
+              ),
             ),
+
+
             TutorialStepSpec(
               targetId: 'gateBack',
               text:
                   'Not ready yet? This BACK button returns you to mode select.',
               andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topLeft,
+                offset: Offset(-20, 100),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomCenter,
+                offset: Offset(0, -300),
+              ),
             ),
           ],
         ),
+
+
         const TutorialPageSpec(
           routeName: AppRoutes.gatekeepingTutorialPreview,
           steps: [
             TutorialStepSpec(
               targetId: null,
               text:
-                  'Before your first real round, let me show you how the game screen works.',
+                  'Before your first real round, let me show you how the game screen for Gatekeeping works.',
               andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                //offset: Offset(0, 20),
+              ),
+
             ),
+
+
             TutorialStepSpec(
               targetId: 'previewDiagram',
               text:
                   'This area shows the circuit diagram. Read the gates and follow how the signals connect.',
-              andyAsset: AppAssets.tutorialAndy2,
+              andyAsset: AppAssets.tutorialAndy1,
             ),
+
+
             TutorialStepSpec(
               targetId: 'previewExpression',
               text:
-                  'This expression is your main clue. The blank box is the missing operator you need to fill.',
+                  'This expression area is the main question. There will be blank boxes you need to fill with operators.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, -150),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                //offset: Offset(0, 20),
+              ),
             ),
+
+            TutorialStepSpec(
+              targetId: 'previewExpression',
+              text:
+                  'Filling all the boxes with the correct operators will give you another diagram and expression.',
+              andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, -150),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                //offset: Offset(0, 20),
+              ),
+            ),
+
+            TutorialStepSpec(
+              targetId: 'previewExpression',
+              text:
+                  'Getting even just one of them incorrect will not give you a new diagram and expression.',
+              andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, -150),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                //offset: Offset(0, 20),
+              ),
+            ),
+
+            TutorialStepSpec(
+              targetId: 'previewExpression',
+              text:
+                  'There is NO LIMIT to the number of expressions you can solve.',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, -150),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                //offset: Offset(0, 20),
+              ),
+            ),
+
+
             TutorialStepSpec(
               targetId: 'previewButtons',
               text:
-                  'Choose the operator button that correctly completes the expression.',
+                  'Choose the operator buttons that will correctly complete the expression.',
               andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 150),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                offset: Offset(0, 300),
+              ),
             ),
+
+
             TutorialStepSpec(
               targetId: 'previewTimer',
               text:
-                  'Here’s your timer and score. Correct answers help you keep momentum.',
-              andyAsset: AppAssets.tutorialAndy2,
+                  'Here’s the timer in seconds. Correct answers will add 2 seconds to it, but wrong answers will deduct 1 second to it.',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
             ),
+
+            TutorialStepSpec(
+              targetId: 'previewTimer',
+              text:
+                  'When the timer reaches 0, the game will end and you\'ll see a preview of your score and other stats.',
+              andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
+            ),
+
+
             TutorialStepSpec(
               targetId: 'previewMultiplierStreak',
               text:
                   'This part shows you your current streak and multiplier.',
-              andyAsset: AppAssets.tutorialAndy3,
+              andyAsset: AppAssets.tutorialAndy2,
+
               andyPlacement: TutorialOverlayPlacement(
-                anchor: TutorialAnchor.bottomRight,
-                offset: Offset(12, 0),
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
               ),
+
               dialoguePlacement: TutorialOverlayPlacement(
-                anchor: TutorialAnchor.bottomLeft,
-                offset: Offset(0, -20),
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
               ),
-              andyWidthFactor: 0.42,
-              dialogueWidthFactor: 0.78,
+
             ),
+
+            TutorialStepSpec(
+              targetId: 'previewMultiplierStreak',
+              text:
+                  'Every two correct answers will increase your multiplier tier, while every incorrect answer will decrease it.',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+
+            TutorialStepSpec(
+              targetId: 'previewScore',
+              text:
+                  'Here is your current score. Getting a correct answer will increase it by the base score of the difficulty, multiplied by your current multiplier.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+            TutorialStepSpec(
+              targetId: 'previewScore',
+              text:
+                  'Getting an incorrect answer will decrease it by just the base score of the difficulty.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+
             TutorialStepSpec(
               targetId: 'previewPass',
               text:
-                  'Stuck? Use PASS to skip a question, but you only get a limited number of passes.',
+                  'Stuck? Press this PASS button to skip a question, but you only get a limited number of passes per game.',
               andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
             ),
+
+
             TutorialStepSpec(
-              targetId: 'previewPass',
+              targetId: 'previewPassesLeft',
               text:
-                  'Passes will not affect your streak or multiplier. Use them wisely!',
-              andyAsset: AppAssets.tutorialAndy3,
+                  'Passes will not affect your current streak, multiplier, score, or timer. Use them wisely!',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
             ),
+
+            TutorialStepSpec(
+              targetId: 'previewBackspace',
+              text:
+                  'If you pressed the wrong operator button, you can press this backspace button to clear the single rightmost filled box in the expression.',
+              andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+
+            TutorialStepSpec(
+              targetId: 'previewBack',
+              text:
+                  'If you want to pause the game to retry the level or exit back to the home page, just press this button to do so.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+            TutorialStepSpec(
+              targetId: 'previewBack',
+              text:
+                  'This will stop the timer until you press resume.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+
+            TutorialStepSpec(
+              targetId: 'previewHelp',
+              text:
+                  'If you want to see the operator names and some other helpful info, you can press this help button to show an overview.',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+            TutorialStepSpec(
+              targetId: 'previewHelp',
+              text:
+                  'But doing so will NOT pause the timer.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
 
             TutorialStepSpec(
               targetId: null,
               text:
-                  'That’s it for Gatekeeping! Read the circuit, solve the blank, and keep your streak alive.',
+                  'That’s it for Gatekeeping! Read the circuit, fill in the blanks with operators, and get as many correct answers as you can within the time limit.',
               andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
+
             ),
           ],
         ),
+
+        
 
         const TutorialPageSpec(
           routeName: AppRoutes.oneOrNoneTutorialPreview,
@@ -284,64 +752,226 @@ class AppTutorialController {
               text:
                   'Now let’s check the One or None game screen. This mode asks you to decide whether the circuit output is 1 or 0.',
               andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.bottomLeft,
+                offset: Offset(-20, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                //offset: Offset(0, 20),
+              ),
             ),
+
+
             TutorialStepSpec(
               targetId: 'onePreviewLives',
               text:
-                  'Instead of a timer, One or None uses lives. Wrong answers cost lives.',
-              andyAsset: AppAssets.tutorialAndy2,
+                  'Instead of a timer, One or None uses lives. Wrong answers cost lives, and there is no way to recover them. Think carefully before you answer!',
+              andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
             ),
+
+
             TutorialStepSpec(
               targetId: 'onePreviewMultiplierStreak',
               text:
                   'Streaks and Multipliers work the same way as in Gatekeeping.',
-              andyAsset: AppAssets.tutorialAndy3,
+              andyAsset: AppAssets.tutorialAndy2,
+              
               andyPlacement: TutorialOverlayPlacement(
-                anchor: TutorialAnchor.bottomRight,
-                offset: Offset(12, 0),
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
               ),
+
               dialoguePlacement: TutorialOverlayPlacement(
-                anchor: TutorialAnchor.bottomLeft,
-                offset: Offset(0, -20),
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
               ),
-              andyWidthFactor: 0.42,
+
               dialogueWidthFactor: 0.78,
             ),
+
+
             TutorialStepSpec(
               targetId: 'onePreviewScore',
               text:
-                  'Your score still increases when you answer correctly, and your multiplier can make each correct answer worth more.',
-              andyAsset: AppAssets.tutorialAndy1,
+                  'So do scores and base difficulty score values.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
             ),
+
+
             TutorialStepSpec(
               targetId: 'onePreviewDiagram',
               text:
-                  'Read the circuit diagram, then follow the logic gates from the inputs to the final output.',
-              andyAsset: AppAssets.tutorialAndy2,
+                  'Just like in Gatekeeping, you will be given a circuit diagram.',
+              andyAsset: AppAssets.tutorialAndy1,
             ),
+
+
             TutorialStepSpec(
               targetId: 'onePreviewValues',
               text:
-                  'These are the current input values. Use them to evaluate the circuit.',
+                  'But unlike in Gatekeeping, you are given the current input values. Use them to evaluate the circuit, whether they\'ll result in a 1 or a 0.',
               andyAsset: AppAssets.tutorialAndy3,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, -100),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                offset: Offset(0, 40),
+              ),
             ),
+
+            TutorialStepSpec(
+              targetId: 'onePreviewValues',
+              text:
+                  'Keep in mind that an incorrect answer WILL RANDOMIZE these input values every time, so you will have to reevaluate them.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, -100),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                offset: Offset(0, 40),
+              ),
+            ),
+
+            TutorialStepSpec(
+              targetId: 'onePreviewValues',
+              text:
+                  'Just like in Gatekeeping, a correct answer will give you a new diagram and input values, and there is NO LIMIT to how many you can solve.',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, -100),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                offset: Offset(0, 40),
+              ),
+            ),
+
+
             TutorialStepSpec(
               targetId: 'onePreviewButtons',
               text:
                   'Choose 1 if the circuit output is true, or 0 if the circuit output is false.',
-              andyAsset: AppAssets.tutorialAndy1,
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 150),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.topCenter,
+                offset: Offset(0, 300),
+              ),
+
             ),
+
+
             TutorialStepSpec(
               targetId: 'onePreviewPass',
               text:
-                  'You can still pass if you are stuck, but passes are limited.',
-              andyAsset: AppAssets.tutorialAndy2,
+                  'Passes work the same way as in Gatekeeping, not affecting your streak, multiplier, score, lives, and skipping the diagram. They are also limited per game.',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
             ),
+
+            TutorialStepSpec(
+              targetId: 'onePreviewBack',
+              text:
+                  'The same pause button is present in this game mode.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+            TutorialStepSpec(
+              targetId: 'onePreviewHelp',
+              text:
+                  'The same help button is also here.',
+              andyAsset: AppAssets.tutorialAndy2,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+            ),
+
+
             TutorialStepSpec(
               targetId: null,
               text:
-                  'That’s the full tour! You’re ready to play both modes.',
-              andyAsset: AppAssets.tutorialAndy3,
+                  'And that’s the full tour! You’re now ready to play both modes. Good luck!',
+              andyAsset: AppAssets.tutorialAndy1,
+
+              andyPlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.centerLeft,
+                offset: Offset(0, 0),
+              ),
+
+              dialoguePlacement: TutorialOverlayPlacement(
+                anchor: TutorialAnchor.center,
+                offset: Offset(0, -200),
+              ),
+
             ),
           ],
         ),
