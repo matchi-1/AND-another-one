@@ -76,6 +76,11 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  fonts:
+    - family: Retro Floral
+      fonts:
+        - asset: assets/fonts/Retro-Floral.ttf
+          weight: 400
   assets:
     - assets/images/tutorial/
     - assets/images/shared/

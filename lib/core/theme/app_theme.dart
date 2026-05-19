@@ -6,7 +6,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.blueBg,
-      fontFamily: 'Arial',
+      fontFamily: 'Retro Floral',
     );
   }
 }
