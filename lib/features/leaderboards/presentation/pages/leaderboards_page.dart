@@ -569,20 +569,10 @@ class _LeaderboardBoardState extends State<_LeaderboardBoard> {
                   message: 'More ranks will appear after more scores.',
                   compact: true,
                 )
-                    : Column(
-                  children: List.generate(pagedEntries.length, (index) {
-                    final rank = startIndex + index + 4;
-
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: index == pagedEntries.length - 1 ? 0 : 8,
-                      ),
-                      child: _LeaderboardRow(
-                        rank: rank,
-                        entry: pagedEntries[index],
-                      ),
-                    );
-                  }),
+                    : _LeaderboardRowsArea(
+                  pagedEntries: pagedEntries,
+                  startIndex: startIndex,
+                  maxRows: rowCount,
                 ),
               ),
 
@@ -909,6 +899,80 @@ class _LeaderboardHeader extends StatelessWidget {
   }
 }
 
+class _LeaderboardRowsArea extends StatelessWidget {
+  const _LeaderboardRowsArea({
+    required this.pagedEntries,
+    required this.startIndex,
+    required this.maxRows,
+  });
+
+  final List<LeaderboardEntry> pagedEntries;
+  final int startIndex;
+  final int maxRows;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final gap = maxRows <= 2 ? 8.0 : 6.0;
+
+        final availableHeight = constraints.maxHeight;
+        final totalGapHeight = gap * (maxRows - 1);
+
+        final rawRowHeight = maxRows <= 0
+            ? availableHeight
+            : (availableHeight - totalGapHeight) / maxRows;
+
+        final rowHeight = rawRowHeight.clamp(
+          maxRows <= 2 ? 54.0 : 42.0,
+          maxRows <= 2 ? 76.0 : 58.0,
+        );
+
+        final contentHeight = (rowHeight * maxRows) + totalGapHeight;
+        final shouldScroll = contentHeight > availableHeight;
+
+        final rows = List.generate(maxRows, (index) {
+          final hasEntry = index < pagedEntries.length;
+          final rank = startIndex + index + 4;
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: index == maxRows - 1 ? 0 : gap,
+            ),
+            child: SizedBox(
+              height: rowHeight,
+              child: hasEntry
+                  ? _LeaderboardRow(
+                rank: rank,
+                entry: pagedEntries[index],
+              )
+                  : const SizedBox.shrink(),
+            ),
+          );
+        });
+
+        final rowColumn = Column(
+          children: rows,
+        );
+
+        if (shouldScroll) {
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: rowColumn,
+          );
+        }
+
+        return Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            height: contentHeight,
+            child: rowColumn,
+          ),
+        );
+      },
+    );
+  }
+}
 class _LeaderboardRow extends StatelessWidget {
   const _LeaderboardRow({
     required this.rank,
@@ -920,82 +984,110 @@ class _LeaderboardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.22),
-          width: 1.6,
-        ),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 52,
-            child: _RankBadge(rank: rank),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final rowHeight = constraints.maxHeight;
+
+        final compact = rowHeight < 50;
+        final horizontalPadding = compact ? 8.0 : 10.0;
+        final verticalPadding = compact ? 6.0 : 8.0;
+
+        final usernameFontSize = compact ? 13.0 : 15.0;
+        final scoreFontSize = compact ? 12.5 : 14.0;
+
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            verticalPadding,
+            horizontalPadding,
+            verticalPadding,
           ),
-
-          const SizedBox(width: 6),
-
-          Expanded(
-            child: Text(
-              entry.username,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                shadows: [
-                  Shadow(
-                    color: Colors.black26,
-                    blurRadius: 2,
-                    offset: Offset(0, 1.5),
-                  ),
-                ],
-              ),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(compact ? 12 : 15),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.22),
+              width: compact ? 1.3 : 1.6,
             ),
           ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: compact ? 46 : 52,
+                child: _RankBadge(
+                  rank: rank,
+                  compact: compact,
+                ),
+              ),
 
-          const SizedBox(width: 8),
+              SizedBox(width: compact ? 4 : 6),
 
-          _ScorePill(score: entry.score),
-        ],
-      ),
+              Expanded(
+                child: Text(
+                  entry.username,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textScaler: TextScaler.noScaling,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: usernameFontSize,
+                    fontWeight: FontWeight.w800,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black26,
+                        blurRadius: 2,
+                        offset: Offset(0, 1.5),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(width: compact ? 6 : 8),
+
+              _ScorePill(
+                score: entry.score,
+                compact: compact,
+                fontSize: scoreFontSize,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
-
 class _RankBadge extends StatelessWidget {
   const _RankBadge({
     required this.rank,
+    this.compact = false,
   });
 
   final int rank;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 34,
-      height: 30,
+      width: compact ? 30 : 34,
+      height: compact ? 26 : 30,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.16),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(compact ? 8 : 10),
         border: Border.all(
           color: Colors.white.withOpacity(0.28),
-          width: 1.6,
+          width: compact ? 1.3 : 1.6,
         ),
       ),
       child: Center(
         child: Text(
           '$rank',
-          style: const TextStyle(
+          textScaler: TextScaler.noScaling,
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: compact ? 12.5 : 14,
             fontWeight: FontWeight.w900,
-            shadows: [
+            shadows: const [
               Shadow(
                 color: Colors.black38,
                 blurRadius: 2,
@@ -1008,36 +1100,42 @@ class _RankBadge extends StatelessWidget {
     );
   }
 }
-
 class _ScorePill extends StatelessWidget {
   const _ScorePill({
     required this.score,
+    this.compact = false,
+    this.fontSize = 14,
   });
 
   final int score;
+  final bool compact;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minWidth: 76),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
+      constraints: BoxConstraints(
+        minWidth: compact ? 66 : 76,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.18),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
           color: Colors.white.withOpacity(0.20),
-          width: 1.4,
+          width: compact ? 1.2 : 1.4,
         ),
       ),
       child: Text(
         score.toString(),
         textAlign: TextAlign.center,
-        style: const TextStyle(
+        textScaler: TextScaler.noScaling,
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 14,
+          fontSize: fontSize,
           fontWeight: FontWeight.w900,
           letterSpacing: 0.3,
         ),
