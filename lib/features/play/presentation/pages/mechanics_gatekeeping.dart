@@ -58,7 +58,7 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                         number: '3',
                         title: 'Beat the timer',
                         body:
-                        'Answer before time runs out to earn points faster and maintain momentum.',
+                        'Answer before time runs out to earn points and maintain momentum.',
                       ),
                       const SizedBox(height: 18),
 
@@ -138,8 +138,8 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                       const _InfoBulletCard(
                         items: [
                           'A timer increases urgency and quick reasoning.',
-                          'You can use Pass if you want to skip a difficult question.',
-                          'A correction or backspace button lets you revise your answer.',
+                          'You can Pass if you want to skip a difficult question.',
+                          'A backspace button lets you revise your answer.',
                           'Each mode and difficulty has its own leaderboard.',
                         ],
                       ),

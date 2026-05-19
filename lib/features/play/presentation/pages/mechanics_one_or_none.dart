@@ -44,7 +44,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                         number: '1',
                         title: 'Read the circuit',
                         body:
-                            'Observe the gates, inputs, and flow of logic from left to right.',
+                            'Observe the gates, inputs, and flow of logic of the circuit.',
                       ),
                       const SizedBox(height: 10),
                       const _StepCard(
@@ -56,9 +56,9 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       const SizedBox(height: 10),
                       const _StepCard(
                         number: '3',
-                        title: 'Choose fast and accurately',
+                        title: 'Choose accurately',
                         body:
-                            'Tap the correct answer before the timer runs out to score more points.',
+                            'Tap the correct answer to avoid losing lives and rerandomizing the input values.',
                       ),
                       const SizedBox(height: 18),
 
@@ -69,46 +69,40 @@ class MechanicsOneOrNonePage extends StatelessWidget {
 
                       const _SectionBanner('DIFFICULTIES'),
                       const SizedBox(height: 10),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final bool stackCards = constraints.maxWidth < 560;
-                          final double cardWidth = stackCards
-                              ? constraints.maxWidth
-                              : (constraints.maxWidth - 20) / 3;
-
-                          return Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: const [
-                              _DifficultyCard(
-                                title: 'BASIC',
-                                color: AppColors.yellowButton,
-                                body:
-                                    'Introductory recognition tasks with simpler circuits.',
-                              ),
-                              _DifficultyCard(
-                                title: 'LOGIC',
-                                color: AppColors.pinkButton,
-                                body:
-                                    'Moderate circuit analysis with more reasoning required.',
-                              ),
-                              _DifficultyCard(
-                                title: 'MANIC',
-                                color: AppColors.redButton,
-                                body:
-                                    'Harder circuit structures with faster pressure.',
-                              ),
-                            ]
-                                .map(
-                                  (card) => SizedBox(
-                                    width: cardWidth,
-                                    child: card,
-                                  ),
-                                )
-                                .toList(),
-                          );
-                        },
+                      Row(
+                        children: const [
+                          Expanded(
+                            child: _DifficultyCard(
+                              title: 'BASIC',
+                              color: AppColors.yellowButton,
+                              body:
+                              'Introductory recognition tasks with simpler circuits.',
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: _DifficultyCard(
+                              title: 'LOGIC',
+                              color: AppColors.pinkButton,
+                              body:
+                              'Moderate circuit analysis with more reasoning required.',
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: _DifficultyCard(
+                              title: 'MANIC',
+                              color: AppColors.redButton,
+                              body:
+                              'Harder circuit structures with higher pressure.',
+                            ),
+                          ),
+                        ],
                       ),
+
+                    
+
+
                       const SizedBox(height: 18),
 
                       const _SectionBanner('SCORING AND FEEDBACK'),
@@ -121,7 +115,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                               scoreText: '+POINTS',
                               color: AppColors.greenButton,
                               body:
-                                  'A green feedback screen confirms the right answer instantly.',
+                                  'A green feedback screen confirms the right answer.',
                             ),
                           ),
                           SizedBox(width: 10),
@@ -131,7 +125,7 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                               scoreText: '-POINTS',
                               color: AppColors.redButton,
                               body:
-                                  'A red feedback screen clearly shows that the answer was wrong.',
+                                  'A red feedback screen shows that the answer was wrong.',
                             ),
                           ),
                         ],
@@ -139,16 +133,10 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       const SizedBox(height: 10),
-                      const _InfoBulletCard(
-                        items: [
-                          'For base score: BASIC gives 100 points, LOGIC gives 200 points, and MANIC gives 300 points per correct answer.',
-                          'If your streak is 0 or 1, your score is x1. Then every 2 more right answers makes it go up: x1.25, x1.5, x1.75, x2, and x3 is the max mutiplier',
-                          'If you get one wrong, your score only goes down by 1 step. Your streak stays, and Pass does not change anything.',
-                        ],
-                      ),
+                      
                       const SizedBox(height: 18),
 
-                      const _SectionBanner('MULTIPLIER SYSTEM', color: Color(0xFF556B2F)), // Army Green
+                      const _SectionBanner('MULTIPLIER SYSTEM'),
                       const SizedBox(height: 10),
                       const _MultiplierSystemCard(),
                       const SizedBox(height: 18),
@@ -157,9 +145,10 @@ class MechanicsOneOrNonePage extends StatelessWidget {
                       const SizedBox(height: 10),
                       const _InfoBulletCard(
                         items: [
-                          'A timer adds urgency and rewards quick reasoning.',
-                          'You can Pass a question when needed, depending on your remaining passes.',
+                          'A lives system promotes thinking about the answer instead of spamming buttons.',
+                          'You can Pass if you want to skip a difficult question.',
                           'The interface keeps the answer choice simple: just 1 or 0.',
+                          'Each mode and difficulty has its own leaderboard.',
                         ],
                       ),
                     ],
@@ -1268,6 +1257,7 @@ class _LegendBadge extends StatelessWidget {
       ),
     );
   }
+}
 class _MultiplierSystemCard extends StatelessWidget {
   const _MultiplierSystemCard();
 
