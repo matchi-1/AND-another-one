@@ -58,7 +58,7 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                         number: '3',
                         title: 'Beat the timer',
                         body:
-                        'Answer before time runs out to earn points faster and maintain momentum.',
+                        'Answer before time runs out to earn points and maintain momentum.',
                       ),
                       const SizedBox(height: 18),
 
@@ -128,14 +128,18 @@ class MechanicsGatekeepingPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 18),
 
+                      const _SectionTitle('MULTIPLIER SYSTEM'),
+                      const SizedBox(height: 10),
+                      const _MultiplierSystemCard(),
+                      const SizedBox(height: 18),
+
                       const _SectionTitle('OTHER FEATURES'),
                       const SizedBox(height: 10),
                       const _InfoBulletCard(
                         items: [
                           'A timer increases urgency and quick reasoning.',
-                          'You can use Pass if you want to skip a difficult question.',
-                          'A correction or backspace button lets you revise your answer.',
-                          'Multiplier increases as correct streak increases, up to a 10-answer streak with 3.0x multiplier.',
+                          'You can Pass if you want to skip a difficult question.',
+                          'A backspace button lets you revise your answer.',
                           'Each mode and difficulty has its own leaderboard.',
                         ],
                       ),
@@ -1050,6 +1054,207 @@ class _InfoBulletCard extends StatelessWidget {
           ),
         )
             .toList(),
+      ),
+    );
+  }
+}
+
+class _MultiplierSystemCard extends StatelessWidget {
+  const _MultiplierSystemCard();
+
+  Widget _buildBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white, width: 1.5),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset(0, 1),
+            blurRadius: 2,
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontFamily: 'Nunito',
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const textStyle = TextStyle(
+      color: Color(0xFF333333),
+      fontSize: 14.5,
+      height: 1.35,
+      fontFamily: 'Nunito',
+      fontWeight: FontWeight.w800,
+    );
+
+    Widget buildTierRow(String range, String mult) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(
+          children: [
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [Color(0xFFFF2A00), Color(0xFFFF8C00), Color(0xFFFFD700)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ).createShader(bounds),
+              child: Text(
+                'Streak',
+                style: textStyle.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 36,
+              child: Text(range, style: textStyle),
+            ),
+            const Text(' =  ', style: textStyle),
+            _buildBadge(mult, AppColors.orangeButton),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.beigeBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFF9F00), width: 3),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Base Score
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Icon(Icons.star_rounded, size: 14, color: AppColors.orangeButton),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    const Text('Base score:', style: textStyle),
+                    _buildBadge('100', AppColors.yellowButton),
+                    const Text('= Basic,', style: textStyle),
+                    _buildBadge('200', AppColors.pinkButton),
+                    const Text('= Logic,', style: textStyle),
+                    _buildBadge('300', AppColors.redButton),
+                    const Text('= Manic.', style: textStyle),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          
+          // Multiplier Tiers
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Icon(Icons.rocket_launch_rounded, size: 14, color: AppColors.orangeButton),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Multiplier Tiers:', style: textStyle),
+                    const SizedBox(height: 8),
+                    buildTierRow('0-1', 'x1'),
+                    buildTierRow('2-3', 'x1.25'),
+                    buildTierRow('4-5', 'x1.5'),
+                    buildTierRow('6-7', 'x1.75'),
+                    buildTierRow('8-9', 'x2'),
+                    buildTierRow('10+', 'x3'),
+                    const SizedBox(height: 2),
+                    Text(
+                      '(Two correct answers = +1 multiplier tier, up to x3 multiplier)',
+                      style: textStyle.copyWith(fontStyle: FontStyle.italic, color: const Color(0xFF666666), fontSize: 13.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          
+          // Wrong Answer
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: Icon(Icons.close_rounded, size: 18, color: AppColors.redButton),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: RichText(
+                  text: const TextSpan(
+                    style: textStyle,
+                    children: [
+                      TextSpan(
+                        text: 'Wrong answer',
+                        style: TextStyle(color: AppColors.redButton, fontWeight: FontWeight.w900),
+                      ),
+                      TextSpan(text: ' = -1 multiplier tier only.'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Pass
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: Icon(Icons.fast_forward_rounded, size: 16, color: Color(0xFF666666)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: RichText(
+                  text: const TextSpan(
+                    style: textStyle,
+                    children: [
+                      TextSpan(
+                        text: 'Pass',
+                        style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF666666)),
+                      ),
+                      TextSpan(text: ' = no change in multiplier or streak.'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

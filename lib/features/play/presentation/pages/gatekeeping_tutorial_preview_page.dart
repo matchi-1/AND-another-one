@@ -1,3 +1,4 @@
+import 'package:and_another_one/shared/widgets/pause_icon_button.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
@@ -138,6 +139,20 @@ class GatekeepingTutorialPreviewPage extends StatelessWidget {
   );
 }
 
+Widget _buildDiagramPlaceholder() {
+    return Container(
+      alignment: Alignment.center,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Image.asset(
+          'assets/images/diagrams/basic/basic_1.png',
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,23 +176,21 @@ class GatekeepingTutorialPreviewPage extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                key: TutorialTargets.previewBack,
-                                child: IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  visualDensity: VisualDensity.compact,
-                                  iconSize: 24,
-                                  icon: Image.asset(
-                                    AppAssets.backBtn,
-                                    width: 24,
-                                    height: 24,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
+                              PauseIconButton( key: TutorialTargets.previewBack, onTap: () {}),
+
+                              IconButton(
+                              key: TutorialTargets.previewHelp,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              visualDensity: VisualDensity.compact,
+                              iconSize: 24,
+                              icon: const Icon(
+                                Icons.help_outline,
+                                color: Colors.white,
                               ),
+                              onPressed: () => (), //_showGatekeepingTutorial(),
+                            ),
+
                               const MusicButton(size: 26),
                             ],
                           ),
@@ -224,6 +237,7 @@ class GatekeepingTutorialPreviewPage extends StatelessWidget {
                                   ),
 
                                   Positioned(
+                                    key: TutorialTargets.previewScore,
                                     right: w * 0.07,
                                     top: h * 0.055,
                                     width: w * 0.31,
@@ -234,32 +248,18 @@ class GatekeepingTutorialPreviewPage extends StatelessWidget {
                                       w * 0.085,
                                     ),
                                   ),
+
                                   Positioned(
-                                    left: w * 0.12,
-                                    right: w * 0.12,
-                                    top: h * 0.18,
-                                    height: h * 0.55,
-                                    child: Container(
-                                      key: TutorialTargets.previewDiagram,
-                                      alignment: Alignment.center,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(20),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.10),
-                                          borderRadius: BorderRadius.circular(18),
-                                          border: Border.all(
-                                            color: Colors.white.withOpacity(0.24),
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.account_tree_rounded,
-                                          color: Colors.white,
-                                          size: 110,
-                                        ),
-                                      ),
-                                    ),
+                                  left: w * 0.12,
+                                  right: w * 0.12,
+                                  top: h * 0.18,
+                                  height: h * 0.55,
+                                  child: Container(
+                                    key: TutorialTargets.previewDiagram,
+                                    child: _buildDiagramPlaceholder(),
                                   ),
+                                ),
+
                                   Positioned(
                                     left: w * 0.12,
                                     right: w * 0.12,
@@ -301,27 +301,33 @@ class GatekeepingTutorialPreviewPage extends StatelessWidget {
                                       height: 32,
                                       alignment: Alignment.centerLeft,
                                       padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      margin: const EdgeInsets.only(bottom: 6),
                                       decoration: BoxDecoration(
                                         color: AppColors.beigeBg,
                                         borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                          color: const Color(0xFFD8C6B5),
-                                          width: 2,
-                                        ),
+                                        border: Border.all(color: const Color(0xFFD8C6B5), width: 2),
                                       ),
-                                      child: const Text(
-                                        'PASSES LEFT: 5',
-                                        style: TextStyle(
-                                          color: Color(0xFFFF6B00),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w900,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'PASSES LEFT: 5',
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          overflow: TextOverflow.visible,
+                                          style: const TextStyle(
+                                            color: Color(0xFFFF6B00),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   BeveledMenuButton(
-                                    label: '←',
+                                    key: TutorialTargets.previewBackspace,
+                                    label: '⌫',
                                     color: Colors.grey,
                                     width: 80,
                                     height: 50,

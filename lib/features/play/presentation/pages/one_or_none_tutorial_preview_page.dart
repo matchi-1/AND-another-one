@@ -1,3 +1,4 @@
+import 'package:and_another_one/shared/widgets/pause_icon_button.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
@@ -123,23 +124,14 @@ class OneOrNoneTutorialPreviewPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDiagramPlaceholder() {
+Widget _buildDiagramPlaceholder() {
     return Container(
       alignment: Alignment.center,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.10),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.24),
-            width: 2,
-          ),
-        ),
-        child: const Icon(
-          Icons.account_tree_rounded,
-          color: Colors.white,
-          size: 110,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Image.asset(
+          'assets/images/diagrams/basic/basic_1.png',
+          fit: BoxFit.contain,
         ),
       ),
     );
@@ -152,7 +144,7 @@ class OneOrNoneTutorialPreviewPage extends StatelessWidget {
         width: double.infinity,
         alignment: Alignment.center,
         child: const Text(
-          'A = 1    B = 0    C = 1',
+          'A = 1  |  B = 0',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white,
@@ -207,6 +199,9 @@ class OneOrNoneTutorialPreviewPage extends StatelessWidget {
     );
   }
 
+
+
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -237,21 +232,23 @@ class OneOrNoneTutorialPreviewPage extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                visualDensity: VisualDensity.compact,
-                                iconSize: 24,
-                                icon: Image.asset(
-                                  AppAssets.backBtn,
-                                  width: 24,
-                                  height: 24,
-                                ),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
+                              PauseIconButton( key: TutorialTargets.onePreviewBack, onTap: () {}),
+
+                            IconButton(
+                              key: TutorialTargets.onePreviewHelp,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              visualDensity: VisualDensity.compact,
+                              iconSize: 24,
+                              icon: const Icon(
+                                Icons.help_outline,
+                                color: Colors.white,
                               ),
-                              const MusicButton(size: 26),
+                              onPressed: () => (), //_showGatekeepingTutorial(),
+                            ),
+
+
+                            const MusicButton(size: 26),
                             ],
                           ),
                         ),

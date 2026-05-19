@@ -29,6 +29,10 @@ class TutorialTargets {
   static final previewPass = GlobalKey();
   static final previewBack = GlobalKey();
   static final previewMultiplierStreak = GlobalKey();
+  static final previewPassesLeft = GlobalKey();
+  static final previewBackspace = GlobalKey();
+  static final previewScore = GlobalKey();
+  static final previewHelp = GlobalKey();
 
   // Tutorial Preview page - One or None
   static final onePreviewLives = GlobalKey();
@@ -38,6 +42,8 @@ class TutorialTargets {
   static final onePreviewValues = GlobalKey();
   static final onePreviewPass = GlobalKey();
   static final onePreviewButtons = GlobalKey();
+  static final onePreviewBack = GlobalKey();
+  static final onePreviewHelp = GlobalKey();
 
 }
 
@@ -88,6 +94,14 @@ GlobalKey? tutorialTargetById(String? id) {
       return TutorialTargets.previewBack;
     case 'previewMultiplierStreak':
       return TutorialTargets.previewMultiplierStreak;
+    case 'previewPassesLeft':
+      return TutorialTargets.previewPassesLeft;
+    case 'previewBackspace':
+      return TutorialTargets.previewBackspace;
+    case 'previewScore':
+      return TutorialTargets.previewScore;
+    case 'previewHelp':
+      return TutorialTargets.previewHelp;
 
     case 'onePreviewLives':
       return TutorialTargets.onePreviewLives;
@@ -103,6 +117,10 @@ GlobalKey? tutorialTargetById(String? id) {
       return TutorialTargets.onePreviewPass;
     case 'onePreviewButtons':
       return TutorialTargets.onePreviewButtons;
+    case 'onePreviewBack':
+      return TutorialTargets.onePreviewBack;
+    case 'onePreviewHelp':
+      return TutorialTargets.onePreviewHelp;
 
 
       }
